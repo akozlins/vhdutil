@@ -1,0 +1,8 @@
+.cache
+.Xil
+
+*.bit
+*.msk
+
+*.jou
+*.log
