@@ -18,3 +18,9 @@ set_property PACKAGE_PIN U19 [get_ports {led_out[6]}]
 set_property PACKAGE_PIN U14 [get_ports {led_out[7]}]
 
 set_property IOSTANDARD "LVCMOS33" [get_ports {led_out[*]}]
+
+# btns
+
+set_property PACKAGE_PIN P16 [get_ports {btn_in[0]}]
+
+set_property IOSTANDARD "LVCMOS25" [get_ports {btn_in[*]}]
