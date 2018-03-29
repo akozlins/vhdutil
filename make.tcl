@@ -11,6 +11,8 @@ if { [ file isdirectory $dir ] == 0 } {
 
 create_project -in_memory -part $part
 read_vhdl "$dir/top.vhd"
+read_vhdl "util/debounce.vhd"
+read_vhdl "util/components.vhd"
 read_xdc "$dir/top.xdc"
 
 # synth

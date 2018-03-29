@@ -3,12 +3,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
+use work.components.all;
+
 entity top is
     Port (
-        clk     :   in  std_logic;
---        reset   :   in  std_logic;
-        led_out :   out std_logic_vector(7 downto 0);
-        btn_in  :   in std_logic_vector(0 downto 0)
+        pl_clk_100  :   in  std_logic;
+        pl_leds     :   out std_logic_vector(7 downto 0);
+        pl_btns     :   in  std_logic_vector(4 downto 0)
     );
 end top;
 
@@ -19,17 +20,27 @@ architecture arch of top is
 
 begin
 
-    led_out <= cnt_i(31 downto 24);
-    reset_i <= btn_in(0);
+    debounce_i : debounce
+    generic map (
+        N => 5,
+        C => X"FFFF"
+    )
+    port map (
+        input(4 downto 0) => pl_btns(4 downto 0),
+        output(4 downto 1) => open,
+        output(0) => reset_i,
+        clk => pl_clk_100
+    );
 
-    p : process
+    pl_leds <= cnt_i(31 downto 24);
+
+    p : process(pl_clk_100)
     begin
-    if rising_edge(clk) then
+    if rising_edge(pl_clk_100) then
     if reset_i = '1' then
         cnt_i <= (others => '0');
     else
         cnt_i <= cnt_i + 1;
-        wait for 1 ns;
     end if;
     end if; -- rising_edge(clk)
     end process p;

@@ -5,8 +5,8 @@ use ieee.std_logic_unsigned.all;
 
 entity top is
     Port (
-        clk     :   in  std_logic;
-        led_out :   out std_logic_vector(7 downto 0)
+        pl_clk_100  :   in  std_logic;
+        pl_leds     :   out std_logic_vector(7 downto 0)
     );
 end top;
 
@@ -16,13 +16,12 @@ architecture arch of top is
 
 begin
 
-    led_out <= cnt_i(31 downto 24);
+    pl_leds <= cnt_i(31 downto 24);
 
-    p : process
+    p : process(pl_clk_100)
     begin
-    if rising_edge(clk) then
+    if rising_edge(pl_clk_100) then
         cnt_i <= cnt_i + 1;
-        wait for 1 ns;
     end if;
     end process p;
 
