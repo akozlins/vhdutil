@@ -2,21 +2,7 @@
 # \
 exec vivado -mode tcl -source "$0" -tclargs "$@"
 
-set part "xc7z020clg484-1"
-
-set dir [ lindex $argv 0 ]
-if { [ file isdirectory $dir ] == 0 } {
-    error "path '$dir' does not exist"
-}
-
-create_project -in_memory -part $part
-read_vhdl "util.vhd"
-read_vhdl "$dir/top.vhd"
-read_xdc "$dir/top.xdc"
-
-foreach { file } [ glob -directory "util/" -- "*.vhd" ] {
-    read_vhdl "$file"
-}
+source project.tcl
 
 # synth
 synth_design -verbose -top top
@@ -30,15 +16,19 @@ route_design -verbose
 #phys_opt_design -verbose
 #route_design -verbose
 
+report_utilization
+report_timing
+
 #set_property BITSTREAM.STARTUP.STARTUPCLK JtagClk [current_design]
 #set_property BITSTREAM.CONFIG.DCIUPDATEMODE Quiet [current_design]
-write_bitstream -verbose -mask_file -force "$dir/top.bit"
+write_bitstream -verbose -force "$::dir/top.bit"
 
 open_hw
 connect_hw_server
 open_hw_target
-set dev [ get_hw_devices "xc7z020_1" ]
-set_property PROGRAM.FILE "$dir/top.bit" $dev
-program_hw_devices $dev
 
-exit
+proc pgm {} {
+    set dev [ get_hw_devices "xc7z020_1" ]
+    set_property PROGRAM.FILE "$::dir/top.bit" $dev
+    program_hw_devices $dev
+}
