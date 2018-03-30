@@ -15,4 +15,36 @@ package util is
     );
     end component debounce;
 
+    component half_adder is
+    port (
+        a   :   in  std_logic;
+        b   :   in  std_logic;
+        s   :   out std_logic;
+        c   :   out std_logic--;
+    );
+    end component half_adder;
+
+    component full_adder is
+    port (
+        a   :   in  std_logic;
+        b   :   in  std_logic;
+        s   :   out std_logic;
+        ci  :   in  std_logic;
+        co  :   out std_logic--;
+    );
+    end component full_adder;
+
+    component ripple_adder is
+    generic (
+        N   : integer := 8--;
+    );
+    port (
+        a   :   in  std_logic_vector(N-1 downto 0);
+        b   :   in  std_logic_vector(N-1 downto 0);
+        s   :   out std_logic_vector(N-1 downto 0);
+        ci  :   in  std_logic;
+        co  :   out std_logic--;
+    );
+    end component ripple_adder;
+
 end package util;
