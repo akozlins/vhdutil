@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-use work.components.all;
+use work.util.all;
 
 entity top is
     Port (
@@ -22,12 +22,11 @@ begin
 
     debounce_i : debounce
     generic map (
-        N => 5,
+        N => 1,
         C => X"FFFF"
     )
     port map (
-        input(4 downto 0) => pl_btns(4 downto 0),
-        output(4 downto 1) => open,
+        input(0 downto 0) => pl_btns(0 downto 0),
         output(0) => reset_i,
         clk => pl_clk_100
     );

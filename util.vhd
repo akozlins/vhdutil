@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-package components is
+package util is
 
     component debounce is
     generic (
@@ -15,4 +15,4 @@ package components is
     );
     end component debounce;
 
-end package components;
+end package util;
