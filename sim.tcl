@@ -13,7 +13,7 @@ foreach { file } [ glob -directory "tb/" -- "*" ] {
     add_files -fileset sim_1 "$file"
 }
 
-save_project_as -force project_tb project_tb
+save_project_as -force project project
 
 proc sim { tb } {
     set_property top_lib xil_defaultlib [ get_filesets sim_1 ]
@@ -21,4 +21,4 @@ proc sim { tb } {
     launch_simulation
 }
 
-sim tb_half_adder
+sim tb_alu
