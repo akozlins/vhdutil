@@ -7,15 +7,15 @@ use work.util.all;
 
 entity alu is
     generic (
-        N   : integer := 8--;
+        W   : integer := 8--;
     );
     port (
         s0  :   in  std_logic;
         s1  :   in  std_logic;
         s2  :   in  std_logic;
-        a   :   in  std_logic_vector(N-1 downto 0);
-        b   :   in  std_logic_vector(N-1 downto 0);
-        z   :   out std_logic_vector(N-1 downto 0);
+        a   :   in  std_logic_vector(W-1 downto 0);
+        b   :   in  std_logic_vector(W-1 downto 0);
+        z   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
@@ -23,18 +23,18 @@ end entity alu;
 
 architecture arch of alu is
 
-    signal a_i : std_logic_vector(N-1 downto 0);
-    signal b_i : std_logic_vector(N-1 downto 0);
+    signal a_i : std_logic_vector(W-1 downto 0);
+    signal b_i : std_logic_vector(W-1 downto 0);
 
-    signal s0_i : std_logic_vector(N-1 downto 0);
-    signal s1_i : std_logic_vector(N-1 downto 0);
-    signal s2_i : std_logic_vector(N-1 downto 0);
+    signal s0_i : std_logic_vector(W-1 downto 0);
+    signal s1_i : std_logic_vector(W-1 downto 0);
+    signal s2_i : std_logic_vector(W-1 downto 0);
 
 begin
 
     adder_i : ripple_adder
     generic map (
-        N => N
+        W => W
     )
     port map (
         a => a_i,

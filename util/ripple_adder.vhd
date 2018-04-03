@@ -7,12 +7,12 @@ use work.util.all;
 
 entity ripple_adder is
     generic (
-        N   : integer := 8--;
+        W   : integer := 8--;
     );
     port (
-        a   :   in  std_logic_vector(N-1 downto 0);
-        b   :   in  std_logic_vector(N-1 downto 0);
-        s   :   out std_logic_vector(N-1 downto 0);
+        a   :   in  std_logic_vector(W-1 downto 0);
+        b   :   in  std_logic_vector(W-1 downto 0);
+        s   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
@@ -20,14 +20,14 @@ end entity ripple_adder;
 
 architecture arch of ripple_adder is
 
-    signal c_i : std_logic_vector(N downto 0);
+    signal c_i : std_logic_vector(W downto 0);
 
 begin
 
     c_i(0) <= ci;
-    co <= c_i(N);
+    co <= c_i(W);
 
-    gen : for i in 0 to N-1 generate
+    gen : for i in 0 to W-1 generate
         full_adder_i : full_adder
         port map (
             a => a(i),

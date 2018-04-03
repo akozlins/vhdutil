@@ -37,7 +37,7 @@ begin
 
     adder_i : ripple_adder
     generic map (
-        N => 32
+        W => 32--,
     )
     port map (
         a => cnt_i,

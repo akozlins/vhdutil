@@ -7,7 +7,7 @@ reg [3:0] a, b;
 wire [3:0] z;
 wire co;
 
-alu #(.N(4)) adder_i (
+alu #(.W(4)) adder_i (
     .s0(s0), .s1(s1), .s2(s2),
     .a(a),
     .b(b),
