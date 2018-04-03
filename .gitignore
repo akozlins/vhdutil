@@ -6,3 +6,6 @@
 
 *.jou
 *.log
+*.str
+
+project/*

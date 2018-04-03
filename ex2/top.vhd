@@ -16,7 +16,7 @@ end top;
 architecture arch of top is
 
     signal cnt_i : std_logic_vector(31 downto 0);
-    signal reset_i : std_logic;
+    signal areset_i : std_logic;
 
 begin
 
@@ -27,21 +27,19 @@ begin
     )
     port map (
         input(0 downto 0) => pl_btns(0 downto 0),
-        output(0) => reset_i,
+        output(0) => areset_i,
         clk => pl_clk_100
     );
 
     pl_leds <= cnt_i(31 downto 24);
 
-    p : process(pl_clk_100)
+    process(pl_clk_100)
     begin
-    if rising_edge(pl_clk_100) then
-    if reset_i = '1' then
+    if areset_i = '1' then
         cnt_i <= (others => '0');
-    else
+    elsif rising_edge(pl_clk_100) then
         cnt_i <= cnt_i + 1;
-    end if;
-    end if; -- rising_edge(clk)
-    end process p;
+    end if; -- rising_edge
+    end process;
 
 end arch;

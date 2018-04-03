@@ -29,4 +29,8 @@ begin
     $finish;
 end
 
+initial begin
+    $monitor("%b + %b = (%b)%b", a, b, c, s);
+end
+
 endmodule

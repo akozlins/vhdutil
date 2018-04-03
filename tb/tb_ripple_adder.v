@@ -10,7 +10,7 @@ ripple_adder #(.W(4)) ripple_adder_i (
     .a(a),
     .b(b),
     .s(s),
-    .ci(0),
+    .ci(1'b0),
     .co(c)
 );
 
@@ -26,6 +26,10 @@ begin
     end
 
     $finish;
+end
+
+initial begin
+    $monitor("%b + %b = (%b)%b", a, b, c, s);
 end
 
 endmodule

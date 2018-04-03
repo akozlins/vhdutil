@@ -28,3 +28,5 @@ set_property PACKAGE_PIN N15 [get_ports {pl_btns[3]}]
 set_property PACKAGE_PIN R18 [get_ports {pl_btns[4]}]
 
 set_property IOSTANDARD "LVCMOS25" [get_ports {pl_btns[*]}]
+
+set_false_path -from [get_ports {pl_btns[*]}]

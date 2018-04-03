@@ -18,11 +18,11 @@ begin
 
     pl_leds <= cnt_i(31 downto 24);
 
-    p : process(pl_clk_100)
+    process(pl_clk_100)
     begin
     if rising_edge(pl_clk_100) then
         cnt_i <= cnt_i + 1;
     end if;
-    end process p;
+    end process;
 
 end arch;

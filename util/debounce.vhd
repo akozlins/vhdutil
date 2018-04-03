@@ -9,9 +9,9 @@ entity debounce is
         C   : std_logic_vector := X"FFFF"--;
     );
     port (
-        clk     :   in  std_logic;
         input   :   in  std_logic_vector(N-1 downto 0);
-        output  :   out std_logic_vector(N-1 downto 0)--;
+        output  :   out std_logic_vector(N-1 downto 0);
+        clk     :   in  std_logic--;
     );
 end entity debounce;
 
@@ -22,11 +22,10 @@ architecture arch of debounce is
 
     type cnt_array_type is array(N-1 downto 0) of std_logic_vector(C'length-1 downto 0);
     signal cnt : cnt_array_type;
---    signal cnt : cnt_array_type := (others => (others => '0'));
 
 begin
 
-    p : process(clk)
+    process(clk)
     begin
     if rising_edge(clk) then
         input_q0 <= input;
@@ -41,6 +40,6 @@ begin
             end if;
         end loop;
     end if;
-    end process p;
+    end process;
 
 end;
