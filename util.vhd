@@ -97,4 +97,31 @@ package util is
     );
     end component cpu_v1;
 
+    component reg_file is
+    generic (
+        W   : integer := 8;
+        N   : integer := 2--;
+    );
+    port (
+        clk     :   in  std_logic;
+        aA      :   in  std_logic_vector(N-1 downto 0);
+        aB      :   in  std_logic_vector(N-1 downto 0);
+        aC      :   in  std_logic_vector(N-1 downto 0);
+        rdA     :   out std_logic_vector(W-1 downto 0);
+        rdB     :   out std_logic_vector(W-1 downto 0);
+        rdC     :   out std_logic_vector(W-1 downto 0);
+        wdC     :   in  std_logic_vector(W-1 downto 0);
+        weC     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component reg_file;
+
+    component cpu_v2 is
+    port (
+        debug   :   out std_logic_vector(15 downto 0);
+        clk     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component cpu_v2;
+
 end package util;

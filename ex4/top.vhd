@@ -15,10 +15,9 @@ end top;
 
 architecture arch of top is
 
-    signal reg15 : std_logic_vector(15 downto 0);
+    signal debug : std_logic_vector(15 downto 0);
 
     signal cnt_i : std_logic_vector(31 downto 0);
-    signal cnt_o : std_logic_vector(31 downto 0);
 
     signal areset_i : std_logic;
 
@@ -37,34 +36,22 @@ begin
 
 --    pl_leds <= cnt_o(31 downto 24);
 
-    adder_i : ripple_adder
-    generic map (
-        W => 32--,
-    )
-    port map (
-        a => cnt_i,
-        b => X"00000001",
-        s => cnt_o,
-        ci => '0',
-        co => open--,
-    );
-
     process(pl_clk_100, areset_i)
     begin
     if areset_i = '1' then
         cnt_i <= (others => '0');
     elsif rising_edge(pl_clk_100) then
-        cnt_i <= cnt_o;
+        cnt_i <= cnt_i + 1;
     end if; -- rising_edge
     end process;
 
-    cpu_i : cpu_v1
+    cpu_i : cpu_v2
     port map (
-        reg15 => reg15,
-        clk => cnt_i(16),
+        debug => debug,
+        clk => cnt_i(8),
         areset => areset_i--,
     );
 
-    pl_leds <= reg15(15 downto 8);
+    pl_leds <= debug(15 downto 8);
 
 end arch;

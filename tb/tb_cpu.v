@@ -4,7 +4,7 @@ module tb_cpu();
 
 reg clk, areset;
 
-cpu_v1 cpu_i (
+cpu_v2 cpu_i (
     .clk(clk), .areset(areset)
 );
 
