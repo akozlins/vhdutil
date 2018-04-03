@@ -63,6 +63,32 @@ package util is
     );
     end component alu;
 
+    component ram is
+    generic (
+        W   : integer := 8;
+        N   : integer := 8--;
+    );
+    port (
+        clk     :   in  std_logic;
+        address :   in  std_logic_vector(N-1 downto 0);
+        rdata   :   out std_logic_vector(W-1 downto 0);
+        wdata   :   in  std_logic_vector(W-1 downto 0);
+        we      :   in  std_logic--;
+    );
+    end component ram;
+
+    component gray_counter is
+    generic (
+        W   : integer := 8--;
+    );
+    port (
+        cnt     :   out std_logic_vector(W-1 downto 0);
+        clk     :   in  std_logic;
+        ena     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component gray_counter;
+
     component cpu_v1 is
     port (
         reg15   :   out std_logic_vector(15 downto 0);
