@@ -26,9 +26,3 @@ write_bitstream -verbose -force "$::dir/top.bit"
 open_hw
 connect_hw_server
 open_hw_target
-
-proc pgm {} {
-    set dev [ get_hw_devices "xc7z020_1" ]
-    set_property PROGRAM.FILE "$::dir/top.bit" $dev
-    program_hw_devices $dev
-}
