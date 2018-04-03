@@ -19,10 +19,10 @@ architecture arch of cpu_v1 is
 
     type ram_t is array (0 to 2**8-1) of word_t;
     signal ram : ram_t := (
-       X"D100", X"0001", -- ldi reg1 = 1
-       X"DF00", X"0000", -- ldi : reg15 = 0
-       X"0FF1", -- add : reg15 = reg15 + reg1
-       X"A0FF", -- jmp : pc -= 1
+       X"D100", X"0001", -- LDI : reg1 = 1
+       X"DF00", X"0000", -- LDI : reg15 = 0
+       X"0FF1", -- ADD : reg15 = reg15 + reg1
+       X"A0FF", -- JMP : pc -= 1
        others => (others => '0')
     );
 
@@ -37,17 +37,18 @@ architecture arch of cpu_v1 is
     signal pc : word_t;
 
     signal instr : std_logic_vector(3 downto 0);
-    signal regA : word_t;
-    signal regB : word_t;
     signal regC : std_logic_vector(3 downto 0);
+    signal regB : word_t;
+    signal regA : word_t;
+
     signal regC_q : std_logic_vector(3 downto 0);
 
     type state_t is (
-        S_RESET,
         S_EXEC,
         S_ST,
         S_LD,
-        S_LDI--,
+        S_LDI,
+        S_RESET--,
     );
     signal state : state_t;
 
@@ -77,60 +78,65 @@ begin
         state <= S_RESET;
     elsif rising_edge(clk) then
         write <= '0';
-        regC_q <= regC;
 
-        if state = S_RESET then
-            pc <= (others => '0');
-            address <= (others => '0');
-            state <= S_EXEC;
-
-        elsif state = S_EXEC then
+        case state is
+        when S_EXEC =>
             pc <= pc + 1;
             address <= pc + 1;
 
             case instr is
-            when X"F" => -- st : *regC = regA
-                address <= reg(to_integer(unsigned(regC)));
-                wdata <= regA;
+            when X"F" => -- ST : *(regB + regA) = regC
+                address <= regB + regA;
+                wdata <= reg(to_integer(unsigned(regC)));
                 write <= '1';
                 state <= S_ST;
-            when X"E" => -- ld : regC = *regA
-                address <= regA;
+            when X"E" => -- LD : regC = *(regB + regA)
+                address <= regB + regA;
+                regC_q <= regC;
                 state <= S_LD;
-            when X"D" => -- ldi : regC = I
+            when X"D" => -- LDI : regC = *(pc + 1)
+                regC_q <= regC;
                 state <= S_LDI;
-            when X"A" => -- jmp : pc += rdata(7 downto 0)
+            when X"A" => -- JMP : pc += rdata(7 downto 0)
                 pc <= pc + ((7 downto 0 => rdata(7)) & rdata(7 downto 0));
                 address <= pc + ((7 downto 0 => rdata(7)) & rdata(7 downto 0));
---                if rdata(7) = '0' then
---                    pc <= pc + (X"00" & rdata(7 downto 0));
---                    address <= pc + (X"00" & rdata(7 downto 0));
---                else
---                    pc <= pc + (X"FF" & rdata(7 downto 0));
---                    address <= pc + (X"FF" & rdata(7 downto 0));
---                end if;
-            when X"0" => -- add : regC = regA + regB
-                reg(to_integer(unsigned(regC))) <= regA + regB;
+            when X"4" => -- XOR : regC = regB xor regA
+                reg(to_integer(unsigned(regC))) <= regB xor regA;
+            when X"3" => -- OR : regC = regB or regA
+                reg(to_integer(unsigned(regC))) <= regB or regA;
+            when X"2" => -- AND : regC = regB and regA
+                reg(to_integer(unsigned(regC))) <= regB and regA;
+            when X"1" => -- SUB : regC = regB - regA
+                reg(to_integer(unsigned(regC))) <= regB - regA;
+            when X"0" => -- ADD : regC = regB + regA
+                reg(to_integer(unsigned(regC))) <= regB + regA;
             when others =>
                 null;
             end case;
 
-        elsif state = S_LD then
+        when S_ST =>
+            address <= pc;
+            state <= S_EXEC;
+
+        when S_LD =>
             reg(to_integer(unsigned(regC_q))) <= rdata;
             address <= pc;
             state <= S_EXEC;
 
-        elsif state = S_ST then
-            address <= pc;
-            state <= S_EXEC;
-
-        elsif state = S_LDI then
+        when S_LDI =>
             reg(to_integer(unsigned(regC_q))) <= rdata;
             pc <= pc + 1;
             address <= pc + 1;
             state <= S_EXEC;
 
-        end if;
+        when S_RESET =>
+            pc <= (others => '0');
+            address <= (others => '0');
+            state <= S_EXEC;
+
+        when others =>
+            null;
+        end case;
 
         reg(0) <= (others => '0');
     end if; -- rising_edge
