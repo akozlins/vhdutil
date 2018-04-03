@@ -63,4 +63,12 @@ package util is
     );
     end component alu;
 
+    component cpu_v1 is
+    port (
+        reg15   :   out std_logic_vector(15 downto 0);
+        clk     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component cpu_v1;
+
 end package util;
