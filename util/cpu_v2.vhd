@@ -42,6 +42,7 @@ architecture arch of cpu_v2 is
     signal dA : word_t;
     signal dB : word_t;
     signal dC : word_t;
+    signal dC_q : word_t;
 
     signal aC : std_logic_vector(3 downto 0);
     signal aC_q : std_logic_vector(3 downto 0);
@@ -71,6 +72,7 @@ begin
 
     address <= address_q when ( state = S_STORE or state = S_LOAD or state = S_DEBUG ) else pc;
     rdata <= ram(to_integer(unsigned(address)));
+    wdata <= dC_q;
     write <= '1' when ( state = S_STORE ) else '0';
 
     reg_file_i : reg_file
@@ -90,6 +92,7 @@ begin
         weC => weC,
         areset => areset--,
     );
+
     aC <= aC_q when ( state = S_LOAD or state = S_LOADI ) else
           rdata(11 downto 8);
     wdC <= rdata     when ( state = S_LOAD or state = S_LOADI ) else
@@ -100,7 +103,7 @@ begin
            dB xor dA when ( state = S_EXEC and ir = X"4") else
            X"CCCC";
     weC <= '1' when ( state = S_LOAD or state = S_LOADI ) else
-           '1' when ( state = S_EXEC and ir(3) = '0' ) else
+           '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
            '0';
 
     ir <= rdata(15 downto 12);
@@ -111,7 +114,9 @@ begin
         state <= S_RESET;
     elsif rising_edge(clk) then
         state <= S_EXEC;
+        address_q <= dB + dA;
         aC_q <= aC;
+        dC_q <= dC;
 
         case state is
         when S_EXEC =>
@@ -119,16 +124,12 @@ begin
 
             case ir is
             when X"F" => -- ST : *(regB + regA) = regC
-                address_q <= dB + dA;
-                wdata <= dC;
                 state <= S_STORE;
             when X"E" => -- LD : regC = *(regB + regA)
-                address_q <= dB + dA;
                 state <= S_LOAD;
             when X"D" => -- LDI : regC = *(pc + 1)
                 state <= S_LOADI;
             when X"C" => -- DBG
-                address_q <= dB + dA;
                 state <= S_DEBUG;
             when X"A" => -- JMP : pc += rdata(7 downto 0)
                 pc <= pc + ((7 downto 0 => rdata(7)) & rdata(7 downto 0));
