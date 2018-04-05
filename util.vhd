@@ -3,6 +3,12 @@ use ieee.std_logic_1164.all;
 
 package util is
 
+    function bool_to_logic (
+        constant b : in boolean--;
+    ) return std_logic;
+
+
+
     component debounce is
     generic (
         N : integer := 1;
@@ -126,3 +132,16 @@ package util is
     end component cpu_v2;
 
 end package util;
+
+package body util is
+
+    function bool_to_logic (
+        constant b : in boolean--;
+    ) return std_logic is
+    begin
+        if b then return '1';
+             else return '0';
+        end if;
+    end function bool_to_logic;
+
+end util;
