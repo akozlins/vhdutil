@@ -66,7 +66,8 @@ package util is
     component ram is
     generic (
         W   : integer := 8;
-        N   : integer := 8--;
+        N   : integer := 8;
+        INIT_FILE_HEX : string := ""--;
     );
     port (
         clk     :   in  std_logic;

@@ -26,7 +26,8 @@ begin
     ram_i : ram
     generic map (
         W => W,
-        N => N--,
+        N => N,
+        INIT_FILE_HEX => "ram.hex"--,
     )
     port map (
         clk => clk,
