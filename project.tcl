@@ -23,10 +23,10 @@ create_project -in_memory -part $part
 
 read_vhdl "util.vhd"
 foreach { file } [ glob -nocomplain -directory "util/" -- "*.vhd" ] {
-    read_vhdl "$file"
+    add_files -fileset sources_1 "$file"
 }
 foreach { file } [ glob -nocomplain -directory "util/" -- "*.v" ] {
-    read_vhdl "$file"
+    add_files -fileset sources_1 "$file"
 }
 
 foreach { file } [ glob -nocomplain -directory "tb/" -- "*.vhd" ] {

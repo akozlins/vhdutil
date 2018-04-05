@@ -1,6 +1,6 @@
 #!/bin/sh
 # \
-exec vivado -mode gui -source "$0" -tclargs "$@"
+exec vivado -jvm Xmx2048m -mode gui -source "$0" -tclargs "$@"
 
 source project.tcl
 
