@@ -25,7 +25,8 @@ begin
     $finish;
 end
 
-initial begin
+initial
+begin
     $monitor("%d\t%b", $time, cnt);
 end
 

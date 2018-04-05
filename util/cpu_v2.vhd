@@ -42,6 +42,9 @@ architecture arch of cpu_v2 is
     );
     signal state : state_t;
 
+    signal alu_a, alu_b, alu_z : word_t;
+    signal alu_add, alu_addc, alu_sub, alu_and, alu_or, alu_xor, alu_not : std_logic;
+
 begin
 
     ram_i : ram
@@ -82,16 +85,36 @@ begin
 
     regC_addr <= regC_addr_q when ( state = S_LOAD or state = S_LOADI ) else
                  ram_dout(11 downto 8);
-    regC_din <= ram_dout      when ( state = S_LOAD or state = S_LOADI ) else
-                regB  +  regA when ( state = S_EXEC and ir = X"0" ) else
-                regB  -  regA when ( state = S_EXEC and ir = X"1" ) else
-                regB and regA when ( state = S_EXEC and ir = X"2" ) else
-                regB  or regA when ( state = S_EXEC and ir = X"3" ) else
-                regB xor regA when ( state = S_EXEC and ir = X"4" ) else
+    regC_din <= ram_dout when ( state = S_LOAD or state = S_LOADI ) else
+                alu_z    when ( state = S_EXEC and ir(ir'left) = '0' ) else
                 X"CCCC";
     regC_we <= '1' when ( state = S_LOAD or state = S_LOADI ) else
                '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
                '0';
+
+    alu_i : alu
+    generic map (
+        W => 16--,
+    )
+    port map (
+        mux(2) => alu_sub or alu_not,
+        mux(1) => alu_or or alu_xor or alu_not,
+        mux(0) => alu_and or alu_xor,
+        a   => alu_a,
+        b   => alu_b,
+        z   => alu_z,
+        ci  => alu_sub,
+        co  => open--,
+    );
+
+    alu_add <= bool_to_logic(state = S_EXEC and ir = X"0");
+    alu_sub <= bool_to_logic(state = S_EXEC and ir = X"1");
+    alu_and <= bool_to_logic(state = S_EXEC and ir = X"2");
+    alu_or  <= bool_to_logic(state = S_EXEC and ir = X"3");
+    alu_xor <= bool_to_logic(state = S_EXEC and ir = X"4");
+    alu_not <= bool_to_logic(state = S_EXEC and ir = X"5");
+    alu_a <= regA;
+    alu_b <= regB;
 
     ir <= ram_dout(15 downto 12);
 

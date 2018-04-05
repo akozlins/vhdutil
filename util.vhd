@@ -38,6 +38,18 @@ package util is
     );
     end component debounce;
 
+    component gray_counter is
+    generic (
+        W   : integer := 8--;
+    );
+    port (
+        cnt     :   out std_logic_vector(W-1 downto 0);
+        clk     :   in  std_logic;
+        ena     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component gray_counter;
+
     component half_adder is
     port (
         a   :   in  std_logic;
@@ -75,9 +87,7 @@ package util is
         W   : integer := 8--;
     );
     port (
-        s0  :   in  std_logic;
-        s1  :   in  std_logic;
-        s2  :   in  std_logic;
+        mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
         z   :   out std_logic_vector(W-1 downto 0);
@@ -101,26 +111,6 @@ package util is
     );
     end component ram;
 
-    component gray_counter is
-    generic (
-        W   : integer := 8--;
-    );
-    port (
-        cnt     :   out std_logic_vector(W-1 downto 0);
-        clk     :   in  std_logic;
-        ena     :   in  std_logic;
-        areset  :   in  std_logic--;
-    );
-    end component gray_counter;
-
-    component cpu_v1 is
-    port (
-        reg15   :   out std_logic_vector(15 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
-    );
-    end component cpu_v1;
-
     component reg_file is
     generic (
         W   : integer := 8;
@@ -139,6 +129,14 @@ package util is
         areset  :   in  std_logic--;
     );
     end component reg_file;
+
+    component cpu_v1 is
+    port (
+        reg15   :   out std_logic_vector(15 downto 0);
+        clk     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component cpu_v1;
 
     component cpu_v2 is
     port (

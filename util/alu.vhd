@@ -10,9 +10,7 @@ entity alu is
         W   : integer := 8--;
     );
     port (
-        s0  :   in  std_logic;
-        s1  :   in  std_logic;
-        s2  :   in  std_logic;
+        mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
         z   :   out std_logic_vector(W-1 downto 0);
@@ -23,14 +21,18 @@ end entity alu;
 
 architecture arch of alu is
 
+    signal m2_i : std_logic_vector(W-1 downto 0);
+
     signal a_i : std_logic_vector(W-1 downto 0);
     signal b_i : std_logic_vector(W-1 downto 0);
-
-    signal s0_i : std_logic_vector(W-1 downto 0);
-    signal s1_i : std_logic_vector(W-1 downto 0);
-    signal s2_i : std_logic_vector(W-1 downto 0);
+    signal z_i : std_logic_vector(W downto 0);
 
 begin
+
+    m2_i <= (others => mux(2));
+
+    a_i <= a xor m2_i;
+    b_i <= b;
 
     adder_i : ripple_adder
     generic map (
@@ -39,16 +41,14 @@ begin
     port map (
         a => a_i,
         b => b_i,
-        s => z,
+        s => z_i,
         ci => ci,
         co => co
     );
 
-    s0_i <= (others => s0);
-    s1_i <= (others => s1);
-    s2_i <= (others => s2);
-
-    a_i <= a and (b or s0_i);
-    b_i <= (b or s1_i) xor s2_i;
+    z <= a_i and b_i when mux(1 downto 0) = "01" else
+         a_i  or b_i when mux(1 downto 0) = "10" else
+         a_i xor b_i when mux(1 downto 0) = "11" else
+         z_i(W-1 downto 0);
 
 end;

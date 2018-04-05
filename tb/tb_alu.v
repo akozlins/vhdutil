@@ -2,30 +2,53 @@
 
 module tb_alu();
 
-reg s0, s1, s2, ci;
+reg [2:0] mux;
 reg [3:0] a, b;
-wire [3:0] z;
-wire co;
+reg ci;
 
-alu #(.W(4)) adder_i (
-    .s0(s0), .s1(s1), .s2(s2),
+alu #(.W(4)) alu_i (
+    .mux(mux),
     .a(a),
     .b(b),
-    .z(z),
-    .ci(ci),
-    .co(co)
+    .ci(ci)
 );
 
 integer i;
 
 initial
 begin
-    s0 = 1; s1 = 1; s2 = 0;
-    ci = 0;
-    for (i = 0; i < 16; i = i + 1)
-    begin
-        a = i % 4;
-        b = i / 4;
+    // add
+    mux = 3'b000; ci = 0;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i % 4; b = i / 4;
+        #10;
+    end
+
+    // sub
+    mux = 3'b100; ci = 1;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i % 4; b = i / 4;
+        #10;
+    end
+
+    // and
+    mux = 3'b001; ci = 0;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i % 4; b = i / 4;
+        #10;
+    end
+
+    // or
+    mux = 3'b010; ci = 0;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i % 4; b = i / 4;
+        #10;
+    end
+
+    // xor
+    mux = 3'b011; ci = 0;
+    for (i = 0; i < 16; i = i + 1) begin
+        a = i % 4; b = i / 4;
         #10;
     end
 
