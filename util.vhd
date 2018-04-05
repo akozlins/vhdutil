@@ -77,9 +77,9 @@ package util is
     );
     port (
         clk     :   in  std_logic;
-        address :   in  std_logic_vector(N-1 downto 0);
-        rdata   :   out std_logic_vector(W-1 downto 0);
-        wdata   :   in  std_logic_vector(W-1 downto 0);
+        addr    :   in  std_logic_vector(N-1 downto 0);
+        dout    :   out std_logic_vector(W-1 downto 0);
+        din     :   in  std_logic_vector(W-1 downto 0);
         we      :   in  std_logic--;
     );
     end component ram;
@@ -111,14 +111,14 @@ package util is
     );
     port (
         clk     :   in  std_logic;
-        aA      :   in  std_logic_vector(N-1 downto 0);
-        aB      :   in  std_logic_vector(N-1 downto 0);
-        aC      :   in  std_logic_vector(N-1 downto 0);
-        rdA     :   out std_logic_vector(W-1 downto 0);
-        rdB     :   out std_logic_vector(W-1 downto 0);
-        rdC     :   out std_logic_vector(W-1 downto 0);
-        wdC     :   in  std_logic_vector(W-1 downto 0);
-        weC     :   in  std_logic;
+        a_addr  :   in  std_logic_vector(N-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
+        c_addr  :   in  std_logic_vector(N-1 downto 0);
+        a_dout  :   out std_logic_vector(W-1 downto 0);
+        b_dout  :   out std_logic_vector(W-1 downto 0);
+        c_dout  :   out std_logic_vector(W-1 downto 0);
+        c_din   :   in  std_logic_vector(W-1 downto 0);
+        c_we    :   in  std_logic;
         areset  :   in  std_logic--;
     );
     end component reg_file;

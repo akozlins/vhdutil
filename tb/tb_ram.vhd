@@ -16,9 +16,9 @@ architecture arch of tb_ram is
     constant N : integer := 4;
 
     signal clk : std_logic := '0';
-    signal address : std_logic_vector(N-1 downto 0);
-    signal rdata : std_logic_vector(W-1 downto 0);
-    signal wdata : std_logic_vector(W-1 downto 0);
+    signal addr : std_logic_vector(N-1 downto 0);
+    signal dout : std_logic_vector(W-1 downto 0);
+    signal din : std_logic_vector(W-1 downto 0);
     signal we : std_logic := '0';
 
 begin
@@ -31,9 +31,9 @@ begin
     )
     port map (
         clk => clk,
-        address => address,
-        rdata => rdata,
-        wdata => wdata,
+        addr => addr,
+        dout => dout,
+        din => din,
         we => we--,
     );
 
@@ -50,15 +50,15 @@ begin
         wait until rising_edge(clk);
 
         for i in 0 to 2**N-1 loop
-            address <= std_logic_vector(to_unsigned(i, N));
-            wdata <= std_logic_vector(to_unsigned(i, W));
+            addr <= std_logic_vector(to_unsigned(i, N));
+            din <= std_logic_vector(to_unsigned(i, W));
             we <= '1';
             wait until rising_edge(clk);
         end loop;
 
         for i in 0 to 2**N-1 loop
             we <= '0';
-            address <= std_logic_vector(to_unsigned(i, N));
+            addr <= std_logic_vector(to_unsigned(i, N));
             wait until rising_edge(clk);
         end loop;
 

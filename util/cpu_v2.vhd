@@ -29,25 +29,20 @@ architecture arch of cpu_v2 is
        others => (others => '0')
     );
 
-    signal address : word_t;
-    signal address_q : word_t;
-    signal rdata : word_t;
-    signal wdata : word_t;
-    signal write : std_logic;
+    signal ram_addr : word_t;
+    signal ram_addr_q : word_t;
+    signal ram_dout : word_t;
+    signal ram_din : word_t;
+    signal ram_we : std_logic;
 
     signal pc : word_t;
 
     signal ir : std_logic_vector(3 downto 0);
 
-    signal dA : word_t;
-    signal dB : word_t;
-    signal dC : word_t;
-    signal dC_q : word_t;
-
-    signal aC : std_logic_vector(3 downto 0);
-    signal aC_q : std_logic_vector(3 downto 0);
-    signal wdC : word_t;
-    signal weC : std_logic;
+    signal regA, regB, regC, regC_q : word_t;
+    signal regC_addr, regC_addr_q : std_logic_vector(3 downto 0);
+    signal regC_din : word_t;
+    signal regC_we : std_logic;
 
     type state_t is (
         S_EXEC,
@@ -65,15 +60,15 @@ begin
     begin
     if rising_edge(clk) then
         if(write = '1') then
-            ram(to_integer(unsigned(address))) <= wdata;
+            ram(to_integer(unsigned(ram_addr))) <= ram_din;
         end if;
     end if; -- rising_edge
     end process ram_p;
 
-    address <= address_q when ( state = S_STORE or state = S_LOAD or state = S_DEBUG ) else pc;
-    rdata <= ram(to_integer(unsigned(address)));
-    wdata <= dC_q;
-    write <= '1' when ( state = S_STORE ) else '0';
+    ram_addr <= ram_addr_q when ( state = S_STORE or state = S_LOAD or state = S_DEBUG ) else pc;
+    ram_dout <= ram(to_integer(unsigned(ram_addr)));
+    ram_din <= regC_q;
+    ram_we <= '1' when ( state = S_STORE ) else '0';
 
     reg_file_i : reg_file
     generic map (
@@ -81,32 +76,32 @@ begin
         N => 4--,
     )
     port map (
-        clk => clk,
-        aA => rdata(3 downto 0),
-        aB => rdata(7 downto 4),
-        aC => aC,
-        rdA => dA,
-        rdB => dB,
-        rdC => dC,
-        wdC => wdC,
-        weC => weC,
-        areset => areset--,
+        clk     => clk,
+        a_addr  => ram_dout(3 downto 0),
+        b_addr  => ram_dout(7 downto 4),
+        c_addr  => regC_addr,
+        a_dout  => regA,
+        b_dout  => regB,
+        c_dout  => regC,
+        c_din   => regC_din,
+        c_we    => regC_we,
+        areset  => areset--,
     );
 
-    aC <= aC_q when ( state = S_LOAD or state = S_LOADI ) else
-          rdata(11 downto 8);
-    wdC <= rdata     when ( state = S_LOAD or state = S_LOADI ) else
-           dB  +  dA when ( state = S_EXEC and ir = X"0") else
-           dB  -  dA when ( state = S_EXEC and ir = X"1") else
-           dB and dA when ( state = S_EXEC and ir = X"2") else
-           dB  or dA when ( state = S_EXEC and ir = X"3") else
-           dB xor dA when ( state = S_EXEC and ir = X"4") else
-           X"CCCC";
-    weC <= '1' when ( state = S_LOAD or state = S_LOADI ) else
-           '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
-           '0';
+    regC_addr <= regC_addr_q when ( state = S_LOAD or state = S_LOADI ) else
+                 ram_dout(11 downto 8);
+    regC_din <= ram_dout      when ( state = S_LOAD or state = S_LOADI ) else
+                regB  +  regA when ( state = S_EXEC and ir = X"0" ) else
+                regB  -  regA when ( state = S_EXEC and ir = X"1" ) else
+                regB and regA when ( state = S_EXEC and ir = X"2" ) else
+                regB  or regA when ( state = S_EXEC and ir = X"3" ) else
+                regB xor regA when ( state = S_EXEC and ir = X"4" ) else
+                X"CCCC";
+    regC_we <= '1' when ( state = S_LOAD or state = S_LOADI ) else
+               '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
+               '0';
 
-    ir <= rdata(15 downto 12);
+    ir <= ram_dout(15 downto 12);
 
     process(clk, areset)
     begin
@@ -114,9 +109,9 @@ begin
         state <= S_RESET;
     elsif rising_edge(clk) then
         state <= S_EXEC;
-        address_q <= dB + dA;
-        aC_q <= aC;
-        dC_q <= dC;
+        ram_addr_q <= regB + regA;
+        regC_addr_q <= regC_addr;
+        regC_q <= regC;
 
         case state is
         when S_EXEC =>
@@ -132,7 +127,7 @@ begin
             when X"C" => -- DBG
                 state <= S_DEBUG;
             when X"A" => -- JMP : pc += rdata(7 downto 0)
-                pc <= pc + ((7 downto 0 => rdata(7)) & rdata(7 downto 0));
+                pc <= pc + ((7 downto 0 => ram_dout(7)) & ram_dout(7 downto 0));
             when others =>
                 null;
             end case;
@@ -141,7 +136,7 @@ begin
             pc <= pc + 1;
 
         when S_DEBUG =>
-            debug <= rdata;
+            debug <= ram_dout;
 
         when S_RESET =>
             pc <= (others => '0');
