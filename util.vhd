@@ -1,11 +1,28 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
+
+use std.textio.all;
+use ieee.std_logic_textio.all;
 
 package util is
 
     function bool_to_logic (
         constant b : in boolean--;
     ) return std_logic;
+
+    procedure char_to_hex(
+        c : in character;
+        result : out std_logic_vector(3 downto 0);
+        good : out boolean--;
+    );
+
+    procedure string_to_hex(
+        s : in string;
+        v : out std_logic_vector;
+        good : out boolean--;
+    );
 
 
 
@@ -139,9 +156,66 @@ package body util is
         constant b : in boolean--;
     ) return std_logic is
     begin
-        if b then return '1';
-             else return '0';
+        if b then
+            return '1';
+        else
+            return '0';
         end if;
     end function bool_to_logic;
+
+    procedure char_to_hex(
+        c : in character;
+        result : out std_logic_vector(3 downto 0);
+        good : out boolean--;
+    ) is
+    begin
+        good := true;
+        case c is
+        when '0' => result := X"0";
+        when '1' => result := X"1";
+        when '2' => result := X"2";
+        when '3' => result := X"3";
+        when '4' => result := X"4";
+        when '5' => result := X"5";
+        when '6' => result := X"6";
+        when '7' => result := X"7";
+        when '8' => result := X"8";
+        when '9' => result := X"9";
+
+        when 'A' => result := X"A";
+        when 'B' => result := X"B";
+        when 'C' => result := X"C";
+        when 'D' => result := X"D";
+        when 'E' => result := X"E";
+        when 'F' => result := X"F";
+
+        when 'a' => result := X"A";
+        when 'b' => result := X"B";
+        when 'c' => result := X"C";
+        when 'd' => result := X"D";
+        when 'e' => result := X"E";
+        when 'f' => result := X"F";
+        when others =>
+           assert false report "HREAD Error: Read a '" & c & "', expected a Hex character (0-F).";
+           good := false;
+        end case;
+    end char_to_hex;
+
+    procedure string_to_hex(
+        s : in string;
+        v : out std_logic_vector;
+        good : out boolean--;
+    ) is
+        variable ok: boolean;
+    begin
+        good := false;
+        for i in 0 to s'length-1 loop
+            char_to_hex(s(s'length-i), v(4*i+3 downto 4*i), ok);
+            if not ok then
+                return;
+            end if;
+        end loop;
+        good := true;
+    end string_to_hex;
 
 end util;

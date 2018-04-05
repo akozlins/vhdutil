@@ -30,18 +30,27 @@ architecture arch of ram is
     impure
     function ram_read(fname : in string) return ram_t is
         variable ram : ram_t;
-        file f : text;
-        variable l : line;
-        variable s : file_open_status;
         variable i : integer := 0;
+        file f : text;
+        variable fs : file_open_status;
+        variable l : line;
+        variable c : character;
+        variable s : string(1 to W/4);
+        variable ok : boolean;
     begin
         if fname = "" then
             return ram;
         end if;
-        file_open(s, f, fname, READ_MODE);
+        file_open(fs, f, fname, READ_MODE);
         while ( endfile(f) /= true ) loop
             readline(f, l);
-            hread(l, ram(i));
+            read(l, c);
+            next when ( c = '#' );
+            s(1) := c;
+            read(l, s(2 to W/4), ok);
+            next when ( not ok );
+            string_to_hex(s, ram(i), ok);
+            next when ( not ok );
             i := i + 1;
         end loop;
         file_close(f);

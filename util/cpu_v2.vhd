@@ -17,18 +17,6 @@ architecture arch of cpu_v2 is
 
     subtype word_t is std_logic_vector(15 downto 0);
 
-    type ram_t is array (0 to 2**8-1) of word_t;
-    signal ram : ram_t := (
-       X"D100", X"0001", -- LDI : reg1 = 1
-       X"DC00", X"00CC", -- LDI : regC = 0xCC
-       X"DF00", X"0000", -- LDI : regF = 0
-       X"0FF1", -- ADD : regF = regF + reg1
-       X"FF0C", -- ST : *regC = regF
-       X"C00C", -- DBG : debug = *regC
-       X"A0FD", -- JMP : pc -= 3
-       others => (others => '0')
-    );
-
     signal ram_addr : word_t;
     signal ram_addr_q : word_t;
     signal ram_dout : word_t;
@@ -56,17 +44,21 @@ architecture arch of cpu_v2 is
 
 begin
 
-    ram_p : process(clk)
-    begin
-    if rising_edge(clk) then
-        if(write = '1') then
-            ram(to_integer(unsigned(ram_addr))) <= ram_din;
-        end if;
-    end if; -- rising_edge
-    end process ram_p;
+    ram_i : ram
+    generic map (
+        W => 16,
+        N => 8,
+        INIT_FILE_HEX => "cpu_v2.hex"--,
+    )
+    port map (
+        clk     => clk,
+        addr    => ram_addr(7 downto 0),
+        dout    => ram_dout,
+        din     => ram_din,
+        we      => ram_we--,
+    );
 
     ram_addr <= ram_addr_q when ( state = S_STORE or state = S_LOAD or state = S_DEBUG ) else pc;
-    ram_dout <= ram(to_integer(unsigned(ram_addr)));
     ram_din <= regC_q;
     ram_we <= '1' when ( state = S_STORE ) else '0';
 
