@@ -22,11 +22,17 @@ if { [ file isdirectory $dir ] == 0 } {
 create_project -in_memory -part $part
 
 read_vhdl "util.vhd"
-foreach { file } [ glob -directory "util/" -- "*" ] {
+foreach { file } [ glob -nocomplain -directory "util/" -- "*.vhd" ] {
+    read_vhdl "$file"
+}
+foreach { file } [ glob -nocomplain -directory "util/" -- "*.v" ] {
     read_vhdl "$file"
 }
 
-foreach { file } [ glob -directory "tb/" -- "*" ] {
+foreach { file } [ glob -nocomplain -directory "tb/" -- "*.vhd" ] {
+    add_files -fileset sim_1 "$file"
+}
+foreach { file } [ glob -nocomplain -directory "tb/" -- "*.v" ] {
     add_files -fileset sim_1 "$file"
 }
 
