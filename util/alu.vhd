@@ -34,17 +34,8 @@ begin
     a_i <= a xor m2_i;
     b_i <= b;
 
-    adder_i : ripple_adder
-    generic map (
-        W => W
-    )
-    port map (
-        a => a_i,
-        b => b_i,
-        s => z_i,
-        ci => ci,
-        co => co
-    );
+    z_i <= ('0' & a_i) + ('0' & b_i) + ci;
+    co <= z_i(W);
 
     z <= a_i and b_i when mux(1 downto 0) = "01" else
          a_i  or b_i when mux(1 downto 0) = "10" else

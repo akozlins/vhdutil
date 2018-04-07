@@ -7,7 +7,8 @@ use work.util.all;
 
 entity cpu_v2 is
     port (
-        debug   :   out std_logic_vector(15 downto 0);
+        dbg_out :   out std_logic_vector(31 downto 0);
+        dbg_in  :   in  std_logic_vector(31 downto 0);
         clk     :   in  std_logic;
         areset  :   in  std_logic--;
     );
@@ -25,7 +26,10 @@ architecture arch of cpu_v2 is
 
     signal pc : word_t;
 
+    -- instruction register
     signal ir : std_logic_vector(3 downto 0);
+    -- flags register (sign, msb, zero)
+    signal fr : std_logic_vector(3 downto 0);
 
     signal regA, regB, regC, regC_q : word_t;
     signal regC_addr, regC_addr_q : std_logic_vector(3 downto 0);
@@ -37,13 +41,13 @@ architecture arch of cpu_v2 is
         S_STORE,
         S_LOAD,
         S_LOADI,
-        S_DEBUG,
         S_RESET--,
     );
     signal state : state_t;
 
     signal alu_a, alu_b, alu_z : word_t;
-    signal alu_add, alu_addc, alu_sub, alu_and, alu_or, alu_xor, alu_not : std_logic;
+    signal alu_carry : std_logic;
+    signal alu_add, alu_addc, alu_sub, alu_subb, alu_and, alu_or, alu_xor, alu_not : std_logic;
 
 begin
 
@@ -61,9 +65,9 @@ begin
         we      => ram_we--,
     );
 
-    ram_addr <= ram_addr_q when ( state = S_STORE or state = S_LOAD or state = S_DEBUG ) else pc;
+    ram_addr <= ram_addr_q when ( state = S_STORE or state = S_LOAD ) else pc;
     ram_din <= regC_q;
-    ram_we <= '1' when ( state = S_STORE ) else '0';
+    ram_we <= bool_to_logic( state = S_STORE );
 
     reg_file_i : reg_file
     generic map (
@@ -103,16 +107,18 @@ begin
         a   => alu_a,
         b   => alu_b,
         z   => alu_z,
-        ci  => alu_sub,
-        co  => open--,
+        ci  => (fr(2) and alu_addc) or alu_sub,
+        co  => alu_carry--,
     );
 
-    alu_add <= bool_to_logic(state = S_EXEC and ir = X"0");
-    alu_sub <= bool_to_logic(state = S_EXEC and ir = X"1");
-    alu_and <= bool_to_logic(state = S_EXEC and ir = X"2");
-    alu_or  <= bool_to_logic(state = S_EXEC and ir = X"3");
-    alu_xor <= bool_to_logic(state = S_EXEC and ir = X"4");
-    alu_not <= bool_to_logic(state = S_EXEC and ir = X"5");
+    alu_add  <= bool_to_logic(state = S_EXEC and ir = "0000");
+    alu_addc <= bool_to_logic(state = S_EXEC and ir = "0001");
+    alu_sub  <= bool_to_logic(state = S_EXEC and ir = "0010");
+    alu_subb <= bool_to_logic(state = S_EXEC and ir = "0010");
+    alu_and  <= bool_to_logic(state = S_EXEC and ir = "0100");
+    alu_or   <= bool_to_logic(state = S_EXEC and ir = "0101");
+    alu_xor  <= bool_to_logic(state = S_EXEC and ir = "0110");
+    alu_not  <= bool_to_logic(state = S_EXEC and ir = "0111");
     alu_a <= regA;
     alu_b <= regB;
 
@@ -140,18 +146,23 @@ begin
             when X"D" => -- LDI : regC = *(pc + 1)
                 state <= S_LOADI;
             when X"C" => -- DBG
-                state <= S_DEBUG;
+                dbg_out <= regB & regA;
             when X"A" => -- JMP : pc += rdata(7 downto 0)
-                pc <= pc + ((7 downto 0 => ram_dout(7)) & ram_dout(7 downto 0));
+                if ( (regC_addr and fr) = regC_addr ) then
+                    pc <= pc + ((7 downto 0 => ram_dout(7)) & ram_dout(7 downto 0));
+                end if;
             when others =>
                 null;
             end case;
 
+            if ( ir(ir'left) = '0' ) then
+                fr(0) <= bool_to_logic(alu_z = 0);
+                fr(1) <= alu_z(alu_z'left);
+                fr(2) <= alu_carry;
+            end if;
+
         when S_LOADI =>
             pc <= pc + 1;
-
-        when S_DEBUG =>
-            debug <= ram_dout;
 
         when S_RESET =>
             pc <= (others => '0');

@@ -15,7 +15,7 @@ end top;
 
 architecture arch of top is
 
-    signal debug : std_logic_vector(15 downto 0);
+    signal debug : std_logic_vector(31 downto 0);
 
     signal cnt_i : std_logic_vector(31 downto 0);
 
@@ -47,11 +47,12 @@ begin
 
     cpu_i : cpu_v2
     port map (
-        debug => debug,
-        clk => cnt_i(8),
+        dbg_out => debug,
+        dbg_in => (others => '0'),
+        clk => pl_clk_100,
         areset => areset_i--,
     );
 
-    pl_leds <= debug(15 downto 8);
+    pl_leds <= debug(31 downto 24);
 
 end arch;

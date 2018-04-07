@@ -140,7 +140,8 @@ package util is
 
     component cpu_v2 is
     port (
-        debug   :   out std_logic_vector(15 downto 0);
+        dbg_out :   out std_logic_vector(31 downto 0);
+        dbg_in  :   in  std_logic_vector(31 downto 0);
         clk     :   in  std_logic;
         areset  :   in  std_logic--;
     );
