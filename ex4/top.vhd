@@ -44,7 +44,7 @@ begin
     end if; -- rising_edge
     end process;
 
-    cpu_i : cpu_v2
+    cpu_i : cpu_v3
     port map (
         dbg_out => debug,
         dbg_in => (others => '0'),

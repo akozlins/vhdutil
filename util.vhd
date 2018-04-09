@@ -135,6 +135,22 @@ package util is
     );
     end component ram_v1;
 
+    component ram_v3 is
+    generic (
+        W   : integer := 8;
+        N   : integer := 8;
+        INIT_FILE_HEX : string := ""--;
+    );
+    port (
+        clk     :   in  std_logic;
+        raddr   :   in  std_logic_vector(N-1 downto 0);
+        rd      :   out std_logic_vector(W-1 downto 0);
+        waddr   :   in  std_logic_vector(N-1 downto 0);
+        wd      :   in  std_logic_vector(W-1 downto 0);
+        we      :   in  std_logic--;
+    );
+    end component ram_v3;
+
     component reg_file is
     generic (
         W   : integer := 8;
@@ -170,6 +186,15 @@ package util is
         areset  :   in  std_logic--;
     );
     end component cpu_v2;
+
+    component cpu_v3 is
+    port (
+        dbg_out :   out std_logic_vector(31 downto 0);
+        dbg_in  :   in  std_logic_vector(31 downto 0);
+        clk     :   in  std_logic;
+        areset  :   in  std_logic--;
+    );
+    end component cpu_v3;
 
 end package util;
 
