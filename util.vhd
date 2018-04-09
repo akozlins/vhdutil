@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use std.textio.all;
 use ieee.std_logic_textio.all;
@@ -29,7 +28,7 @@ package util is
     component debounce is
     generic (
         N : integer := 1;
-        C : std_logic_vector := X"FFFF"--;
+        C : unsigned := X"FFFF"--;
     );
     port (
         input   :   in  std_logic_vector(N-1 downto 0);

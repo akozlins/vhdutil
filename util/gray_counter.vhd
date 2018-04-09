@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
@@ -19,7 +18,7 @@ end entity gray_counter;
 
 architecture arch of gray_counter is
 
-    signal cnt_i : std_logic_vector(W-1 downto 0);
+    signal cnt_i : unsigned(W-1 downto 0);
 
 begin
 
@@ -32,6 +31,6 @@ begin
     end if; -- rising_edge
     end process;
 
-    cnt <= cnt_i xor ('0' & cnt_i(W-1 downto 1));
+    cnt <= std_logic_vector(cnt_i xor ('0' & cnt_i(W-1 downto 1)));
 
 end;

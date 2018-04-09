@@ -1,12 +1,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 entity debounce is
     generic (
         N   : integer := 1;
-        C   : std_logic_vector := X"FFFF"--;
+        C   : unsigned := X"FFFF"--;
     );
     port (
         input   :   in  std_logic_vector(N-1 downto 0);
@@ -20,7 +19,7 @@ architecture arch of debounce is
     signal input_q0 : std_logic_vector(N-1 downto 0);
     signal input_q1 : std_logic_vector(N-1 downto 0);
 
-    type cnt_array_type is array(N-1 downto 0) of std_logic_vector(C'length-1 downto 0);
+    type cnt_array_type is array(N-1 downto 0) of unsigned(C'range);
     signal cnt : cnt_array_type;
 
 begin

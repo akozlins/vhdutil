@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
@@ -36,7 +35,7 @@ begin
     if areset = '1' then
         ram <= (others => (others => '0'));
     elsif rising_edge(clk) then
-        if c_we = '1' and c_addr /= 0 then
+        if c_we = '1' and unsigned(c_addr) /= 0 then
             ram(to_integer(unsigned(c_addr))) <= c_din;
         end if;
     end if; -- rising_edge

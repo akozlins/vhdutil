@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
@@ -15,8 +14,8 @@ end top;
 
 architecture arch of top is
 
-    signal cnt_i : std_logic_vector(31 downto 0);
     signal areset_i : std_logic;
+    signal cnt_i : unsigned(31 downto 0);
 
 begin
 
@@ -31,7 +30,7 @@ begin
         clk => pl_clk_100
     );
 
-    pl_leds <= cnt_i(31 downto 24);
+    pl_leds <= std_logic_vector(cnt_i(31 downto 24));
 
     process(pl_clk_100)
     begin

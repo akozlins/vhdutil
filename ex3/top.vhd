@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
@@ -15,10 +14,9 @@ end top;
 
 architecture arch of top is
 
+    signal areset_i : std_logic;
     signal cnt_i : std_logic_vector(31 downto 0);
     signal cnt_o : std_logic_vector(31 downto 0);
-
-    signal areset_i : std_logic;
 
 begin
 
