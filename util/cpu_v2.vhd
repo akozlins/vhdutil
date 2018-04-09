@@ -28,7 +28,7 @@ architecture arch of cpu_v2 is
 
     -- instruction register
     signal ir : std_logic_vector(3 downto 0);
-    -- flags register (sign, msb, zero)
+    -- flags register (carry, overflow, sign, zero)
     signal fr : std_logic_vector(3 downto 0);
 
     signal regA, regB, regC, regC_q : word_t;
@@ -45,9 +45,8 @@ architecture arch of cpu_v2 is
     );
     signal state : state_t;
 
-    signal alu_a, alu_b, alu_z : word_t;
-    signal alu_carry : std_logic;
-    signal alu_add, alu_addc, alu_sub, alu_subb, alu_and, alu_or, alu_xor, alu_not : std_logic;
+    signal alu_a, alu_b, alu_y : word_t;
+    signal alu_overflow, alu_carry, alu_sign, alu_zero : std_logic;
 
 begin
 
@@ -90,35 +89,28 @@ begin
     regC_addr <= regC_addr_q when ( state = S_LOAD or state = S_LOADI ) else
                  ram_dout(11 downto 8);
     regC_din <= ram_dout when ( state = S_LOAD or state = S_LOADI ) else
-                alu_z    when ( state = S_EXEC and ir(ir'left) = '0' ) else
+                alu_y    when ( state = S_EXEC and ir(ir'left) = '0' ) else
                 X"CCCC";
     regC_we <= '1' when ( state = S_LOAD or state = S_LOADI ) else
                '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
                '0';
 
-    alu_i : alu
+    alu_i : alu_v2
     generic map (
         W => 16--,
     )
     port map (
-        mux(2) => alu_sub or alu_not,
-        mux(1) => alu_or or alu_xor or alu_not,
-        mux(0) => alu_and or alu_xor,
+        ci  => fr(3),
         a   => alu_a,
         b   => alu_b,
-        z   => alu_z,
-        ci  => (fr(2) and alu_addc) or alu_sub,
+        op  => ir(2 downto 0),
+        y   => alu_y,
+        z   => alu_zero,
+        s   => alu_sign,
+        v   => alu_overflow,
         co  => alu_carry--,
     );
 
-    alu_add  <= bool_to_logic(state = S_EXEC and ir = "0000");
-    alu_addc <= bool_to_logic(state = S_EXEC and ir = "0001");
-    alu_sub  <= bool_to_logic(state = S_EXEC and ir = "0010");
-    alu_subb <= bool_to_logic(state = S_EXEC and ir = "0010");
-    alu_and  <= bool_to_logic(state = S_EXEC and ir = "0100");
-    alu_or   <= bool_to_logic(state = S_EXEC and ir = "0101");
-    alu_xor  <= bool_to_logic(state = S_EXEC and ir = "0110");
-    alu_not  <= bool_to_logic(state = S_EXEC and ir = "0111");
     alu_a <= regA;
     alu_b <= regB;
 
@@ -156,9 +148,10 @@ begin
             end case;
 
             if ( ir(ir'left) = '0' ) then
-                fr(0) <= bool_to_logic(alu_z = 0);
-                fr(1) <= alu_z(alu_z'left);
-                fr(2) <= alu_carry;
+                fr(0) <= alu_zero;
+                fr(1) <= alu_sign;
+                fr(2) <= alu_overflow;
+                fr(3) <= alu_carry;
             end if;
 
         when S_LOADI =>
