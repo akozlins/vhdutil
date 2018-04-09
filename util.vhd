@@ -81,7 +81,7 @@ package util is
     );
     end component ripple_adder;
 
-    component alu is
+    component alu_v1 is
     generic (
         W   : integer := 8--;
     );
@@ -93,7 +93,7 @@ package util is
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
-    end component alu;
+    end component alu_v1;
 
     component alu_v2 is
     generic (
@@ -120,7 +120,7 @@ package util is
     );
     end component alu_v2;
 
-    component ram is
+    component ram_v1 is
     generic (
         W   : integer := 8;
         N   : integer := 8;
@@ -129,11 +129,11 @@ package util is
     port (
         clk     :   in  std_logic;
         addr    :   in  std_logic_vector(N-1 downto 0);
-        dout    :   out std_logic_vector(W-1 downto 0);
-        din     :   in  std_logic_vector(W-1 downto 0);
+        rd      :   out std_logic_vector(W-1 downto 0);
+        wd      :   in  std_logic_vector(W-1 downto 0);
         we      :   in  std_logic--;
     );
-    end component ram;
+    end component ram_v1;
 
     component reg_file is
     generic (

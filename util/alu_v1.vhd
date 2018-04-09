@@ -5,7 +5,7 @@ use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
-entity alu is
+entity alu_v1 is
     generic (
         W   : integer := 8--;
     );
@@ -17,9 +17,9 @@ entity alu is
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
-end entity alu;
+end entity alu_v1;
 
-architecture arch of alu is
+architecture arch of alu_v1 is
 
     signal m2_i : std_logic_vector(W-1 downto 0);
 

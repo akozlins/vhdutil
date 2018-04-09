@@ -20,6 +20,7 @@ if { [ file isdirectory $dir ] == 0 } {
 }
 
 create_project -in_memory -part $part
+read_xdc "top.xdc"
 
 read_vhdl "util.vhd"
 foreach { file } [ glob -nocomplain -directory "util/" -- "*.vhd" ] {
@@ -37,7 +38,4 @@ foreach { file } [ glob -nocomplain -directory "tb/" -- "*.v" ] {
 }
 
 read_vhdl "$dir/top.vhd"
-read_xdc "top.xdc"
-
 set_property top top [ current_fileset ]
-

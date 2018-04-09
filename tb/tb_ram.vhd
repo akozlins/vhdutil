@@ -22,7 +22,7 @@ architecture arch of tb_ram is
 
 begin
 
-    ram_i : ram
+    ram_i : ram_v1
     generic map (
         W => W,
         N => N,
@@ -31,8 +31,8 @@ begin
     port map (
         clk => clk,
         addr => addr,
-        dout => dout,
-        din => din,
+        rd => dout,
+        wd => din,
         we => we--,
     );
 

@@ -50,7 +50,7 @@ architecture arch of cpu_v2 is
 
 begin
 
-    ram_i : ram
+    ram_i : ram_v1
     generic map (
         W => 16,
         N => 8,
@@ -59,8 +59,8 @@ begin
     port map (
         clk     => clk,
         addr    => ram_addr(7 downto 0),
-        dout    => ram_dout,
-        din     => ram_din,
+        rd      => ram_dout,
+        wd      => ram_din,
         we      => ram_we--,
     );
 

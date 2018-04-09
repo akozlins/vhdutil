@@ -7,7 +7,7 @@ use ieee.std_logic_textio.all;
 
 use work.util.all;
 
-entity ram is
+entity ram_v1 is
     generic (
         W   : integer := 8;
         N   : integer := 8;
@@ -16,14 +16,16 @@ entity ram is
     port (
         clk     :   in  std_logic;
         addr    :   in  std_logic_vector(N-1 downto 0);
-        dout    :   out std_logic_vector(W-1 downto 0);
-        din     :   in  std_logic_vector(W-1 downto 0);
+        rd      :   out std_logic_vector(W-1 downto 0);
+        wd      :   in  std_logic_vector(W-1 downto 0);
         we      :   in  std_logic--;
     );
-end entity ram;
+end entity ram_v1;
 
-architecture arch of ram is
+architecture arch of ram_v1 is
 
+--    attribute RAM_STYLE : string;
+--    attribute RAM_STYLE of <entity_name>: entity is { "DISTRIBUTED" | "BLOCK" };
     type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
 
     impure
@@ -43,6 +45,8 @@ architecture arch of ram is
         file_open(fs, f, fname, READ_MODE);
         while ( endfile(f) /= true ) loop
             readline(f, l);
+--            next when ( l'length = 0 or l(1) = '#' );
+--            hread(l, ram(i));
             read(l, c);
             next when ( c = '#' );
             s(1) := c;
@@ -64,11 +68,11 @@ begin
     begin
     if rising_edge(clk) then
         if(we = '1') then
-            ram(to_integer(unsigned(addr))) <= din;
+            ram(to_integer(unsigned(addr))) <= wd;
         end if;
     end if; -- rising_edge
     end process;
 
-    dout <= ram(to_integer(unsigned(addr)));
+    rd <= ram(to_integer(unsigned(addr)));
 
 end;
