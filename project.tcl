@@ -37,7 +37,7 @@ foreach { file } [ glob -nocomplain -directory "tb/" -- "*.v" ] {
 }
 
 read_vhdl "$dir/top.vhd"
-read_xdc "$dir/top.xdc"
+read_xdc "top.xdc"
 
 set_property top top [ current_fileset ]
 

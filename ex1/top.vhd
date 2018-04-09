@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity top is
     Port (
         pl_clk_100  :   in  std_logic;
-        pl_leds     :   out std_logic_vector(7 downto 0)
+        pl_led      :   out std_logic_vector(7 downto 0)
     );
 end top;
 
@@ -15,7 +15,7 @@ architecture arch of top is
 
 begin
 
-    pl_leds <= std_logic_vector(cnt_i(31 downto 24));
+    pl_led <= std_logic_vector(cnt_i(31 downto 24));
 
     process(pl_clk_100)
     begin

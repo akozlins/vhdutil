@@ -7,8 +7,8 @@ use work.util.all;
 entity top is
     Port (
         pl_clk_100  :   in  std_logic;
-        pl_leds     :   out std_logic_vector(7 downto 0);
-        pl_btns     :   in  std_logic_vector(4 downto 0)
+        pl_led      :   out std_logic_vector(7 downto 0);
+        pl_btn      :   in  std_logic_vector(4 downto 0)
     );
 end top;
 
@@ -25,12 +25,12 @@ begin
         C => X"FFFF"
     )
     port map (
-        input(0 downto 0) => pl_btns(0 downto 0),
+        input(0 downto 0) => pl_btn(0 downto 0),
         output(0) => areset_i,
         clk => pl_clk_100
     );
 
-    pl_leds <= std_logic_vector(cnt_i(31 downto 24));
+    pl_led <= std_logic_vector(cnt_i(31 downto 24));
 
     process(pl_clk_100)
     begin
