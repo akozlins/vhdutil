@@ -42,10 +42,10 @@ architecture arch of cpu_v3 is
     -- flags register (carry, overflow, sign, zero)
     signal flags : std_logic_vector(3 downto 0);
 
-    signal regA, regB, regC : word_t;
+    signal regA, regB : word_t;
     signal regA_addr, regB_addr, regC_addr : std_logic_vector(3 downto 0);
-    signal regC_wd : word_t;
-    signal regC_we : std_logic;
+    signal regB_wd : word_t;
+    signal regB_we : std_logic;
 
     signal alu_op : std_logic_vector(2 downto 0);
     signal alu_a, alu_b, alu_y : word_t;
@@ -67,22 +67,19 @@ begin
         we      => ram_we--,
     );
 
-    reg_file_i : reg_file
+    reg_file_i : reg_file_v3
     generic map (
         W => 16,
         N => 4--,
     )
     port map (
-        clk     => clk,
         a_addr  => regA_addr,
         b_addr  => regB_addr,
-        c_addr  => regC_addr,
-        a_dout  => regA,
-        b_dout  => regB,
-        c_dout  => regC,
-        c_din   => regC_wd,
-        c_we    => regC_we,
-        areset  => areset--,
+        a_rd    => regA,
+        b_rd    => regB,
+        b_wd    => regB_wd,
+        b_we    => regB_we,
+        clk     => clk--,
     );
 
     alu_i : alu_v2
@@ -110,8 +107,8 @@ begin
 
     elsif rising_edge(clk) then
         ram_we <= '0';
-        regC_we <= '0';
-    
+        regB_we <= '0';
+
         case state is
         when S_FETCH =>
             state <= S_REG_READ;
@@ -129,7 +126,7 @@ begin
 
             case ir is
             when X"F" => -- ST : *(regB + regA) = regC
-                null;
+                regB_addr <= regC_addr;
             when X"E" => -- LD : regC = *(regB + regA)
                 null;
             when X"D" => -- LDI : regC = *(pc + 1)
@@ -141,17 +138,13 @@ begin
                 state <= S_FETCH;
                 ram_addr <= pc + 1;
                 pc <= pc + 1;
-            when X"B" =>
-                null;
             when X"A" => -- JMP : pc += ram_rd(7 downto 0)
                 alu_a <= pc;
                 alu_b <= ((7 downto 0 => regB_addr(regB_addr'left)) & regB_addr & regA_addr);
-            when X"9" =>
-                null;
-            when X"8" =>
-                null;
-            when others =>
+            when "0---" => -- ALU
                 alu_op <= ir(2 downto 0);
+            when others =>
+                null;
             end case;
 
         when S_ALU =>
@@ -159,30 +152,23 @@ begin
             when X"F" => -- ST : *(regB + regA) = regC
                 state <= S_STORE;
                 ram_addr <= alu_y;
-                ram_wd <= regC;
+                ram_wd <= regB;
                 ram_we <= '1';
             when X"E" => -- LD : regC = *(regB + regA)
                 state <= S_LOAD;
                 ram_addr <= alu_y;
-            when X"D" =>
-                null;
-            when X"C" =>
-                null;
-            when X"B" =>
-                null;
             when X"A" => -- JMP : pc += ram_rd(7 downto 0)
                 state <= S_FETCH;
                 ram_addr <= alu_y;
                 pc <= alu_y;
-            when X"9" =>
-                null;
-            when X"8" =>
-                null;
-            when others =>
+            when "0---" => -- ALU
                 state <= S_REG_WRITE;
-                regC_wd <= alu_y;
-                regC_we <= '1';
+                regB_addr <= regC_addr;
+                regB_wd <= alu_y;
+                regB_we <= '1';
                 flags <= alu_co & alu_v & alu_s & alu_z;
+            when others =>
+                null;
             end case;
 
         when S_REG_WRITE | S_STORE =>
@@ -192,8 +178,9 @@ begin
 
         when S_LOAD | S_LOADI =>
             state <= S_REG_WRITE;
-            regC_wd <= ram_rd;
-            regC_we <= '1';
+            regB_addr <= regC_addr;
+            regB_wd <= ram_rd;
+            regB_we <= '1';
 
         when others =>
             null;

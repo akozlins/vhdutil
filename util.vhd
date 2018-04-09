@@ -170,6 +170,22 @@ package util is
     );
     end component reg_file;
 
+    component reg_file_v3 is
+    generic (
+        W   : integer := 8; -- word width in bits
+        N   : integer := 2--; -- addr bits (2**N words)
+    );
+    port (
+        a_addr  :   in  std_logic_vector(N-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
+        a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_rd    :   out std_logic_vector(W-1 downto 0);
+        b_wd    :   in  std_logic_vector(W-1 downto 0);
+        b_we    :   in  std_logic;
+        clk     :   in  std_logic--;
+    );
+    end component reg_file_v3;
+
     component cpu_v1 is
     port (
         reg15   :   out std_logic_vector(15 downto 0);
