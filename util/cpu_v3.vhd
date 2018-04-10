@@ -30,17 +30,10 @@ architecture arch of cpu_v3 is
     );
     signal state : state_t;
 
-    signal pc : word_t;
-
     signal ram_addr : word_t;
     signal ram_rd : word_t;
     signal ram_wd : word_t;
     signal ram_we : std_logic;
-
-    -- instruction register
-    signal ir : std_logic_vector(3 downto 0);
-    -- flags register (carry, overflow, sign, zero)
-    signal flags : std_logic_vector(3 downto 0);
 
     signal regA, regB : word_t;
     signal regA_addr, regB_addr, regC_addr : std_logic_vector(3 downto 0);
@@ -50,6 +43,13 @@ architecture arch of cpu_v3 is
     signal alu_op : std_logic_vector(2 downto 0);
     signal alu_a, alu_b, alu_y : word_t;
     signal alu_ci, alu_z, alu_s, alu_v, alu_co : std_logic;
+
+    -- program counter
+    signal pc : word_t;
+    -- instruction register
+    signal ir : std_logic_vector(3 downto 0);
+    -- flags register (carry, overflow, sign, zero)
+    signal flags : std_logic_vector(3 downto 0);
 
 begin
 

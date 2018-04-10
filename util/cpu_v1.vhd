@@ -7,7 +7,8 @@ use work.util.all;
 
 entity cpu_v1 is
     port (
-        reg15   :   out std_logic_vector(15 downto 0);
+        dbg_out :   out std_logic_vector(31 downto 0);
+        dbg_in  :   in  std_logic_vector(31 downto 0);
         clk     :   in  std_logic;
         areset  :   in  std_logic--;
     );
@@ -54,7 +55,7 @@ architecture arch of cpu_v1 is
 
 begin
 
-    reg15 <= reg(15);
+    dbg_out <= reg(14) & reg(15);
 
     ram_p : process(clk)
     begin
