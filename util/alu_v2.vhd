@@ -39,8 +39,17 @@ architecture arch of alu_v2 is
 
 begin
 
-    y_i <= ('0' & a_i) + b_i + ci_i;
-    co <= y_i(W);
+    adder_i : adder
+    generic map (
+        W => W--,
+    )
+    port map (
+        a => a_i,
+        b => b_i,
+        ci => ci_i,
+        s => y_i(y'range),
+        co => co--,
+    );
 
     process(op, a, b, ci, y_i)
     begin
