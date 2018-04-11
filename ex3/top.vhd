@@ -39,9 +39,9 @@ begin
     )
     port map (
         a => cnt_i,
-        b => X"00000001",
+        b => (others => '0'),
+        ci => '1',
         s => cnt_o,
-        ci => '0',
         co => open--,
     );
 

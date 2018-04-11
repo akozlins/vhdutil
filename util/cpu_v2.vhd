@@ -20,8 +20,8 @@ architecture arch of cpu_v2 is
 
     signal ram_addr : word_t;
     signal ram_addr_q : word_t;
-    signal ram_dout : word_t;
-    signal ram_din : word_t;
+    signal ram_rd : word_t;
+    signal ram_wd : word_t;
     signal ram_we : std_logic;
 
     signal pc : word_t;
@@ -33,7 +33,7 @@ architecture arch of cpu_v2 is
 
     signal regA, regB, regC, regC_q : word_t;
     signal regC_addr, regC_addr_q : std_logic_vector(3 downto 0);
-    signal regC_din : word_t;
+    signal regC_wd : word_t;
     signal regC_we : std_logic;
 
     type state_t is (
@@ -59,38 +59,38 @@ begin
     port map (
         clk     => clk,
         addr    => ram_addr(7 downto 0),
-        rd      => ram_dout,
-        wd      => ram_din,
+        rd      => ram_rd,
+        wd      => ram_wd,
         we      => ram_we--,
     );
 
     ram_addr <= ram_addr_q when ( state = S_STORE or state = S_LOAD ) else pc;
-    ram_din <= regC_q;
+    ram_wd <= regC_q;
     ram_we <= bool_to_logic( state = S_STORE );
 
-    reg_file_i : reg_file
+    reg_file_i : reg_file_v1
     generic map (
         W => 16,
         N => 4--,
     )
     port map (
         clk     => clk,
-        a_addr  => ram_dout(3 downto 0),
-        b_addr  => ram_dout(7 downto 4),
+        a_addr  => ram_rd(3 downto 0),
+        b_addr  => ram_rd(7 downto 4),
         c_addr  => regC_addr,
-        a_dout  => regA,
-        b_dout  => regB,
-        c_dout  => regC,
-        c_din   => regC_din,
+        a_rd    => regA,
+        b_rd    => regB,
+        c_rd    => regC,
+        c_wd    => regC_wd,
         c_we    => regC_we,
         areset  => areset--,
     );
 
     regC_addr <= regC_addr_q when ( state = S_LOAD or state = S_LOADI ) else
-                 ram_dout(11 downto 8);
-    regC_din <= ram_dout when ( state = S_LOAD or state = S_LOADI ) else
-                alu_y    when ( state = S_EXEC and ir(ir'left) = '0' ) else
-                X"CCCC";
+                 ram_rd(11 downto 8);
+    regC_wd <= ram_rd when ( state = S_LOAD or state = S_LOADI ) else
+               alu_y  when ( state = S_EXEC and ir(ir'left) = '0' ) else
+               X"CCCC";
     regC_we <= '1' when ( state = S_LOAD or state = S_LOADI ) else
                '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
                '0';
@@ -114,7 +114,7 @@ begin
     alu_a <= regA;
     alu_b <= regB;
 
-    ir <= ram_dout(15 downto 12);
+    ir <= ram_rd(15 downto 12);
 
     process(clk, areset)
     begin
@@ -141,7 +141,7 @@ begin
                 dbg_out <= regB & regA;
             when X"A" => -- JMP : pc += rdata(7 downto 0)
                 if ( (regC_addr and fr) = regC_addr ) then
-                    pc <= pc + ((7 downto 0 => ram_dout(7)) & ram_dout(7 downto 0));
+                    pc <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
                 end if;
             when others =>
                 null;

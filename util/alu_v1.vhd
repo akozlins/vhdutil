@@ -13,7 +13,7 @@ entity alu_v1 is
         mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        z   :   out std_logic_vector(W-1 downto 0);
+        y   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
@@ -25,7 +25,7 @@ architecture arch of alu_v1 is
 
     signal a_i : std_logic_vector(W-1 downto 0);
     signal b_i : std_logic_vector(W-1 downto 0);
-    signal z_i : std_logic_vector(W downto 0);
+    signal y_i : std_logic_vector(W downto 0);
 
 begin
 
@@ -34,12 +34,12 @@ begin
     a_i <= a xor m2_i;
     b_i <= b;
 
-    z_i <= ('0' & a_i) + b_i + ci;
-    co <= z_i(W);
+    y_i <= ('0' & a_i) + b_i + ci;
+    co <= y_i(W);
 
-    z <= a_i and b_i when mux(1 downto 0) = "01" else
+    y <= a_i and b_i when mux(1 downto 0) = "01" else
          a_i  or b_i when mux(1 downto 0) = "10" else
          a_i xor b_i when mux(1 downto 0) = "11" else
-         z_i(W-1 downto 0);
+         y_i(y'range);
 
 end;

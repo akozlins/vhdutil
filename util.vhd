@@ -62,8 +62,8 @@ package util is
     port (
         a   :   in  std_logic;
         b   :   in  std_logic;
-        s   :   out std_logic;
         ci  :   in  std_logic;
+        s   :   out std_logic;
         co  :   out std_logic--;
     );
     end component full_adder;
@@ -75,8 +75,8 @@ package util is
     port (
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        s   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
+        s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
     end component ripple_adder;
@@ -89,7 +89,7 @@ package util is
         mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        z   :   out std_logic_vector(W-1 downto 0);
+        y   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
         co  :   out std_logic--;
     );
@@ -151,7 +151,7 @@ package util is
     );
     end component ram_v3;
 
-    component reg_file is
+    component reg_file_v1 is
     generic (
         W   : integer := 8;
         N   : integer := 2--;
@@ -161,14 +161,14 @@ package util is
         a_addr  :   in  std_logic_vector(N-1 downto 0);
         b_addr  :   in  std_logic_vector(N-1 downto 0);
         c_addr  :   in  std_logic_vector(N-1 downto 0);
-        a_dout  :   out std_logic_vector(W-1 downto 0);
-        b_dout  :   out std_logic_vector(W-1 downto 0);
-        c_dout  :   out std_logic_vector(W-1 downto 0);
-        c_din   :   in  std_logic_vector(W-1 downto 0);
+        a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_rd    :   out std_logic_vector(W-1 downto 0);
+        c_rd    :   out std_logic_vector(W-1 downto 0);
+        c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
         areset  :   in  std_logic--;
     );
-    end component reg_file;
+    end component reg_file_v1;
 
     component reg_file_v3 is
     generic (

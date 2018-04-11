@@ -11,8 +11,8 @@ entity ripple_adder is
     port (
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        s   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
+        s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
 end entity ripple_adder;
@@ -31,8 +31,8 @@ begin
         port map (
             a => a(i),
             b => b(i),
-            s => s(i),
             ci => c_i(i),
+            s => s(i),
             co => c_i(i+1)
         );
     end generate gen;

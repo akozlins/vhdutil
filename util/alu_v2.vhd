@@ -74,7 +74,7 @@ begin
         end case;
     end process;
 
-    z <= bool_to_logic(y_i = 0);
+    z <= bool_to_logic(y_i(y'range) = 0);
     s <= y_i(W-1);
     v <= (a(W-1) and b(W-1) and not y_i(W-1)) or (not a(W-1) and not b(W-1) and y_i(W-1));
 
