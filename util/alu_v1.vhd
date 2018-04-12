@@ -34,8 +34,17 @@ begin
     a_i <= a xor m2_i;
     b_i <= b;
 
-    y_i <= ('0' & a_i) + b_i + ci;
-    co <= y_i(W);
+    adder_i : adder
+    generic map (
+        W => W--,
+    )
+    port map (
+        a => a_i,
+        b => b_i,
+        ci => ci,
+        s => y_i(y'range),
+        co => co--,
+    );
 
     y <= a_i and b_i when mux(1 downto 0) = "01" else
          a_i  or b_i when mux(1 downto 0) = "10" else

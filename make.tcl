@@ -1,5 +1,7 @@
 #!/bin/sh
 # \
+unset CDPATH ; \
+cd "$(dirname -- "$(readlink -e -- "$0")")" || exit 1 ; \
 exec vivado -mode tcl -source "$0" -tclargs "$@"
 
 source project.tcl

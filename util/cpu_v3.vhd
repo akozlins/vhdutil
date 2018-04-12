@@ -56,7 +56,7 @@ begin
     generic map (
         W => 16,
         N => 8,
-        INIT_FILE_HEX => "cpu_v2.hex"--,
+        INIT_FILE_HEX => "cpu_v3.hex"--,
     )
     port map (
         clk     => clk,

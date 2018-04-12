@@ -10,16 +10,21 @@ cpu_v3 cpu_i (
 
 initial
 begin
-    clk = 1'b1; areset = 1'b1;
-    repeat(4) #5 clk = ~clk;
-    areset = 1'b0;
+    clk = 1'b1;
     forever #5 clk = ~clk;
 end
 
 initial
 begin
+    areset = 1'b1;
+    #100
+    areset = 1'b0;
+end
+
+initial
+begin
     @(negedge areset);
-    repeat(256) @(posedge clk);
+    repeat(1000*1000) @(posedge clk);
     $finish;
 end
 

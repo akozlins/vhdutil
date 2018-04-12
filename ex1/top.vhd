@@ -6,7 +6,7 @@ entity top is
     Port (
         pl_clk_100  :   in  std_logic;
         pl_led      :   out std_logic_vector(7 downto 0);
-        pl_btn      :   in  std_logic_vector(7 downto 0);
+        pl_btn      :   in  std_logic_vector(4 downto 0);
         pl_sw       :   in  std_logic_vector(7 downto 0)--;
     );
 end top;

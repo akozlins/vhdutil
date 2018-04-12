@@ -30,9 +30,9 @@ foreach { file } [ glob -nocomplain -directory "util/" -- "*.v" ] {
     add_files -fileset sources_1 "$file"
 }
 
-foreach { file } [ glob -nocomplain -directory "tb/" -- "*.vhd" ] {
-    add_files -fileset sim_1 "$file"
-}
+#foreach { file } [ glob -nocomplain -directory "tb/" -- "*.vhd" ] {
+#    add_files -fileset sim_1 "$file"
+#}
 foreach { file } [ glob -nocomplain -directory "tb/" -- "*.v" ] {
     add_files -fileset sim_1 "$file"
 }

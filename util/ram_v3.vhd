@@ -44,8 +44,8 @@ architecture arch of ram_v3 is
         file_open(fs, f, fname, READ_MODE);
         while ( endfile(f) /= true ) loop
             readline(f, l);
-            read(l, c);
-            next when ( c = '#' );
+            read(l, c, ok);
+            next when ( not ok or c = '#' );
             s(1) := c;
             read(l, s(2 to W/4), ok);
             next when ( not ok );

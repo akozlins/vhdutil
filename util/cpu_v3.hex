@@ -1,0 +1,27 @@
+#
+0000
+
+# LDI : regC = CC
+DC00
+00CC
+# ST : *(CC) = regC
+FC0C
+# LD : regC = *(CC)
+EC0C
+
+# LDI : reg1 = 1
+D100
+0001
+# ADD : regF = reg0 + reg0 = 0
+0F00
+# ADD : regE = reg0 + reg0 = 0
+0E00
+
+# DBG : debug = *regC
+C0EF
+# ADD : regF = regF + reg1
+0FF1
+# ADDC : regE = regE + carry
+1EE0
+# JMP : pc -= 3
+A0FD

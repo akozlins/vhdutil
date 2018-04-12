@@ -19,8 +19,8 @@ architecture arch of debounce is
     signal input_q0 : std_logic_vector(N-1 downto 0);
     signal input_q1 : std_logic_vector(N-1 downto 0);
 
-    type cnt_array_type is array(N-1 downto 0) of unsigned(C'range);
-    signal cnt : cnt_array_type;
+    type cnt_t is array(N-1 downto 0) of unsigned(C'range);
+    signal cnt : cnt_t;
 
 begin
 
