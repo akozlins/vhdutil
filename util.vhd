@@ -227,6 +227,15 @@ package util is
     );
     end component;
 
+    component cpu_v4 is
+    port (
+        dbg_out :   out std_logic_vector(31 downto 0);
+        dbg_in  :   in  std_logic_vector(31 downto 0);
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
+    );
+    end component;
+
 end package;
 
 package body util is

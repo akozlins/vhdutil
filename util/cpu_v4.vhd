@@ -1,4 +1,3 @@
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -37,6 +36,8 @@ architecture arch of cpu_v4 is
     signal reg_a_addr, reg_b_addr : std_logic_vector(3 downto 0);
     signal reg_a_rd, reg_b_rd, reg_b_wd : word_t;
     signal reg_b_we : std_logic;
+
+    signal alu_c : std_logic;
 
 begin
 
@@ -158,6 +159,7 @@ begin
                      (others => '-');
 
     ex_p : process(clk, areset)
+        variable alu_y : std_logic_vector(mem_wd'length downto 0);
     begin
     if areset = '1' then
         mem_ir <= (others => '0');
@@ -168,21 +170,23 @@ begin
 
         if ( ex_ir /= 0 and ex_op(ex_op'left) = '0' ) then -- ALU
             case ex_op(2 downto 0) is
-            when "000" => mem_wd <= ex_reg_a + ex_reg_b;
-            when "001" => mem_wd <= ex_reg_a + ex_reg_b;
-            when "010" => mem_wd <= ex_reg_a - ex_reg_b;
-            when "011" => mem_wd <= ex_reg_a - ex_reg_b;
-            when "100" => mem_wd <= ex_reg_a and ex_reg_b;
-            when "101" => mem_wd <= ex_reg_a or ex_reg_b;
-            when "110" => mem_wd <= ex_reg_a xor ex_reg_b;
-            when "111" => mem_wd <= not (ex_reg_a or ex_reg_b);
-            when others => mem_wd <= (others => 'X');
+            when "000" => alu_y := ('0' & ex_reg_b) + ex_reg_a;
+            when "001" => alu_y := ('0' & ex_reg_b) + ex_reg_a + alu_c;
+            when "010" => alu_y := (others => 'X');
+            when "011" => alu_y := (others => 'X');
+            when "100" => alu_y := '-' & (ex_reg_b and ex_reg_a);
+            when "101" => alu_y := '-' & (ex_reg_b or ex_reg_a);
+            when "110" => alu_y := '-' & (ex_reg_b xor ex_reg_a);
+            when "111" => alu_y := '-' & not (ex_reg_b or ex_reg_a);
+            when others => alu_y := (others => 'X');
             end case;
+            mem_wd <= alu_y(mem_wd'range);
+            alu_c <= alu_y(alu_y'left);
         elsif ( ex_op = X"F" ) then -- STORE
             mem_wd <= reg_a_rd;
-            mem_addr <= ex_reg_a + ex_reg_b;
+            mem_addr <= ex_reg_b + ex_reg_a;
         elsif ( ex_op = X"E" ) then -- LOAD
-            mem_addr <= ex_reg_a + ex_reg_b;
+            mem_addr <= ex_reg_b + ex_reg_a;
         elsif ( ex_op = X"D" ) then -- LOADI
             mem_addr <= ex_pc + 1;
         end if;
