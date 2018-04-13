@@ -1,4 +1,8 @@
-#!/bin/tclsh
+#!/bin/sh
+# \
+unset CDPATH ; \
+cd "$(dirname -- "$(readlink -e -- "$0")")" || exit 1 ; \
+exec vivado -mode tcl -source "$0" -tclargs "$@"
 
 proc sim { tb } {
     set_property top_lib xil_defaultlib [ get_filesets sim_1 ]
@@ -23,17 +27,10 @@ create_project -in_memory -part $part
 read_xdc "top.xdc"
 
 read_vhdl "util.vhd"
-foreach { file } [ glob -nocomplain -directory "util/" -- "*.vhd" ] {
+foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" "util/*.v" ] ] {
     add_files -fileset sources_1 "$file"
 }
-foreach { file } [ glob -nocomplain -directory "util/" -- "*.v" ] {
-    add_files -fileset sources_1 "$file"
-}
-
-#foreach { file } [ glob -nocomplain -directory "tb/" -- "*.vhd" ] {
-#    add_files -fileset sim_1 "$file"
-#}
-foreach { file } [ glob -nocomplain -directory "tb/" -- "*.v" ] {
+foreach { file } [ lsort [ glob -nocomplain -- "tb/*.v" ] ] {
     add_files -fileset sim_1 "$file"
 }
 
