@@ -14,12 +14,13 @@ entity ram_v3 is
         INIT_FILE_HEX : string := ""--;
     );
     port (
-        clk     :   in  std_logic;
-        raddr   :   in  std_logic_vector(N-1 downto 0);
-        rd      :   out std_logic_vector(W-1 downto 0);
-        waddr   :   in  std_logic_vector(N-1 downto 0);
-        wd      :   in  std_logic_vector(W-1 downto 0);
-        we      :   in  std_logic--;
+        a_addr  :   in  std_logic_vector(N-1 downto 0);
+        a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
+        b_rd    :   out std_logic_vector(W-1 downto 0);
+        b_wd    :   in  std_logic_vector(W-1 downto 0);
+        b_we    :   in  std_logic;
+        clk     :   in  std_logic--;
     );
 end entity;
 
@@ -64,11 +65,13 @@ begin
     process(clk)
     begin
     if rising_edge(clk) then
-        if we = '1' then
-            ram(to_integer(unsigned(waddr))) <= wd;
+        if b_we = '1' then
+            ram(to_integer(unsigned(b_addr))) <= b_wd;
         end if;
-        rd <= ram(to_integer(unsigned(raddr)));
     end if; -- rising_edge
     end process;
+
+    a_rd <= ram(to_integer(unsigned(a_addr)));
+    b_rd <= ram(to_integer(unsigned(b_addr)));
 
 end architecture;
