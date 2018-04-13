@@ -9,10 +9,10 @@ entity cpu_v1 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-end entity cpu_v1;
+end entity;
 
 architecture arch of cpu_v1 is
 
@@ -57,14 +57,14 @@ begin
 
     dbg_out <= reg(14) & reg(15);
 
-    ram_p : process(clk)
+    process(clk)
     begin
     if rising_edge(clk) then
         if(ram_we = '1') then
             ram(to_integer(unsigned(ram_addr))) <= ram_wd;
         end if;
     end if; -- rising_edge
-    end process ram_p;
+    end process;
 
     ram_rd <= ram(to_integer(unsigned(ram_addr)));
 
@@ -143,4 +143,4 @@ begin
     end if; -- rising_edge
     end process;
 
-end;
+end architecture;

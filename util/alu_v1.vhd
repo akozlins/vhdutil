@@ -13,11 +13,11 @@ entity alu_v1 is
         mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        y   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
+        y   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-end entity alu_v1;
+end entity;
 
 architecture arch of alu_v1 is
 
@@ -34,7 +34,7 @@ begin
     a_i <= a xor m2_i;
     b_i <= b;
 
-    adder_i : adder
+    adder_i : component adder
     generic map (
         W => W--,
     )
@@ -51,4 +51,4 @@ begin
          a_i xor b_i when mux(1 downto 0) = "11" else
          y_i(y'range);
 
-end;
+end architecture;

@@ -8,10 +8,10 @@ entity cpu_v3 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-end entity cpu_v3;
+end entity;
 
 architecture arch of cpu_v3 is
 
@@ -52,7 +52,7 @@ architecture arch of cpu_v3 is
 
 begin
 
-    ram_i : ram_v1
+    ram_i : component ram_v1
     generic map (
         W => 16,
         N => 8,
@@ -66,7 +66,7 @@ begin
         we      => ram_we--,
     );
 
-    reg_file_i : reg_file_v3
+    reg_file_i : component reg_file_v3
     generic map (
         W => 16,
         N => 4--,
@@ -81,14 +81,14 @@ begin
         clk     => clk--,
     );
 
-    alu_i : alu_v2
+    alu_i : component alu_v2
     generic map (
         W => 16--,
     )
     port map (
-        ci  => alu_ci,
         a   => alu_a,
         b   => alu_b,
+        ci  => alu_ci,
         op  => alu_op,
         y   => alu_y,
         z   => alu_z,
@@ -200,4 +200,4 @@ begin
     end if; -- rising_edge
     end process;
 
-end;
+end architecture;

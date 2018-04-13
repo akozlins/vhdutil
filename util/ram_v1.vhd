@@ -14,13 +14,13 @@ entity ram_v1 is
         INIT_FILE_HEX : string := ""--;
     );
     port (
-        clk     :   in  std_logic;
         addr    :   in  std_logic_vector(N-1 downto 0);
         rd      :   out std_logic_vector(W-1 downto 0);
         wd      :   in  std_logic_vector(W-1 downto 0);
-        we      :   in  std_logic--;
+        we      :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-end entity ram_v1;
+end entity;
 
 architecture arch of ram_v1 is
 
@@ -75,4 +75,4 @@ begin
 
     rd <= ram(to_integer(unsigned(addr)));
 
-end;
+end architecture;

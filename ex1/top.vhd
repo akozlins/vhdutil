@@ -9,7 +9,7 @@ entity top is
         pl_btn      :   in  std_logic_vector(4 downto 0);
         pl_sw       :   in  std_logic_vector(7 downto 0)--;
     );
-end top;
+end entity;
 
 architecture arch of top is
 
@@ -26,4 +26,4 @@ begin
     end if;
     end process;
 
-end arch;
+end architecture;

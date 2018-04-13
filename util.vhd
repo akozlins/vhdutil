@@ -35,7 +35,7 @@ package util is
         output  :   out std_logic_vector(N-1 downto 0);
         clk     :   in  std_logic--;
     );
-    end component debounce;
+    end component;
 
     component gray_counter is
     generic (
@@ -43,11 +43,11 @@ package util is
     );
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);
-        clk     :   in  std_logic;
         ena     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component gray_counter;
+    end component;
 
     component half_adder is
     port (
@@ -56,7 +56,7 @@ package util is
         s   :   out std_logic;
         c   :   out std_logic--;
     );
-    end component half_adder;
+    end component;
 
     component full_adder is
     port (
@@ -66,7 +66,7 @@ package util is
         s   :   out std_logic;
         co  :   out std_logic--;
     );
-    end component full_adder;
+    end component;
 
     component ripple_adder is
     generic (
@@ -79,7 +79,7 @@ package util is
         s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-    end component ripple_adder;
+    end component;
 
     component adder is
     generic (
@@ -92,7 +92,7 @@ package util is
         s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-    end component adder;
+    end component;
 
     component alu_v1 is
     generic (
@@ -102,22 +102,22 @@ package util is
         mux :   in  std_logic_vector(2 downto 0);
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
-        y   :   out std_logic_vector(W-1 downto 0);
         ci  :   in  std_logic;
+        y   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-    end component alu_v1;
+    end component;
 
     component alu_v2 is
     generic (
         W   : integer := 8--;
     );
     port (
-        -- carry in
-        ci  :   in  std_logic;
         -- operands
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
+        -- carry in
+        ci  :   in  std_logic;
         -- operation
         op  :   in  std_logic_vector(2 downto 0);
         -- output
@@ -131,7 +131,7 @@ package util is
         -- carry out
         co  :   out std_logic--;
     );
-    end component alu_v2;
+    end component;
 
     component ram_v1 is
     generic (
@@ -140,13 +140,13 @@ package util is
         INIT_FILE_HEX : string := ""--;
     );
     port (
-        clk     :   in  std_logic;
         addr    :   in  std_logic_vector(N-1 downto 0);
         rd      :   out std_logic_vector(W-1 downto 0);
         wd      :   in  std_logic_vector(W-1 downto 0);
-        we      :   in  std_logic--;
+        we      :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component ram_v1;
+    end component;
 
     component ram_v3 is
     generic (
@@ -162,7 +162,7 @@ package util is
         wd      :   in  std_logic_vector(W-1 downto 0);
         we      :   in  std_logic--;
     );
-    end component ram_v3;
+    end component;
 
     component reg_file_v1 is
     generic (
@@ -170,7 +170,6 @@ package util is
         N   : integer := 2--;
     );
     port (
-        clk     :   in  std_logic;
         a_addr  :   in  std_logic_vector(N-1 downto 0);
         b_addr  :   in  std_logic_vector(N-1 downto 0);
         c_addr  :   in  std_logic_vector(N-1 downto 0);
@@ -179,9 +178,10 @@ package util is
         c_rd    :   out std_logic_vector(W-1 downto 0);
         c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component reg_file_v1;
+    end component;
 
     component reg_file_v3 is
     generic (
@@ -197,36 +197,36 @@ package util is
         b_we    :   in  std_logic;
         clk     :   in  std_logic--;
     );
-    end component reg_file_v3;
+    end component;
 
     component cpu_v1 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component cpu_v1;
+    end component;
 
     component cpu_v2 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component cpu_v2;
+    end component;
 
     component cpu_v3 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        clk     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-    end component cpu_v3;
+    end component;
 
-end package util;
+end package;
 
 package body util is
 
@@ -239,7 +239,7 @@ package body util is
         else
             return '0';
         end if;
-    end function bool_to_logic;
+    end function;
 
     procedure char_to_hex(
         c : in character;
@@ -277,7 +277,7 @@ package body util is
            assert false report "HREAD Error: Read a '" & c & "', expected a Hex character (0-F).";
            good := false;
         end case;
-    end char_to_hex;
+    end procedure;
 
     procedure string_to_hex(
         s : in string;
@@ -294,6 +294,6 @@ package body util is
             end if;
         end loop;
         good := true;
-    end string_to_hex;
+    end procedure;
 
-end util;
+end package body;

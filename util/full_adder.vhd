@@ -12,7 +12,7 @@ entity full_adder is
         s   :   out std_logic;
         co  :   out std_logic--;
     );
-end entity full_adder;
+end entity;
 
 architecture arch of full_adder is
 
@@ -22,7 +22,7 @@ architecture arch of full_adder is
 
 begin
 
-    half_adder_1 : half_adder
+    half_adder_1 : component half_adder
     port map (
         a => a,
         b => b,
@@ -30,7 +30,7 @@ begin
         c => c_1
     );
 
-    half_adder_2 : half_adder
+    half_adder_2 : component half_adder
     port map (
         a => s_1,
         b => ci,
@@ -40,4 +40,4 @@ begin
 
     co <= c_1 or c_2;
 
-end;
+end architecture;

@@ -5,7 +5,8 @@ module tb_cpu();
 reg clk, areset;
 
 cpu_v3 cpu_i (
-    .clk(clk), .areset(areset)
+    .areset(areset),
+    .clk(clk)
 );
 
 initial

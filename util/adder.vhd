@@ -16,7 +16,7 @@ entity adder is
         s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-end entity adder;
+end entity;
 
 architecture arch of adder is
 
@@ -28,4 +28,4 @@ begin
     s <= s_i(s'range);
     co <= s_i(W);
 
-end;
+end architecture;

@@ -21,7 +21,7 @@ entity ram_v3 is
         wd      :   in  std_logic_vector(W-1 downto 0);
         we      :   in  std_logic--;
     );
-end entity ram_v3;
+end entity;
 
 architecture arch of ram_v3 is
 
@@ -71,4 +71,4 @@ begin
     end if; -- rising_edge
     end process;
 
-end;
+end architecture;

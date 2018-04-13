@@ -7,7 +7,7 @@ reg clk, ena, areset;
 
 gray_counter #(.W(4)) gray_counter_i (
     .cnt(cnt),
-    .clk(clk), .ena(ena), .areset(areset)
+    .ena(ena), .areset(areset), .clk(clk)
 );
 
 initial

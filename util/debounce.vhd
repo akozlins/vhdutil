@@ -12,7 +12,7 @@ entity debounce is
         output  :   out std_logic_vector(N-1 downto 0);
         clk     :   in  std_logic--;
     );
-end entity debounce;
+end entity;
 
 architecture arch of debounce is
 
@@ -41,4 +41,4 @@ begin
     end if;
     end process;
 
-end;
+end architecture;

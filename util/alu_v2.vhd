@@ -10,11 +10,11 @@ entity alu_v2 is
         W   : integer := 8--;
     );
     port (
-        -- carry in
-        ci  :   in  std_logic;
         -- operands
         a   :   in  std_logic_vector(W-1 downto 0);
         b   :   in  std_logic_vector(W-1 downto 0);
+        -- carry in
+        ci  :   in  std_logic;
         -- operation
         op  :   in  std_logic_vector(2 downto 0);
         -- output
@@ -28,7 +28,7 @@ entity alu_v2 is
         -- carry out
         co  :   out std_logic--;
     );
-end entity alu_v2;
+end entity;
 
 architecture arch of alu_v2 is
 
@@ -39,7 +39,7 @@ architecture arch of alu_v2 is
 
 begin
 
-    adder_i : adder
+    adder_i : component adder
     generic map (
         W => W--,
     )
@@ -87,4 +87,4 @@ begin
     s <= y_i(W-1);
     v <= (a(W-1) and b(W-1) and not y_i(W-1)) or (not a(W-1) and not b(W-1) and y_i(W-1));
 
-end;
+end architecture;

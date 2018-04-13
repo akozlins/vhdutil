@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 use work.util.all;
 
 entity tb_ram is
-end tb_ram;
+end entity;
 
 architecture arch of tb_ram is
 
@@ -14,26 +14,26 @@ architecture arch of tb_ram is
     constant W : integer := 16;
     constant N : integer := 4;
 
-    signal clk : std_logic := '0';
     signal addr : std_logic_vector(N-1 downto 0);
     signal dout : std_logic_vector(W-1 downto 0);
     signal din : std_logic_vector(W-1 downto 0);
     signal we : std_logic := '0';
+    signal clk : std_logic := '0';
 
 begin
 
-    ram_i : ram_v1
+    ram_i : component ram_v1
     generic map (
         W => W,
         N => N,
         INIT_FILE_HEX => "ram.hex"--,
     )
     port map (
-        clk => clk,
         addr => addr,
         rd => dout,
         wd => din,
-        we => we--,
+        we => we,
+        clk => clk--,
     );
 
     process
@@ -64,4 +64,4 @@ begin
         wait;
     end process;
 
-end arch;
+end architecture;

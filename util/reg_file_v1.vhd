@@ -10,7 +10,6 @@ entity reg_file_v1 is
         N   : integer := 2--; -- addr bits (2**N words)
     );
     port (
-        clk     :   in  std_logic;
         a_addr  :   in  std_logic_vector(N-1 downto 0);
         b_addr  :   in  std_logic_vector(N-1 downto 0);
         c_addr  :   in  std_logic_vector(N-1 downto 0);
@@ -19,9 +18,10 @@ entity reg_file_v1 is
         c_rd    :   out std_logic_vector(W-1 downto 0);
         c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-end entity reg_file_v1;
+end entity;
 
 architecture arch of reg_file_v1 is
 
@@ -45,4 +45,4 @@ begin
     b_rd <= ram(to_integer(unsigned(b_addr)));
     c_rd <= ram(to_integer(unsigned(c_addr)));
 
-end;
+end architecture;

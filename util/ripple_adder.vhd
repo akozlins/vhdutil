@@ -15,7 +15,7 @@ entity ripple_adder is
         s   :   out std_logic_vector(W-1 downto 0);
         co  :   out std_logic--;
     );
-end entity ripple_adder;
+end entity;
 
 architecture arch of ripple_adder is
 
@@ -27,7 +27,7 @@ begin
     co <= c_i(W);
 
     gen : for i in 0 to W-1 generate
-        full_adder_i : full_adder
+        full_adder_i : component full_adder
         port map (
             a => a(i),
             b => b(i),
@@ -35,6 +35,6 @@ begin
             s => s(i),
             co => c_i(i+1)
         );
-    end generate gen;
+    end generate;
 
-end;
+end architecture;

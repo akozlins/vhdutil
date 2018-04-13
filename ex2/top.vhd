@@ -11,7 +11,7 @@ entity top is
         pl_btn      :   in  std_logic_vector(4 downto 0);
         pl_sw       :   in  std_logic_vector(7 downto 0)--;
     );
-end top;
+end entity;
 
 architecture arch of top is
 
@@ -20,7 +20,7 @@ architecture arch of top is
 
 begin
 
-    debounce_i : debounce
+    debounce_i : component debounce
     generic map (
         N => 1,
         C => X"FFFF"
@@ -42,4 +42,4 @@ begin
     end if; -- rising_edge
     end process;
 
-end arch;
+end architecture;

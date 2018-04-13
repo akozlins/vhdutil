@@ -9,7 +9,7 @@ entity half_adder is
         s   :   out std_logic;
         c   :   out std_logic--;
     );
-end entity half_adder;
+end entity;
 
 architecture arch of half_adder is
 begin
@@ -17,4 +17,4 @@ begin
     s <= a xor b;
     c <= a and b;
 
-end;
+end architecture;

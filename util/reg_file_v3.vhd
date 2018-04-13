@@ -18,7 +18,7 @@ entity reg_file_v3 is
         b_we    :   in  std_logic;
         clk     :   in  std_logic--;
     );
-end entity reg_file_v3;
+end entity;
 
 architecture arch of reg_file_v3 is
 
@@ -39,4 +39,4 @@ begin
     a_rd <= ram(to_integer(unsigned(a_addr))) when unsigned(a_addr) /= 0 else (others => '0');
     b_rd <= ram(to_integer(unsigned(b_addr))) when unsigned(b_addr) /= 0 else (others => '0');
 
-end;
+end architecture;

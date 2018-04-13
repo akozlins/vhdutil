@@ -10,11 +10,11 @@ entity gray_counter is
     );
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);
-        clk     :   in  std_logic;
         ena     :   in  std_logic;
-        areset  :   in  std_logic--;
+        areset  :   in  std_logic;
+        clk     :   in  std_logic--;
     );
-end entity gray_counter;
+end entity;
 
 architecture arch of gray_counter is
 
@@ -33,4 +33,4 @@ begin
 
     cnt <= std_logic_vector(cnt_i xor ('0' & cnt_i(W-1 downto 1)));
 
-end;
+end architecture;

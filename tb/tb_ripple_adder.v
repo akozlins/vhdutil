@@ -4,14 +4,14 @@ module tb_ripple_adder();
 
 reg [3:0] a, b;
 wire [3:0] s;
-wire c;
+wire co;
 
 ripple_adder #(.W(4)) ripple_adder_i (
     .a(a),
     .b(b),
-    .s(s),
     .ci(1'b0),
-    .co(c)
+    .s(s),
+    .co(co)
 );
 
 integer i;
