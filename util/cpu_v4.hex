@@ -4,9 +4,12 @@
 # LDI : regC = CC
 DC00
 00CC
-# ST : *(CC) = regC
+# NOP
+0000
+0000
+# ST : *(regB + regA) = *(CC) = regC
 FC0C
-# LD : regC = *(CC)
+# LD : regC = *(regB + regA) = *(CC)
 EC0C
 
 # LDI : reg1 = 1

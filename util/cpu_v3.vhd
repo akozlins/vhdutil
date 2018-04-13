@@ -59,11 +59,11 @@ begin
         INIT_FILE_HEX => "cpu_v3.hex"--,
     )
     port map (
-        clk     => clk,
         addr    => ram_addr(7 downto 0),
         rd      => ram_rd,
         wd      => ram_wd,
-        we      => ram_we--,
+        we      => ram_we,
+        clk     => clk--,
     );
 
     reg_file_i : component reg_file_v3
@@ -73,8 +73,8 @@ begin
     )
     port map (
         a_addr  => regA_addr,
-        b_addr  => regB_addr,
         a_rd    => regA_rd,
+        b_addr  => regB_addr,
         b_rd    => regB_rd,
         b_wd    => regB_wd,
         b_we    => regB_we,

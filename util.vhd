@@ -172,10 +172,10 @@ package util is
     );
     port (
         a_addr  :   in  std_logic_vector(N-1 downto 0);
-        b_addr  :   in  std_logic_vector(N-1 downto 0);
-        c_addr  :   in  std_logic_vector(N-1 downto 0);
         a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
         b_rd    :   out std_logic_vector(W-1 downto 0);
+        c_addr  :   in  std_logic_vector(N-1 downto 0);
         c_rd    :   out std_logic_vector(W-1 downto 0);
         c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
@@ -191,8 +191,8 @@ package util is
     );
     port (
         a_addr  :   in  std_logic_vector(N-1 downto 0);
-        b_addr  :   in  std_logic_vector(N-1 downto 0);
         a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
         b_rd    :   out std_logic_vector(W-1 downto 0);
         b_wd    :   in  std_logic_vector(W-1 downto 0);
         b_we    :   in  std_logic;

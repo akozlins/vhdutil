@@ -76,10 +76,10 @@ begin
     port map (
         clk     => clk,
         a_addr  => ram_rd(3 downto 0),
-        b_addr  => ram_rd(7 downto 4),
-        c_addr  => regC_addr,
         a_rd    => regA,
+        b_addr  => ram_rd(7 downto 4),
         b_rd    => regB,
+        c_addr  => regC_addr,
         c_rd    => regC,
         c_wd    => regC_wd,
         c_we    => regC_we,

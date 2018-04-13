@@ -11,10 +11,10 @@ entity reg_file_v1 is
     );
     port (
         a_addr  :   in  std_logic_vector(N-1 downto 0);
-        b_addr  :   in  std_logic_vector(N-1 downto 0);
-        c_addr  :   in  std_logic_vector(N-1 downto 0);
         a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
         b_rd    :   out std_logic_vector(W-1 downto 0);
+        c_addr  :   in  std_logic_vector(N-1 downto 0);
         c_rd    :   out std_logic_vector(W-1 downto 0);
         c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
@@ -26,7 +26,10 @@ end entity;
 architecture arch of reg_file_v1 is
 
     type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
-    signal ram : ram_t;
+    signal ram : ram_t := (
+        0 => (others => '0'),
+        others => (others => '-')
+    );
 
 begin
 
