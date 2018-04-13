@@ -43,7 +43,7 @@ package util is
     );
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);
-        ena     :   in  std_logic;
+        ce      :   in  std_logic;
         areset  :   in  std_logic;
         clk     :   in  std_logic--;
     );
