@@ -29,6 +29,9 @@ architecture arch of cpu_v4 is
     signal mem_wd, mem_addr : word_t;
     signal wb_wd : word_t;
 
+    signal id_stall : std_logic;
+    signal id_reg_ab_r, ex_reg_c_w, mem_reg_c_w, wb_reg_c_w : std_logic;
+
     signal ram_a_addr, ram_b_addr : word_t;
     signal ram_a_rd, ram_b_rd, ram_b_wd : word_t;
     signal ram_b_we : std_logic;
@@ -37,7 +40,9 @@ architecture arch of cpu_v4 is
     signal reg_a_rd, reg_b_rd, reg_b_wd : word_t;
     signal reg_b_we : std_logic;
 
-    signal alu_c : std_logic;
+    signal alu_op : std_logic_vector(2 downto 0);
+    signal alu_a, alu_b, alu_y : word_t;
+    signal alu_ci, alu_co : std_logic;
 
 begin
 
@@ -72,6 +77,22 @@ begin
         clk     => clk--,
     );
 
+    alu_i : component alu_v2
+    generic map (
+        W => 16--,
+    )
+    port map (
+        a   => alu_a,
+        b   => alu_b,
+        ci  => alu_ci,
+        op  => alu_op,
+        y   => alu_y,
+        z   => open,
+        s   => open,
+        v   => open,
+        co  => alu_co--,
+    );
+
     if_op <= if_ir(15 downto 12);
     id_op <= id_ir(15 downto 12);
     ex_op <= ex_ir(15 downto 12);
@@ -83,6 +104,16 @@ begin
 
     reg_b_addr <= wb_reg_b_addr when ( reg_b_we = '1' ) else
                   id_reg_b_addr;
+
+    id_stall <= '0' when ( id_reg_ab_r = '0' ) else
+                '1' when ( reg_b_we = '1' or ex_op = X"F" ) else
+                '1' when (  ex_reg_c_w = '1' and  ex_ir(11 downto 8) = id_ir(3 downto 0) and id_ir(3 downto 0) /= 0 ) else
+                '1' when (  ex_reg_c_w = '1' and  ex_ir(11 downto 8) = id_ir(7 downto 4) and id_ir(7 downto 4) /= 0 ) else
+                '1' when ( mem_reg_c_w = '1' and mem_ir(11 downto 8) = id_ir(3 downto 0) and id_ir(3 downto 0) /= 0 ) else
+                '1' when ( mem_reg_c_w = '1' and mem_ir(11 downto 8) = id_ir(7 downto 4) and id_ir(7 downto 4) /= 0 ) else
+                '1' when (  wb_reg_c_w = '1' and  wb_ir(11 downto 8) = id_ir(3 downto 0) and id_ir(3 downto 0) /= 0 ) else
+                '1' when (  wb_reg_c_w = '1' and  wb_ir(11 downto 8) = id_ir(7 downto 4) and id_ir(7 downto 4) /= 0 ) else
+                '0';
 
     -- Instruction Fetch
 
@@ -97,7 +128,7 @@ begin
         id_pc <= (others => '-');
         --
     elsif rising_edge(clk) then
-    if ( reg_b_we = '1' or ex_op = X"F" ) then -- stall
+    if ( id_stall = '1' ) then -- stall
         --
     else
         if ( if_op = X"A" ) then -- JUMP
@@ -117,16 +148,14 @@ begin
 
     -- Instruction Decode
 
-    id_reg_a_addr <= id_ir(3 downto 0) when ( id_ir /= 0 and id_op(id_op'left) = '0' ) else -- ALU
-                  id_ir(3 downto 0) when ( id_op = X"F" ) else -- STORE
-                  id_ir(3 downto 0) when ( id_op = X"E" ) else -- LOAD
-                  id_ir(3 downto 0) when ( id_op = X"C" ) else -- DEBUG
-                  (others => '-');
-    id_reg_b_addr <= id_ir(7 downto 4) when ( id_ir /= 0 and id_op(id_op'left) = '0' ) else -- ALU
-                     id_ir(7 downto 4) when ( id_op = X"F" ) else -- STORE
-                     id_ir(7 downto 4) when ( id_op = X"E" ) else -- LOAD
-                     id_ir(7 downto 4) when ( id_op = X"C" ) else -- DEBUG
-                     (others => '-');
+    id_reg_ab_r <= bool_to_logic(
+        ( id_ir /= 0 and id_op(id_op'left) = '0' ) -- ALU
+        or id_op = X"F" -- STORE
+        or id_op = X"E" -- LOAD
+        or id_op = X"C" -- DEBUG
+    );
+    id_reg_a_addr <= id_ir(3 downto 0) when ( id_reg_ab_r = '1' ) else (others => '-');
+    id_reg_b_addr <= id_ir(7 downto 4) when ( id_reg_ab_r = '1' ) else (others => '-');
 
     id_p : process(clk, areset)
     begin
@@ -135,9 +164,8 @@ begin
         ex_pc <= (others => '-');
         --
     elsif rising_edge(clk) then
-    if ( reg_b_we = '1' or ex_op = X"F" ) then -- stall
+    if ( id_stall = '1' ) then -- stall
         ex_ir <= (others => '0');
-        -- TODO: allow LOADI
     else
         ex_reg_a <= reg_a_rd;
         ex_reg_b <= reg_b_rd;
@@ -155,11 +183,23 @@ begin
 
     -- Execute
 
+    ex_reg_c_w <= bool_to_logic(
+        ( ex_ir /= 0 and ex_op(ex_op'left) = '0' ) -- ALU
+        or ex_op = X"E" -- LOAD
+        or ex_op = X"D" -- LOADI
+    );
+
     ex_reg_a_addr <= ex_ir(11 downto 8) when ( ex_op = X"F" ) else -- STORE
                      (others => '-');
 
+    alu_a <= ex_reg_a;
+    alu_b <= ex_reg_b;
+    alu_op <= ex_op(alu_op'range) when ( ex_ir /= 0 and ex_op(ex_op'left) = '0' ) else -- ALU
+              (others => '0') when ( ex_op = X"F" ) else -- STORE
+              (others => '0') when ( ex_op = X"E" ) else -- LOAD
+              (others => '-');
+
     ex_p : process(clk, areset)
-        variable alu_y : std_logic_vector(mem_wd'length downto 0);
     begin
     if areset = '1' then
         mem_ir <= (others => '0');
@@ -169,24 +209,13 @@ begin
         mem_wd <= (others => '-');
 
         if ( ex_ir /= 0 and ex_op(ex_op'left) = '0' ) then -- ALU
-            case ex_op(2 downto 0) is
-            when "000" => alu_y := ('0' & ex_reg_b) + ex_reg_a;
-            when "001" => alu_y := ('0' & ex_reg_b) + ex_reg_a + alu_c;
-            when "010" => alu_y := (others => 'X');
-            when "011" => alu_y := (others => 'X');
-            when "100" => alu_y := '-' & (ex_reg_b and ex_reg_a);
-            when "101" => alu_y := '-' & (ex_reg_b or ex_reg_a);
-            when "110" => alu_y := '-' & (ex_reg_b xor ex_reg_a);
-            when "111" => alu_y := '-' & not (ex_reg_b or ex_reg_a);
-            when others => alu_y := (others => 'X');
-            end case;
-            mem_wd <= alu_y(mem_wd'range);
-            alu_c <= alu_y(alu_y'left);
+            mem_wd <= alu_y;
+            alu_ci <= alu_co;
         elsif ( ex_op = X"F" ) then -- STORE
             mem_wd <= reg_a_rd;
-            mem_addr <= ex_reg_b + ex_reg_a;
+            mem_addr <= alu_y;
         elsif ( ex_op = X"E" ) then -- LOAD
-            mem_addr <= ex_reg_b + ex_reg_a;
+            mem_addr <= alu_y;
         elsif ( ex_op = X"D" ) then -- LOADI
             mem_addr <= ex_pc + 1;
         end if;
@@ -197,6 +226,12 @@ begin
     end process;
 
     -- Memory access
+
+    mem_reg_c_w <= bool_to_logic(
+        ( mem_ir /= 0 and mem_op(mem_op'left) = '0' ) -- ALU
+        or mem_op = X"E" -- LOAD
+        or mem_op = X"D" -- LOADI
+    );
 
     ram_b_addr <= mem_addr when ( mem_op = X"F" ) else -- STORE
                   mem_addr when ( mem_op = X"E" or mem_op = X"D" ) else -- LOAD or LOADI
@@ -226,6 +261,12 @@ begin
     end process;
 
     -- Register write back
+
+    wb_reg_c_w <= bool_to_logic(
+        ( wb_ir /= 0 and wb_op(wb_op'left) = '0' ) -- ALU
+        or wb_op = X"E" -- LOAD
+        or wb_op = X"D" -- LOADI
+    );
 
     wb_reg_b_addr <= wb_ir(11 downto 8) when ( wb_ir /= 0 and wb_op(wb_op'left) = '0' ) else -- ALU
                      wb_ir(11 downto 8) when ( wb_op = X"E" or wb_op = X"D" ) else -- LOAD or LOADI
