@@ -29,7 +29,9 @@ architecture arch of ram_v1 is
     type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
 
     impure
-    function ram_read(fname : in string) return ram_t is
+    function ram_read(
+        fname : in string--;
+    ) return ram_t is
         variable ram : ram_t;
         variable i : integer := 0;
         file f : text;
@@ -48,7 +50,7 @@ architecture arch of ram_v1 is
             read(l, c, ok);
             next when ( not ok or c = '#' );
             s(1) := c;
-            read(l, s(2 to W/4), ok);
+            read(l, s(2 to s'right), ok);
             next when ( not ok );
             string_to_hex(s, ram(i), ok);
             next when ( not ok );

@@ -23,7 +23,7 @@ architecture arch of cpu_v4 is
         ir : word_t;
         reg_a_re, reg_b_re, reg_c_re, reg_c_we : boolean;
         op : std_logic_vector(3 downto 0);
-        op_alu, op_store, op_load, op_debug, op_jump : boolean;
+        op_alu, op_store, op_load, op_loadi, op_debug, op_jump : boolean;
     end record;
 
     constant NOP : state_t := (
@@ -39,7 +39,7 @@ architecture arch of cpu_v4 is
     signal mm_wd, mm_addr : word_t;
     signal wb_wd : word_t;
 
-    signal id_stall : std_logic;
+    signal id_stall : boolean;
 
     signal ram_a_addr, ram_b_addr : word_t;
     signal ram_a_rd, ram_b_rd, ram_b_wd : word_t;
@@ -110,28 +110,28 @@ begin
                   s_id.ir(7 downto 4) when ( s_id.reg_b_re ) else
                   (others => '-');
 
-    id_stall <= '1' when ( s_ex.reg_c_re and s_id.reg_a_re ) else
-                '1' when ( s_wb.reg_c_we and s_id.reg_b_re) else
-                '1' when ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re ) else
-                '1' when ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re ) else
-                '1' when ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re ) else
-                '1' when ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re ) else
-                '1' when ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re ) else
-                '1' when ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re ) else
-                '0';
+    id_stall <= ( s_ex.reg_c_re and s_id.reg_a_re )
+             or ( s_wb.reg_c_we and s_id.reg_b_re )
+             or ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
+             or ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re )
+             or ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
+             or ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re )
+             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
+             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re );
 
     -- Instruction Fetch
 
     ram_a_addr <= s_if.pc;
     s_if.ir <= ram_a_rd;
-    s_if.reg_a_re <= s_if.ir(3 downto 0) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op = X"E" or s_if.op_debug );
-    s_if.reg_b_re <= s_if.ir(7 downto 4) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op = X"E" or s_if.op_debug );
+    s_if.reg_a_re <= s_if.ir(3 downto 0) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
+    s_if.reg_b_re <= s_if.ir(7 downto 4) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
     s_if.reg_c_re <= s_if.ir(11 downto 8) /= 0 and ( s_if.op_store );
-    s_if.reg_c_we <= s_if.ir(11 downto 8) /= 0 and ( s_if.op_alu or s_if.op_load );
+    s_if.reg_c_we <= s_if.ir(11 downto 8) /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
     s_if.op <= s_if.ir(15 downto 12);
     s_if.op_alu <= s_if.ir /= 0 and s_if.op(s_if.op'left) = '0';
     s_if.op_store <= s_if.op = X"F";
-    s_if.op_load <= s_if.op = X"E" or s_if.op = X"D";
+    s_if.op_load <= s_if.op = X"E";
+    s_if.op_loadi <= s_if.op = X"D";
     s_if.op_debug <= s_if.op = X"C";
     s_if.op_jump <= s_if.op = X"A";
 
@@ -142,12 +142,12 @@ begin
         s_id <= NOP;
         --
     elsif rising_edge(clk) then
-    if ( id_stall = '1' ) then -- stall
+    if ( id_stall ) then
         --
     else
-        if ( s_if.op = X"A" ) then -- JUMP
+        if ( s_if.op_jump ) then
             s_if.pc <= s_if.pc + ((7 downto 0 => s_if.ir(7)) & s_if.ir(7 downto 0));
-        elsif ( s_if.op = X"D" ) then -- LOADI
+        elsif ( s_if.op_loadi ) then
             s_if.pc <= s_if.pc + 2;
         else
             s_if.pc <= s_if.pc + 1;
@@ -167,8 +167,9 @@ begin
         s_ex <= NOP;
         --
     elsif rising_edge(clk) then
-    if ( id_stall = '1' ) then -- stall
+    if ( id_stall ) then
         s_ex <= NOP;
+        --
     else
         ex_reg_a <= (others => '0');
         ex_reg_b <= (others => '0');
@@ -193,10 +194,10 @@ begin
     -- Execute
 
     alu_a <= ex_reg_a when ( s_ex.reg_a_re ) else
-             s_ex.pc when ( s_ex.op = X"D" ) else
+             s_ex.pc when ( s_ex.op_loadi ) else
              (others => '0');
     alu_b <= ex_reg_b when ( s_ex.reg_b_re ) else
-             X"0001" when ( s_ex.op = X"D" ) else
+             X"0001" when ( s_ex.op_loadi ) else
              (others => '0');
     alu_op <= s_ex.op(alu_op'range) when ( s_ex.op_alu ) else
               (others => '0');
@@ -216,7 +217,7 @@ begin
         elsif ( s_ex.op_store ) then
             mm_addr <= alu_y;
             mm_wd <= reg_a_rd;
-        elsif ( s_ex.op_load ) then
+        elsif ( s_ex.op_load or s_ex.op_loadi ) then
             mm_addr <= alu_y;
         end if;
 
@@ -227,7 +228,7 @@ begin
 
     -- Memory access
 
-    ram_b_addr <= mm_addr when ( s_mm.op_store or s_mm.op_load ) else
+    ram_b_addr <= mm_addr when ( s_mm.op_store or s_mm.op_load or s_mm.op_loadi ) else
                   (others => '-');
     ram_b_wd <= mm_wd when ( s_mm.op_store ) else
                 (others => '-');
@@ -244,7 +245,7 @@ begin
 
         if ( s_mm.op_alu ) then
             wb_wd <= mm_wd;
-        elsif ( s_mm.op_load ) then
+        elsif ( s_mm.op_load or s_mm.op_loadi ) then
             wb_wd <= ram_b_rd;
         end if;
 
@@ -259,14 +260,5 @@ begin
                 (others => '-');
     reg_b_we <= '1' when ( s_wb.reg_c_we ) else
                 '0';
-
-    wb_p : process(clk, areset)
-    begin
-    if areset = '1' then
-        --
-    elsif rising_edge(clk) then
-        --
-    end if; -- rising_edge
-    end process;
 
 end architecture;

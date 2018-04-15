@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 use work.util.all;
 
@@ -32,10 +31,11 @@ end entity;
 
 architecture arch of alu_v2 is
 
+    constant ZERO : std_logic_vector(W-1 downto 0) := (others => '0');
+
     signal ci_i : std_logic;
-    signal a_i : std_logic_vector(W-1 downto 0);
-    signal b_i : std_logic_vector(W-1 downto 0);
-    signal y_i : std_logic_vector(W downto 0);
+    signal a_i, b_i, s_i : std_logic_vector(W-1 downto 0);
+    signal y_i : std_logic_vector(W-1 downto 0);
 
 begin
 
@@ -47,16 +47,16 @@ begin
         a => a_i,
         b => b_i,
         ci => ci_i,
-        s => y_i(y'range),
+        s => s_i,
         co => co--,
     );
 
-    process(op, a, b, ci, y_i)
+    process(op, a, b, ci, s_i)
     begin
         a_i <= a;
         b_i <= b;
         ci_i <= ci;
-        y <= y_i(y'range);
+        y_i <= s_i;
 
         case op is
         when "000" =>
@@ -71,20 +71,22 @@ begin
             a_i <= not a;
             ci_i <= not ci;
         when "100" =>
-            y <= a and b;
+            y_i <= a and b;
         when "101" =>
-            y <= a or b;
+            y_i <= a or b;
         when "110" =>
-            y <= a xor b;
+            y_i <= a xor b;
         when "111" =>
-            y <= not a;
+            y_i <= not (a or b);
         when others =>
             null;
         end case;
     end process;
 
-    z <= bool_to_logic(y_i(y'range) = 0);
-    s <= y_i(W-1);
-    v <= (a(W-1) and b(W-1) and not y_i(W-1)) or (not a(W-1) and not b(W-1) and y_i(W-1));
+    y <= y_i;
+    z <= bool_to_logic(y_i = ZERO);
+    s <= y_i(y_i'left);
+    v <= (a(a'left) and b(b'left) and not y_i(y_i'left)) or
+         (not a(a'left) and not b(b'left) and y_i(y_i'left));
 
 end architecture;
