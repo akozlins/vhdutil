@@ -60,7 +60,7 @@ begin
     process(clk)
     begin
     if rising_edge(clk) then
-        if(ram_we = '1') then
+        if ( ram_we = '1' ) then
             ram(to_integer(unsigned(ram_addr))) <= ram_wd;
         end if;
     end if; -- rising_edge
@@ -75,7 +75,7 @@ begin
 
     process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         state <= S_RESET;
     elsif rising_edge(clk) then
         ram_we <= '0';

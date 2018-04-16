@@ -118,7 +118,7 @@ begin
 
     process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         state <= S_RESET;
     elsif rising_edge(clk) then
         state <= S_EXEC;

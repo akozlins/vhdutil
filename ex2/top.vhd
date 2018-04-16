@@ -35,7 +35,7 @@ begin
 
     process(pl_clk_100)
     begin
-    if areset_i = '1' then
+    if ( areset_i = '1' ) then
         cnt_i <= (others => '0');
     elsif rising_edge(pl_clk_100) then
         cnt_i <= cnt_i + 1;

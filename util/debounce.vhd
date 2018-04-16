@@ -29,7 +29,7 @@ begin
     if rising_edge(clk) then
         input_q0 <= input;
         input_q1 <= input_q0;
-        for i in N-1 downto 0 loop
+        for i in input'range loop
             if ( input_q0(i) /= input_q1(i) ) then
                 cnt(i) <= (others => '0');
             elsif ( cnt(i) = C ) then

@@ -137,7 +137,7 @@ begin
 
     if_p : process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         s_if.pc <= (others => '0');
         s_id <= NOP;
         --
@@ -163,7 +163,7 @@ begin
 
     id_p : process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         s_ex <= NOP;
         --
     elsif rising_edge(clk) then
@@ -174,10 +174,10 @@ begin
         ex_reg_a <= (others => '0');
         ex_reg_b <= (others => '0');
 
-        if s_id.reg_a_re then
+        if ( s_id.reg_a_re ) then
             ex_reg_a <= reg_a_rd;
         end if;
-        if s_id.reg_b_re then
+        if ( s_id.reg_b_re ) then
             ex_reg_b <= reg_b_rd;
         end if;
 
@@ -204,7 +204,7 @@ begin
 
     ex_p : process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         alu_ci <= '0';
         s_mm <= NOP;
         --
@@ -238,7 +238,7 @@ begin
 
     mem_p : process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         s_wb <= NOP;
         --
     elsif rising_edge(clk) then

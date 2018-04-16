@@ -60,14 +60,14 @@ architecture arch of ram_v3 is
         return ram;
     end function;
 
-    signal ram : ram_t := ram_read(INIT_FILE_HEX);
+    signal ram : ram_t(2**N-1 downto 0) := ram_read(INIT_FILE_HEX);
 
 begin
 
     process(clk)
     begin
     if rising_edge(clk) then
-        if b_we = '1' then
+        if ( b_we = '1' ) then
             ram(to_integer(unsigned(b_addr))) <= b_wd;
         end if;
     end if; -- rising_edge

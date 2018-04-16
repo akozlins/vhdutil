@@ -35,10 +35,10 @@ begin
 
     process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         ram <= (others => (others => '0'));
     elsif rising_edge(clk) then
-        if c_we = '1' and unsigned(c_addr) /= 0 then
+        if ( c_we = '1' and unsigned(c_addr) /= 0 ) then
             ram(to_integer(unsigned(c_addr))) <= c_wd;
         end if;
     end if; -- rising_edge

@@ -163,7 +163,7 @@ begin
 
     process(clk, rst_n)
     begin
-    if rst_n = '0' then
+    if ( rst_n = '0' ) then
         state <= S_FETCH;
         pc <= (others => '0');
 
