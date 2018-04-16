@@ -39,7 +39,7 @@ architecture arch of cpu_v4 is
     signal mm_wd, mm_addr : word_t;
     signal wb_wd : word_t;
 
-    signal id_stall : boolean;
+    signal id_stall, ex_stall : boolean;
 
     signal ram_a_addr, ram_b_addr : word_t;
     signal ram_a_rd, ram_b_rd, ram_b_wd : word_t;
@@ -118,6 +118,8 @@ begin
              or ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re )
              or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
              or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re );
+    ex_stall <= ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_ex.ir(11 downto 8) and s_ex.reg_c_re )
+             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_ex.ir(11 downto 8) and s_ex.reg_c_re );
 
     -- Instruction Fetch
 
@@ -142,7 +144,7 @@ begin
         s_id <= NOP;
         --
     elsif rising_edge(clk) then
-    if ( id_stall ) then
+    if ( id_stall or ex_stall ) then
         --
     else
         if ( s_if.op_jump ) then
@@ -170,9 +172,11 @@ begin
     if ( id_stall ) then
         s_ex <= NOP;
         --
+    elsif ( ex_stall ) then
+        --
     else
-        ex_reg_a <= (others => '0');
-        ex_reg_b <= (others => '0');
+        ex_reg_a <= (others => '-');
+        ex_reg_b <= (others => '-');
 
         if ( s_id.reg_a_re ) then
             ex_reg_a <= reg_a_rd;
@@ -209,6 +213,10 @@ begin
         s_mm <= NOP;
         --
     elsif rising_edge(clk) then
+    if ( ex_stall ) then
+        s_mm <= NOP;
+        --
+    else
         mm_addr <= (others => '-');
         mm_wd <= (others => '-');
 
@@ -224,6 +232,7 @@ begin
 
         s_mm <= s_ex;
         --
+    end if; -- ena
     end if; -- rising_edge
     end process;
 
