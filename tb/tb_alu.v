@@ -5,7 +5,7 @@ module tb_alu();
 reg [2:0] op;
 reg [3:0] a, b;
 
-alu_v2 #(.W(4)) alu_i (
+alu_v2 #(.W(4)) i_alu (
     .op(op),
     .a(a),
     .b(b),

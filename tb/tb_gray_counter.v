@@ -2,12 +2,12 @@
 
 module tb_gray_counter();
 
+reg clk, rst_n, ce;
 wire [3:0] cnt;
-reg clk, ce, areset;
 
-gray_counter #(.W(4)) gray_counter_i (
+gray_counter #(.W(4)) i_counter (
     .cnt(cnt),
-    .ce(ce), .areset(areset), .clk(clk)
+    .ce(ce), .rst_n(rst_n), .clk(clk)
 );
 
 initial
@@ -19,14 +19,15 @@ end
 initial
 begin
     ce = 1'b1;
-    areset = 1'b1;
+    rst_n = 1'b0;
     #100;
-    areset = 1'b0;
+    @(posedge clk);
+    rst_n = 1'b1;
 end
 
 initial
 begin
-    @(negedge areset);
+    @(posedge rst_n);
     repeat(1000) @(posedge clk);
     $finish;
 end

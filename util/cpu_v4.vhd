@@ -9,7 +9,7 @@ entity cpu_v4 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
@@ -55,7 +55,7 @@ architecture arch of cpu_v4 is
 
 begin
 
-    ram_i : component ram_v3
+    i_ram : component ram_v3
     generic map (
         W => 16,
         N => 8,
@@ -71,7 +71,7 @@ begin
         clk     => clk--,
     );
 
-    reg_file_i : component reg_file_v3
+    i_reg_file : component reg_file_v3
     generic map (
         W => 16,
         N => 4--,
@@ -86,7 +86,7 @@ begin
         clk     => clk--,
     );
 
-    alu_i : component alu_v2
+    i_alu : component alu_v2
     generic map (
         W => 16--,
     )
@@ -135,9 +135,9 @@ begin
     s_if.op_debug <= s_if.op = X"C";
     s_if.op_jump <= s_if.op = X"A";
 
-    if_p : process(clk, areset)
+    if_p : process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
         s_if.pc <= (others => '0');
         s_id <= NOP;
         --
@@ -161,9 +161,9 @@ begin
 
     -- Instruction Decode
 
-    id_p : process(clk, areset)
+    id_p : process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
         s_ex <= NOP;
         --
     elsif rising_edge(clk) then
@@ -202,9 +202,10 @@ begin
     alu_op <= s_ex.op(alu_op'range) when ( s_ex.op_alu ) else
               (others => '0');
 
-    ex_p : process(clk, areset)
+    ex_p : process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
+        alu_ci <= '0';
         s_mm <= NOP;
         --
     elsif rising_edge(clk) then
@@ -235,9 +236,9 @@ begin
     ram_b_we <= '1' when ( s_mm.op_store ) else
                 '0';
 
-    mem_p : process(clk, areset)
+    mem_p : process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
         s_wb <= NOP;
         --
     elsif rising_edge(clk) then

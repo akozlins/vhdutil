@@ -5,7 +5,7 @@ module tb_half_adder();
 reg a, b;
 wire s, c;
 
-half_adder adder_i (
+half_adder i_adder (
     .a(a),
     .b(b),
     .s(s),

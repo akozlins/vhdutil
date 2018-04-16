@@ -6,7 +6,7 @@ reg [3:0] a, b;
 wire [3:0] s;
 wire co;
 
-ripple_adder #(.W(4)) ripple_adder_i (
+ripple_adder #(.W(4)) i_adder (
     .a(a),
     .b(b),
     .ci(1'b0),

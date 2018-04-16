@@ -22,7 +22,7 @@ architecture arch of top is
 
 begin
 
-    debounce_i : component debounce
+    i_debounce : component debounce
     generic map (
         N => 1,
         C => X"FFFF"--,
@@ -44,12 +44,12 @@ begin
     end if; -- rising_edge
     end process;
 
-    cpu_i : component cpu_v4
+    i_cpu : component cpu_v4
     port map (
         dbg_out => debug,
         dbg_in => (others => '0'),
         clk => pl_clk_100,
-        areset => areset_i--,
+        rst_n => not areset_i--,
     );
 
     pl_led <= debug(31 downto 24);

@@ -11,7 +11,7 @@ entity gray_counter is
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);
         ce      :   in  std_logic;
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
@@ -24,7 +24,7 @@ begin
 
     process(clk)
     begin
-    if ( areset = '1' ) then
+    if ( rst_n = '0' ) then
         cnt_i <= (others => '0');
     elsif ( rising_edge(clk) and ce = '1' ) then
         cnt_i <= cnt_i + 1;

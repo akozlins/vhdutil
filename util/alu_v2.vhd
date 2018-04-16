@@ -39,7 +39,7 @@ architecture arch of alu_v2 is
 
 begin
 
-    adder_i : component adder
+    i_adder : component adder
     generic map (
         W => W--,
     )

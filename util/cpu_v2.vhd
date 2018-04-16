@@ -9,7 +9,7 @@ entity cpu_v2 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
@@ -50,7 +50,7 @@ architecture arch of cpu_v2 is
 
 begin
 
-    ram_i : component ram_v1
+    i_ram : component ram_v1
     generic map (
         W => 16,
         N => 8,
@@ -68,7 +68,7 @@ begin
     ram_wd <= regC_q;
     ram_we <= bool_to_logic( state = S_STORE );
 
-    reg_file_i : component reg_file_v1
+    i_reg_file : component reg_file_v1
     generic map (
         W => 16,
         N => 4--,
@@ -83,7 +83,7 @@ begin
         c_rd    => regC,
         c_wd    => regC_wd,
         c_we    => regC_we,
-        areset  => areset--,
+        rst_n   => rst_n--,
     );
 
     regC_addr <= regC_addr_q when ( state = S_LOAD or state = S_LOADI ) else
@@ -95,7 +95,7 @@ begin
                '1' when ( state = S_EXEC and ir(ir'left) = '0' ) else
                '0';
 
-    alu_i : component alu_v2
+    i_alu : component alu_v2
     generic map (
         W => 16--,
     )
@@ -116,9 +116,9 @@ begin
 
     ir <= ram_rd(15 downto 12);
 
-    process(clk, areset)
+    process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
         state <= S_RESET;
     elsif rising_edge(clk) then
         state <= S_EXEC;

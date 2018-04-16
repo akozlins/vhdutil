@@ -27,7 +27,7 @@ begin
     co <= c_i(W);
 
     gen : for i in 0 to W-1 generate
-        full_adder_i : component full_adder
+        i_full_adder : component full_adder
         port map (
             a => a(i),
             b => b(i),

@@ -22,7 +22,7 @@ architecture arch of tb_ram is
 
 begin
 
-    ram_i : component ram_v1
+    i_ram : component ram_v1
     generic map (
         W => W,
         N => N,

@@ -9,7 +9,7 @@ entity cpu_v1 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
@@ -73,9 +73,9 @@ begin
     regB <= reg(to_integer(unsigned(ram_rd(7 downto 4))));
     regA <= reg(to_integer(unsigned(ram_rd(3 downto 0))));
 
-    process(clk, areset)
+    process(clk, rst_n)
     begin
-    if areset = '1' then
+    if rst_n = '0' then
         state <= S_RESET;
     elsif rising_edge(clk) then
         ram_we <= '0';

@@ -44,7 +44,7 @@ package util is
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);
         ce      :   in  std_logic;
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;
@@ -179,7 +179,7 @@ package util is
         c_rd    :   out std_logic_vector(W-1 downto 0);
         c_wd    :   in  std_logic_vector(W-1 downto 0);
         c_we    :   in  std_logic;
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;
@@ -204,7 +204,7 @@ package util is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;
@@ -213,7 +213,7 @@ package util is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;
@@ -222,7 +222,7 @@ package util is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;
@@ -231,7 +231,7 @@ package util is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
-        areset  :   in  std_logic;
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
     end component;

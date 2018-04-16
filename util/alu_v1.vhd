@@ -31,7 +31,7 @@ begin
     a_i <= a xor m2_i;
     b_i <= b;
 
-    adder_i : component adder
+    i_adder : component adder
     generic map (
         W => W--,
     )

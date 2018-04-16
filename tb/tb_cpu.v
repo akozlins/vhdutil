@@ -2,10 +2,10 @@
 
 module tb_cpu();
 
-reg clk, areset;
+reg clk, rst_n;
 
-cpu_v4 cpu_i (
-    .areset(areset),
+cpu_v4 i_cpu (
+    .rst_n(rst_n),
     .clk(clk)
 );
 
@@ -17,14 +17,15 @@ end
 
 initial
 begin
-    areset = 1'b1;
-    #105;
-    areset = 1'b0;
+    rst_n = 1'b0;
+    #100
+    @(posedge clk);
+    rst_n = 1'b1;
 end
 
 initial
 begin
-    @(negedge areset);
+    @(posedge rst_n);
     repeat(1000*1000) @(posedge clk);
     $finish;
 end
