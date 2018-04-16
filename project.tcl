@@ -26,7 +26,7 @@ if { [ file isdirectory $dir ] == 0 } {
 create_project -in_memory -part $part
 read_xdc "top.xdc"
 
-read_vhdl "util.vhd"
+read_vhdl "util_pkg.vhd"
 foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" "util/*.v" ] ] {
     add_files -fileset sources_1 "$file"
 }
