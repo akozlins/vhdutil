@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity top is
     Port (
         pl_clk_100  :   in  std_logic;
@@ -21,7 +19,7 @@ architecture arch of top is
 
 begin
 
-    debounce_i : component debounce
+    debounce_i : entity work.debounce
     generic map (
         N => 1,
         C => X"FFFF"--,
@@ -34,7 +32,7 @@ begin
 
     pl_led <= cnt_o(31 downto 24);
 
-    adder_i : component ripple_adder
+    adder_i : entity work.ripple_adder
     generic map (
         W => 32--,
     )

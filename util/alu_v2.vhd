@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity alu_v2 is
     generic (
         W   : integer := 8--;
@@ -39,7 +37,7 @@ architecture arch of alu_v2 is
 
 begin
 
-    i_adder : component adder
+    i_adder : entity work.adder
     generic map (
         W => W--,
     )
@@ -84,7 +82,7 @@ begin
     end process;
 
     y <= y_i;
-    z <= bool_to_logic(y_i = ZERO);
+    z <= '1' when ( y_i = ZERO ) else '0';
     s <= y_i(y_i'left);
     v <= (a(a'left) and b(b'left) and not y_i(y_i'left)) or
          (not a(a'left) and not b(b'left) and y_i(y_i'left));

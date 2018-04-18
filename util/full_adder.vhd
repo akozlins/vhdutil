@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity full_adder is
     port (
         a   :   in  std_logic;
@@ -22,7 +20,7 @@ architecture arch of full_adder is
 
 begin
 
-    i_half_adder_1 : component half_adder
+    i_half_adder_1 : entity work.half_adder
     port map (
         a => a,
         b => b,
@@ -30,7 +28,7 @@ begin
         c => c_1
     );
 
-    i_half_adder_2 : component half_adder
+    i_half_adder_2 : entity work.half_adder
     port map (
         a => s_1,
         b => ci,

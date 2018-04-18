@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity top is
     Port (
         pl_clk_100  :   in  std_logic;
@@ -22,7 +20,7 @@ architecture arch of top is
 
 begin
 
-    i_debounce : component debounce
+    i_debounce : entity work.debounce
     generic map (
         N => 1,
         C => X"FFFF"--,
@@ -44,7 +42,7 @@ begin
     end if; -- rising_edge
     end process;
 
-    i_cpu : component cpu_v4
+    i_cpu : entity work.cpu_v4
     port map (
         dbg_out => debug,
         dbg_in => (others => '0'),

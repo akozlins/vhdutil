@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity ripple_adder is
     generic (
         W   : integer := 8--;
@@ -27,7 +25,7 @@ begin
     co <= c_i(W);
 
     gen : for i in 0 to W-1 generate
-        i_full_adder : component full_adder
+        i_full_adder : entity work.full_adder
         port map (
             a => a(i),
             b => b(i),

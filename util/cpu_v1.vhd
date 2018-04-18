@@ -3,8 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-use work.util.all;
-
 entity cpu_v1 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);

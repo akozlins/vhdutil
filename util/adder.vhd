@@ -3,8 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-use work.util.all;
-
 entity adder is
     generic (
         W   : integer := 8--;

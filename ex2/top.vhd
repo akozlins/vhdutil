@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity top is
     Port (
         pl_clk_100  :   in  std_logic;
@@ -20,7 +18,7 @@ architecture arch of top is
 
 begin
 
-    debounce_i : component debounce
+    debounce_i : entity work.debounce
     generic map (
         N => 1,
         C => X"FFFF"

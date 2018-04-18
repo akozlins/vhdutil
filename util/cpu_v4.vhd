@@ -3,8 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-use work.util.all;
-
 entity cpu_v4 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
@@ -55,7 +53,7 @@ architecture arch of cpu_v4 is
 
 begin
 
-    i_ram : component ram_v3
+    i_ram : entity work.ram_v3
     generic map (
         W => 16,
         N => 8,
@@ -71,7 +69,7 @@ begin
         clk     => clk--,
     );
 
-    i_reg_file : component reg_file_v3
+    i_reg_file : entity work.reg_file_v3
     generic map (
         W => 16,
         N => 4--,
@@ -86,7 +84,7 @@ begin
         clk     => clk--,
     );
 
-    i_alu : component alu_v2
+    i_alu : entity work.alu_v2
     generic map (
         W => 16--,
     )

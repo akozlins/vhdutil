@@ -2,8 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-use work.util.all;
-
 entity tb_ram is
 end entity;
 
@@ -22,7 +20,7 @@ architecture arch of tb_ram is
 
 begin
 
-    i_ram : component ram_v1
+    i_ram : entity work.ram_v1
     generic map (
         W => W,
         N => N,
