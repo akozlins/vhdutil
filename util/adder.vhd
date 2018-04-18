@@ -33,52 +33,40 @@ use UNISIM.vcomponents.all;
 
 architecture rtl of adder is
 
-    signal co_i : std_logic_vector(15 downto 0);
-    signal ab : std_logic_vector(15 downto 0);
+    constant N : integer := (W + 3) / 4;
+
+    signal a_i, b_i, ab_i, s_i : std_logic_vector(4*N-1 downto 0);
+    signal co_i : std_logic_vector(4*N-1 downto 0);
 
 begin
 
-    ab <= a xor b;
-    co <= co_i(15);
+    a_i(a'range) <= a;
+    b_i(b'range) <= b;
+    ab_i <= a_i xor b_i;
+    s <= s_i(s'range);
+    co <= co_i(W-1);
 
-    i_c0 : CARRY4
+    i_carry4_0 : CARRY4
     port map (
         CO => co_i(3 downto 0),
-        O => s(3 downto 0),
+        O => s_i(3 downto 0),
         CI => '0',
         CYINIT => ci,
-        DI => a(3 downto 0),
-        S => ab(3 downto 0)
+        DI => a_i(3 downto 0),
+        S => ab_i(3 downto 0)
     );
 
-    i_c1 : CARRY4
+    gen:
+    for i in 1 to N-1 generate
+    i_carry4_i : CARRY4
     port map (
-        CO => co_i(7 downto 4),
-        O => s(7 downto 4),
-        CI => co_i(3),
+        CO => co_i(4*i+3 downto 4*i),
+        O => s_i(4*i+3 downto 4*i),
+        CI => co_i(4*i-1),
         CYINIT => '0',
-        DI => a(7 downto 4),
-        S => ab(7 downto 4)
+        DI => a_i(4*i+3 downto 4*i),
+        S => ab_i(4*i+3 downto 4*i)
     );
-
-    i_c2 : CARRY4
-    port map (
-        CO => co_i(11 downto 8),
-        O => s(11 downto 8),
-        CI => co_i(7),
-        CYINIT => '0',
-        DI => a(11 downto 8),
-        S => ab(11 downto 8)
-    );
-
-    i_c3 : CARRY4
-    port map (
-        CO => co_i(15 downto 12),
-        O => s(15 downto 12),
-        CI => co_i(11),
-        CYINIT => '0',
-        DI => a(15 downto 12),
-        S => ab(15 downto 12)
-    );
+    end generate;
 
 end architecture;
