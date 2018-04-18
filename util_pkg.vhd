@@ -94,20 +94,6 @@ package util is
     );
     end component;
 
-    component alu_v1 is
-    generic (
-        W   : integer := 8--;
-    );
-    port (
-        mux :   in  std_logic_vector(2 downto 0);
-        a   :   in  std_logic_vector(W-1 downto 0);
-        b   :   in  std_logic_vector(W-1 downto 0);
-        ci  :   in  std_logic;
-        y   :   out std_logic_vector(W-1 downto 0);
-        co  :   out std_logic--;
-    );
-    end component;
-
     component alu_v2 is
     generic (
         W   : integer := 8--;
