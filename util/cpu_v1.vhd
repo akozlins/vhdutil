@@ -99,14 +99,6 @@ begin
             when X"A" => -- JMP : pc += rdata(7 downto 0)
                 pc <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
                 ram_addr <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
-            when X"4" => -- XOR : regC = regB xor regA
-                reg(to_integer(unsigned(regC_addr))) <= regB xor regA;
-            when X"3" => -- OR : regC = regB or regA
-                reg(to_integer(unsigned(regC_addr))) <= regB or regA;
-            when X"2" => -- AND : regC = regB and regA
-                reg(to_integer(unsigned(regC_addr))) <= regB and regA;
-            when X"1" => -- SUB : regC = regB - regA
-                reg(to_integer(unsigned(regC_addr))) <= regB - regA;
             when X"0" => -- ADD : regC = regB + regA
                 reg(to_integer(unsigned(regC_addr))) <= regB + regA;
             when others =>

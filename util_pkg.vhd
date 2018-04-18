@@ -13,7 +13,7 @@ package util is
 
     procedure char_to_hex(
         c : in character;
-        result : out std_logic_vector(3 downto 0);
+        v : out std_logic_vector(3 downto 0);
         good : out boolean--;
     );
 
@@ -239,38 +239,32 @@ package body util is
 
     procedure char_to_hex(
         c : in character;
-        result : out std_logic_vector(3 downto 0);
+        v : out std_logic_vector(3 downto 0);
         good : out boolean--;
     ) is
     begin
         good := true;
         case c is
-        when '0' => result := X"0";
-        when '1' => result := X"1";
-        when '2' => result := X"2";
-        when '3' => result := X"3";
-        when '4' => result := X"4";
-        when '5' => result := X"5";
-        when '6' => result := X"6";
-        when '7' => result := X"7";
-        when '8' => result := X"8";
-        when '9' => result := X"9";
+        when '0' => v := X"0";
+        when '1' => v := X"1";
+        when '2' => v := X"2";
+        when '3' => v := X"3";
+        when '4' => v := X"4";
+        when '5' => v := X"5";
+        when '6' => v := X"6";
+        when '7' => v := X"7";
+        when '8' => v := X"8";
+        when '9' => v := X"9";
 
-        when 'A' => result := X"A";
-        when 'B' => result := X"B";
-        when 'C' => result := X"C";
-        when 'D' => result := X"D";
-        when 'E' => result := X"E";
-        when 'F' => result := X"F";
+        when 'a' | 'A' => v := X"A";
+        when 'b' | 'B' => v := X"B";
+        when 'c' | 'C' => v := X"C";
+        when 'd' | 'D' => v := X"D";
+        when 'e' | 'E' => v := X"E";
+        when 'f' | 'F' => v := X"F";
 
-        when 'a' => result := X"A";
-        when 'b' => result := X"B";
-        when 'c' => result := X"C";
-        when 'd' => result := X"D";
-        when 'e' => result := X"E";
-        when 'f' => result := X"F";
         when others =>
-           assert false report "HREAD Error: Read a '" & c & "', expected a Hex character (0-F).";
+           assert false report "ERROR char_to_hex: invalid hex character '" & c & "'";
            good := false;
         end case;
     end procedure;
@@ -280,7 +274,7 @@ package body util is
         v : out std_logic_vector;
         good : out boolean--;
     ) is
-        variable ok: boolean;
+        variable ok : boolean;
     begin
         good := false;
         for i in 0 to s'length-1 loop

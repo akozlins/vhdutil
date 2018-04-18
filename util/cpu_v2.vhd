@@ -44,7 +44,7 @@ architecture arch of cpu_v2 is
     signal state : state_t;
 
     signal alu_a, alu_b, alu_y : word_t;
-    signal alu_overflow, alu_carry, alu_sign, alu_zero : std_logic;
+    signal alu_v, alu_co, alu_s, alu_z : std_logic;
 
 begin
 
@@ -103,10 +103,10 @@ begin
         ci  => fr(3),
         op  => ir(2 downto 0),
         y   => alu_y,
-        z   => alu_zero,
-        s   => alu_sign,
-        v   => alu_overflow,
-        co  => alu_carry--,
+        z   => alu_z,
+        s   => alu_s,
+        v   => alu_v,
+        co  => alu_co--,
     );
 
     alu_a <= regA;
@@ -146,10 +146,10 @@ begin
             end case;
 
             if ( ir(ir'left) = '0' ) then
-                fr(0) <= alu_zero;
-                fr(1) <= alu_sign;
-                fr(2) <= alu_overflow;
-                fr(3) <= alu_carry;
+                fr(0) <= alu_z;
+                fr(1) <= alu_s;
+                fr(2) <= alu_v;
+                fr(3) <= alu_co;
             end if;
 
         when S_LOADI =>
