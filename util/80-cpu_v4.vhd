@@ -18,24 +18,29 @@ architecture arch of cpu_v4 is
     subtype ram_addr_t is std_logic_vector(7 downto 0);
     subtype reg_addr_t is std_logic_vector(3 downto 0);
 
-    type ir_t is record
-        a_addr : reg_addr_t;
-        b_addr : reg_addr_t;
-        c_addr : reg_addr_t;
-        op : std_logic_vector(3 downto 0);
-    end record;
+    type op_t is (
+        OP_ALU,
+        OP_STORE,
+        OP_LOAD, OP_LOADI,
+        OP_DEBUG,
+        OP_JUMP,
+        OP_NOP--,
+    );
 
     type stage_t is record
         pc : ram_addr_t;
-        ir : ir_t;
-        op_alu, op_store, op_load, op_loadi, op_debug, op_jump : boolean;
+        op : op_t;
+        alu_op : std_logic_vector(2 downto 0);
+        reg_a_addr, reg_b_addr, reg_c_addr : reg_addr_t;
         reg_a_re, reg_b_re, reg_c_re, reg_c_we : boolean;
     end record;
 
     constant NOP : stage_t := (
         pc => (others => '0'),
-        ir => (others => (others => '0')),
-        others => false
+        op => OP_NOP,
+        alu_op => (others => '0'),
+        reg_a_addr => (others => '0'), reg_b_addr => (others => '0'), reg_c_addr => (others => '0'),
+        reg_a_re => false, reg_b_re => false, reg_c_re => false, reg_c_we => false
     );
 
     signal s_if, s_id, s_ex, s_mm, s_wb : stage_t;
@@ -110,46 +115,46 @@ begin
         co  => alu_co--,
     );
 
-    reg_a_addr <= s_ex.ir.c_addr when ( s_ex.reg_c_re ) else
-                  s_id.ir.a_addr when ( s_id.reg_a_re ) else
+    reg_a_addr <= s_ex.reg_c_addr when ( s_ex.reg_c_re ) else
+                  s_id.reg_a_addr when ( s_id.reg_a_re ) else
                   (others => '-');
 
-    reg_b_addr <= s_wb.ir.c_addr when ( s_wb.reg_c_we ) else
-                  s_id.ir.b_addr when ( s_id.reg_b_re ) else
+    reg_b_addr <= s_wb.reg_c_addr when ( s_wb.reg_c_we ) else
+                  s_id.reg_b_addr when ( s_id.reg_b_re ) else
                   (others => '-');
 
     id_stall <= ( s_ex.reg_c_re and s_id.reg_a_re )
              or ( s_wb.reg_c_we and s_id.reg_b_re )
-             or ( s_ex.reg_c_we and s_ex.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
-             or ( s_ex.reg_c_we and s_ex.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re )
-             or ( s_mm.reg_c_we and s_mm.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
-             or ( s_mm.reg_c_we and s_mm.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re )
-             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
-             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re );
-    ex_stall <= ( s_mm.reg_c_we and s_mm.ir.c_addr = s_ex.ir.c_addr and s_ex.reg_c_re )
-             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_ex.ir.c_addr and s_ex.reg_c_re );
+             or ( s_ex.reg_c_we and s_ex.reg_c_addr = s_id.reg_a_addr and s_id.reg_a_re )
+             or ( s_ex.reg_c_we and s_ex.reg_c_addr = s_id.reg_b_addr and s_id.reg_b_re )
+             or ( s_mm.reg_c_we and s_mm.reg_c_addr = s_id.reg_a_addr and s_id.reg_a_re )
+             or ( s_mm.reg_c_we and s_mm.reg_c_addr = s_id.reg_b_addr and s_id.reg_b_re )
+             or ( s_wb.reg_c_we and s_wb.reg_c_addr = s_id.reg_a_addr and s_id.reg_a_re )
+             or ( s_wb.reg_c_we and s_wb.reg_c_addr = s_id.reg_b_addr and s_id.reg_b_re );
+    ex_stall <= ( s_mm.reg_c_we and s_mm.reg_c_addr = s_ex.reg_c_addr and s_ex.reg_c_re )
+             or ( s_wb.reg_c_we and s_wb.reg_c_addr = s_ex.reg_c_addr and s_ex.reg_c_re );
 
     -- Instruction Fetch
 
     ram_a_addr <= s_if.pc;
-    s_if.ir <= (
-        a_addr => ram_a_rd(3 downto 0),
-        b_addr => ram_a_rd(7 downto 4),
-        c_addr => ram_a_rd(11 downto 8),
-        op => ram_a_rd(15 downto 12)
-    );
+    s_if.reg_a_addr <= ram_a_rd(3 downto 0);
+    s_if.reg_b_addr <= ram_a_rd(7 downto 4);
+    s_if.reg_c_addr <= ram_a_rd(11 downto 8);
 
-    s_if.op_store <= s_if.ir.op = X"F";
-    s_if.op_load <= s_if.ir.op = X"E";
-    s_if.op_loadi <= s_if.ir.op = X"D";
-    s_if.op_debug <= s_if.ir.op = X"C";
-    s_if.op_jump <= s_if.ir.op = X"A";
-    s_if.op_alu <= ram_a_rd /= 0 and s_if.ir.op(s_if.ir.op'left) = '0';
+    s_if.op <= OP_ALU   when ram_a_rd /= 0 and ram_a_rd(ram_a_rd'left) = '0' else
+               OP_STORE when ram_a_rd(15 downto 12) = X"F" else
+               OP_LOAD  when ram_a_rd(15 downto 12) = X"E" else
+               OP_LOADI when ram_a_rd(15 downto 12) = X"D" else
+               OP_DEBUG when ram_a_rd(15 downto 12) = X"C" else
+               OP_JUMP  when ram_a_rd(15 downto 12) = X"A" else
+               OP_NOP;
+    s_if.alu_op <= ram_a_rd(14 downto 12) when ( s_if.op = OP_ALU ) else
+                   (others => '0');
 
-    s_if.reg_a_re <= s_if.ir.a_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
-    s_if.reg_b_re <= s_if.ir.b_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
-    s_if.reg_c_re <= s_if.ir.c_addr /= 0 and ( s_if.op_store );
-    s_if.reg_c_we <= s_if.ir.c_addr /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
+    s_if.reg_a_re <= s_if.reg_a_addr /= 0 and ( s_if.op = OP_ALU or s_if.op = OP_STORE or s_if.op = OP_LOAD or s_if.op = OP_DEBUG );
+    s_if.reg_b_re <= s_if.reg_b_addr /= 0 and ( s_if.op = OP_ALU or s_if.op = OP_STORE or s_if.op = OP_LOAD or s_if.op = OP_DEBUG );
+    s_if.reg_c_re <= s_if.reg_c_addr /= 0 and ( s_if.op = OP_STORE );
+    s_if.reg_c_we <= s_if.reg_c_addr /= 0 and ( s_if.op = OP_ALU or s_if.op = OP_LOAD or s_if.op = OP_LOADI);
 
     i_pc_adder : entity work.adder
     generic map (
@@ -162,8 +167,8 @@ begin
         s => pc_adder_s,
         co => open--,
     );
-    pc_adder_b <= s_if.ir.b_addr & s_if.ir.a_addr when ( s_if.op_jump ) else
-                  X"02" when ( s_if.op_loadi ) else
+    pc_adder_b <= s_if.reg_b_addr & s_if.reg_a_addr when ( s_if.op = OP_JUMP ) else
+                  X"02" when ( s_if.op = OP_LOADI ) else
                   X"01";
 
     if_p : process(clk, rst_n)
@@ -208,7 +213,7 @@ begin
             ex_reg_b <= reg_b_rd;
         end if;
 
-        if ( s_id.op_debug ) then -- DEBUG
+        if ( s_id.op = OP_DEBUG ) then
             dbg_out <= reg_b_rd & reg_a_rd;
         end if;
 
@@ -221,13 +226,12 @@ begin
     -- Execute
 
     alu_a <= ex_reg_a when ( s_ex.reg_a_re ) else
-             X"00" & s_ex.pc when ( s_ex.op_loadi ) else
+             X"00" & s_ex.pc when ( s_ex.op = OP_LOADI ) else
              (others => '0');
     alu_b <= ex_reg_b when ( s_ex.reg_b_re ) else
-             X"0001" when ( s_ex.op_loadi ) else
+             X"0001" when ( s_ex.op = OP_LOADI ) else
              (others => '0');
-    alu_op <= s_ex.ir.op(alu_op'range) when ( s_ex.op_alu ) else
-              (others => '0');
+    alu_op <= s_ex.alu_op;
 
     ex_p : process(clk, rst_n)
     begin
@@ -243,15 +247,18 @@ begin
         mm_addr <= (others => '-');
         mm_wd <= (others => '-');
 
-        if ( s_ex.op_store ) then
+        case s_ex.op is
+        when OP_STORE =>
             mm_addr <= alu_y(mm_addr'range);
             mm_wd <= reg_a_rd;
-        elsif ( s_ex.op_load or s_ex.op_loadi ) then
+        when OP_LOAD | OP_LOADI =>
             mm_addr <= alu_y(mm_addr'range);
-        elsif ( s_ex.op_alu ) then
+        when OP_ALU =>
             mm_wd <= alu_y;
             alu_ci <= alu_co;
-        end if;
+        when others =>
+            null;
+        end case;
 
         s_mm <= s_ex;
         --
@@ -261,11 +268,11 @@ begin
 
     -- Memory access
 
-    ram_b_addr <= mm_addr when ( s_mm.op_store or s_mm.op_load or s_mm.op_loadi ) else
+    ram_b_addr <= mm_addr when ( s_mm.op = OP_STORE or s_mm.op = OP_LOAD or s_mm.op = OP_LOADI ) else
                   (others => '-');
-    ram_b_wd <= mm_wd when ( s_mm.op_store ) else
+    ram_b_wd <= mm_wd when ( s_mm.op = OP_STORE ) else
                 (others => '-');
-    ram_b_we <= '1' when ( s_mm.op_store ) else
+    ram_b_we <= '1' when ( s_mm.op = OP_STORE ) else
                 '0';
 
     mem_p : process(clk, rst_n)
@@ -276,11 +283,14 @@ begin
     elsif rising_edge(clk) then
         wb_wd <= (others => '-');
 
-        if ( s_mm.op_load or s_mm.op_loadi ) then
+        case s_mm.op is
+        when OP_LOAD | OP_LOADI =>
             wb_wd <= ram_b_rd;
-        elsif ( s_mm.op_alu ) then
+        when OP_ALU =>
             wb_wd <= mm_wd;
-        end if;
+        when others =>
+            null;
+        end case;
 
         s_wb <= s_mm;
         --
