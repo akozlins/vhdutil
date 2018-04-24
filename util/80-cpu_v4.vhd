@@ -51,6 +51,8 @@ architecture arch of cpu_v4 is
     signal alu_a, alu_b, alu_y : word_t;
     signal alu_ci, alu_co : std_logic;
 
+    signal pc_adder_b, pc_adder_s : std_logic_vector(7 downto 0);
+
 begin
 
     i_ram : entity work.ram_dp
@@ -135,6 +137,21 @@ begin
     s_if.op_debug <= s_if.op = X"C";
     s_if.op_jump <= s_if.op = X"A";
 
+    i_pc_adder : entity work.adder
+    generic map (
+        W => 8--,
+    )
+    port map (
+        a => s_if.pc(7 downto 0),
+        b => pc_adder_b,
+        ci => '0',
+        s => pc_adder_s,
+        co => open--,
+    );
+    pc_adder_b <= s_if.ir(7 downto 0) when ( s_if.op_jump ) else
+                  (1 => '1', others => '0') when ( s_if.op_loadi ) else
+                  (0 => '1', others => '0');
+
     if_p : process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
@@ -145,13 +162,7 @@ begin
     if ( id_stall or ex_stall ) then
         --
     else
-        if ( s_if.op_jump ) then
-            s_if.pc <= s_if.pc + ((7 downto 0 => s_if.ir(7)) & s_if.ir(7 downto 0));
-        elsif ( s_if.op_loadi ) then
-            s_if.pc <= s_if.pc + 2;
-        else
-            s_if.pc <= s_if.pc + 1;
-        end if;
+        s_if.pc(7 downto 0) <= pc_adder_s;
 
         s_id <= s_if;
         --
