@@ -15,35 +15,43 @@ end entity;
 architecture arch of cpu_v4 is
 
     subtype word_t is std_logic_vector(15 downto 0);
+    subtype ram_addr_t is std_logic_vector(7 downto 0);
+    subtype reg_addr_t is std_logic_vector(3 downto 0);
 
-    type state_t is record
-        pc : word_t;
-        ir : word_t;
-        reg_a_re, reg_b_re, reg_c_re, reg_c_we : boolean;
+    type ir_t is record
+        a_addr : reg_addr_t;
+        b_addr : reg_addr_t;
+        c_addr : reg_addr_t;
         op : std_logic_vector(3 downto 0);
-        op_alu, op_store, op_load, op_loadi, op_debug, op_jump : boolean;
     end record;
 
-    constant NOP : state_t := (
+    type stage_t is record
+        pc : ram_addr_t;
+        ir : ir_t;
+        op_alu, op_store, op_load, op_loadi, op_debug, op_jump : boolean;
+        reg_a_re, reg_b_re, reg_c_re, reg_c_we : boolean;
+    end record;
+
+    constant NOP : stage_t := (
         pc => (others => '0'),
-        ir => (others => '0'),
-        op => (others => '0'),
+        ir => (others => (others => '0')),
         others => false
     );
 
-    signal s_if, s_id, s_ex, s_mm, s_wb : state_t;
+    signal s_if, s_id, s_ex, s_mm, s_wb : stage_t;
 
     signal ex_reg_a, ex_reg_b : word_t;
-    signal mm_wd, mm_addr : word_t;
-    signal wb_wd : word_t;
+
+    signal mm_addr : ram_addr_t;
+    signal mm_wd, wb_wd : word_t;
 
     signal id_stall, ex_stall : boolean;
 
-    signal ram_a_addr, ram_b_addr : word_t;
+    signal ram_a_addr, ram_b_addr : ram_addr_t;
     signal ram_a_rd, ram_b_rd, ram_b_wd : word_t;
     signal ram_b_we : std_logic;
 
-    signal reg_a_addr, reg_b_addr : std_logic_vector(3 downto 0);
+    signal reg_a_addr, reg_b_addr : reg_addr_t;
     signal reg_a_rd, reg_b_rd, reg_b_wd : word_t;
     signal reg_b_we : std_logic;
 
@@ -51,20 +59,20 @@ architecture arch of cpu_v4 is
     signal alu_a, alu_b, alu_y : word_t;
     signal alu_ci, alu_co : std_logic;
 
-    signal pc_adder_b, pc_adder_s : std_logic_vector(7 downto 0);
+    signal pc_adder_b, pc_adder_s : ram_addr_t;
 
 begin
 
     i_ram : entity work.ram_dp
     generic map (
-        W => 16,
-        N => 8,
+        W => word_t'length,
+        N => ram_addr_t'length,
         INIT_FILE_HEX => "cpu_v4.hex"--,
     )
     port map (
-        a_addr  => ram_a_addr(7 downto 0),
+        a_addr  => ram_a_addr,
         a_rd    => ram_a_rd,
-        b_addr  => ram_b_addr(7 downto 0),
+        b_addr  => ram_b_addr,
         b_rd    => ram_b_rd,
         b_wd    => ram_b_wd,
         b_we    => ram_b_we,
@@ -73,8 +81,8 @@ begin
 
     i_reg_file : entity work.ram_dp
     generic map (
-        W => 16,
-        N => 4--,
+        W => word_t'length,
+        N => reg_addr_t'length--,
     )
     port map (
         a_addr  => reg_a_addr,
@@ -102,55 +110,61 @@ begin
         co  => alu_co--,
     );
 
-    reg_a_addr <= s_ex.ir(11 downto 8) when ( s_ex.reg_c_re ) else
-                  s_id.ir(3 downto 0) when ( s_id.reg_a_re ) else
+    reg_a_addr <= s_ex.ir.c_addr when ( s_ex.reg_c_re ) else
+                  s_id.ir.a_addr when ( s_id.reg_a_re ) else
                   (others => '-');
 
-    reg_b_addr <= s_wb.ir(11 downto 8) when ( s_wb.reg_c_we ) else
-                  s_id.ir(7 downto 4) when ( s_id.reg_b_re ) else
+    reg_b_addr <= s_wb.ir.c_addr when ( s_wb.reg_c_we ) else
+                  s_id.ir.b_addr when ( s_id.reg_b_re ) else
                   (others => '-');
 
     id_stall <= ( s_ex.reg_c_re and s_id.reg_a_re )
              or ( s_wb.reg_c_we and s_id.reg_b_re )
-             or ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
-             or ( s_ex.reg_c_we and s_ex.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re )
-             or ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
-             or ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re )
-             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(3 downto 0) and s_id.reg_a_re )
-             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_id.ir(7 downto 4) and s_id.reg_b_re );
-    ex_stall <= ( s_mm.reg_c_we and s_mm.ir(11 downto 8) = s_ex.ir(11 downto 8) and s_ex.reg_c_re )
-             or ( s_wb.reg_c_we and s_wb.ir(11 downto 8) = s_ex.ir(11 downto 8) and s_ex.reg_c_re );
+             or ( s_ex.reg_c_we and s_ex.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
+             or ( s_ex.reg_c_we and s_ex.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re )
+             or ( s_mm.reg_c_we and s_mm.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
+             or ( s_mm.reg_c_we and s_mm.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re )
+             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_id.ir.a_addr and s_id.reg_a_re )
+             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_id.ir.b_addr and s_id.reg_b_re );
+    ex_stall <= ( s_mm.reg_c_we and s_mm.ir.c_addr = s_ex.ir.c_addr and s_ex.reg_c_re )
+             or ( s_wb.reg_c_we and s_wb.ir.c_addr = s_ex.ir.c_addr and s_ex.reg_c_re );
 
     -- Instruction Fetch
 
     ram_a_addr <= s_if.pc;
-    s_if.ir <= ram_a_rd;
-    s_if.reg_a_re <= s_if.ir(3 downto 0) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
-    s_if.reg_b_re <= s_if.ir(7 downto 4) /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
-    s_if.reg_c_re <= s_if.ir(11 downto 8) /= 0 and ( s_if.op_store );
-    s_if.reg_c_we <= s_if.ir(11 downto 8) /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
-    s_if.op <= s_if.ir(15 downto 12);
-    s_if.op_alu <= s_if.ir /= 0 and s_if.op(s_if.op'left) = '0';
-    s_if.op_store <= s_if.op = X"F";
-    s_if.op_load <= s_if.op = X"E";
-    s_if.op_loadi <= s_if.op = X"D";
-    s_if.op_debug <= s_if.op = X"C";
-    s_if.op_jump <= s_if.op = X"A";
+    s_if.ir <= (
+        a_addr => ram_a_rd(3 downto 0),
+        b_addr => ram_a_rd(7 downto 4),
+        c_addr => ram_a_rd(11 downto 8),
+        op => ram_a_rd(15 downto 12)
+    );
+
+    s_if.op_store <= s_if.ir.op = X"F";
+    s_if.op_load <= s_if.ir.op = X"E";
+    s_if.op_loadi <= s_if.ir.op = X"D";
+    s_if.op_debug <= s_if.ir.op = X"C";
+    s_if.op_jump <= s_if.ir.op = X"A";
+    s_if.op_alu <= ram_a_rd /= 0 and s_if.ir.op(s_if.ir.op'left) = '0';
+
+    s_if.reg_a_re <= s_if.ir.a_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
+    s_if.reg_b_re <= s_if.ir.b_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
+    s_if.reg_c_re <= s_if.ir.c_addr /= 0 and ( s_if.op_store );
+    s_if.reg_c_we <= s_if.ir.c_addr /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
 
     i_pc_adder : entity work.adder
     generic map (
         W => 8--,
     )
     port map (
-        a => s_if.pc(7 downto 0),
+        a => s_if.pc,
         b => pc_adder_b,
         ci => '0',
         s => pc_adder_s,
         co => open--,
     );
-    pc_adder_b <= s_if.ir(7 downto 0) when ( s_if.op_jump ) else
-                  (1 => '1', others => '0') when ( s_if.op_loadi ) else
-                  (0 => '1', others => '0');
+    pc_adder_b <= s_if.ir.b_addr & s_if.ir.a_addr when ( s_if.op_jump ) else
+                  X"02" when ( s_if.op_loadi ) else
+                  X"01";
 
     if_p : process(clk, rst_n)
     begin
@@ -162,7 +176,7 @@ begin
     if ( id_stall or ex_stall ) then
         --
     else
-        s_if.pc(7 downto 0) <= pc_adder_s;
+        s_if.pc <= pc_adder_s;
 
         s_id <= s_if;
         --
@@ -207,12 +221,12 @@ begin
     -- Execute
 
     alu_a <= ex_reg_a when ( s_ex.reg_a_re ) else
-             s_ex.pc when ( s_ex.op_loadi ) else
+             X"00" & s_ex.pc when ( s_ex.op_loadi ) else
              (others => '0');
     alu_b <= ex_reg_b when ( s_ex.reg_b_re ) else
              X"0001" when ( s_ex.op_loadi ) else
              (others => '0');
-    alu_op <= s_ex.op(alu_op'range) when ( s_ex.op_alu ) else
+    alu_op <= s_ex.ir.op(alu_op'range) when ( s_ex.op_alu ) else
               (others => '0');
 
     ex_p : process(clk, rst_n)
@@ -229,14 +243,14 @@ begin
         mm_addr <= (others => '-');
         mm_wd <= (others => '-');
 
-        if ( s_ex.op_alu ) then
-            mm_wd <= alu_y;
-            alu_ci <= alu_co;
-        elsif ( s_ex.op_store ) then
-            mm_addr <= alu_y;
+        if ( s_ex.op_store ) then
+            mm_addr <= alu_y(mm_addr'range);
             mm_wd <= reg_a_rd;
         elsif ( s_ex.op_load or s_ex.op_loadi ) then
-            mm_addr <= alu_y;
+            mm_addr <= alu_y(mm_addr'range);
+        elsif ( s_ex.op_alu ) then
+            mm_wd <= alu_y;
+            alu_ci <= alu_co;
         end if;
 
         s_mm <= s_ex;
@@ -262,10 +276,10 @@ begin
     elsif rising_edge(clk) then
         wb_wd <= (others => '-');
 
-        if ( s_mm.op_alu ) then
-            wb_wd <= mm_wd;
-        elsif ( s_mm.op_load or s_mm.op_loadi ) then
+        if ( s_mm.op_load or s_mm.op_loadi ) then
             wb_wd <= ram_b_rd;
+        elsif ( s_mm.op_alu ) then
+            wb_wd <= mm_wd;
         end if;
 
         s_wb <= s_mm;
