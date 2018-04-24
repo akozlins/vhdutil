@@ -50,7 +50,7 @@ architecture arch of cpu_v3 is
 
 begin
 
-    i_ram : entity work.ram_v1
+    i_ram : entity work.ram_sp
     generic map (
         W => 16,
         N => 8,
@@ -64,7 +64,7 @@ begin
         clk     => clk--,
     );
 
-    i_reg_file : entity work.reg_file_v3
+    i_reg_file : entity work.reg_file_dp
     generic map (
         W => 16,
         N => 4--,

@@ -45,7 +45,7 @@ begin
     i_cpu : entity work.cpu_v4
     port map (
         dbg_out => debug,
-        dbg_in => (others => '0'),
+        dbg_in => (others => '-'),
         clk => pl_clk_100,
         rst_n => not areset_i--,
     );

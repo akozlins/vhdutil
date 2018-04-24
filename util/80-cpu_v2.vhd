@@ -48,7 +48,7 @@ architecture arch of cpu_v2 is
 
 begin
 
-    i_ram : entity work.ram_v1
+    i_ram : entity work.ram_sp
     generic map (
         W => 16,
         N => 8,
@@ -66,7 +66,7 @@ begin
     ram_wd <= regC_q;
     ram_we <= '1' when ( state = S_STORE ) else '0';
 
-    i_reg_file : entity work.reg_file_v1
+    i_reg_file : entity work.reg_file_tp
     generic map (
         W => 16,
         N => 4--,

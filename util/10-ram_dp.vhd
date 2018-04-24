@@ -7,25 +7,25 @@ use ieee.std_logic_textio.all;
 
 use work.util.all;
 
-entity ram_v1 is
+entity ram_dp is
     generic (
         W   : integer := 8;
         N   : integer := 8;
         INIT_FILE_HEX : string := ""--;
     );
     port (
-        addr    :   in  std_logic_vector(N-1 downto 0);
-        rd      :   out std_logic_vector(W-1 downto 0);
-        wd      :   in  std_logic_vector(W-1 downto 0);
-        we      :   in  std_logic;
+        a_addr  :   in  std_logic_vector(N-1 downto 0);
+        a_rd    :   out std_logic_vector(W-1 downto 0);
+        b_addr  :   in  std_logic_vector(N-1 downto 0);
+        b_rd    :   out std_logic_vector(W-1 downto 0);
+        b_wd    :   in  std_logic_vector(W-1 downto 0);
+        b_we    :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
 
-architecture arch of ram_v1 is
+architecture arch of ram_dp is
 
---    attribute RAM_STYLE : string;
---    attribute RAM_STYLE of <entity_name>: entity is { "DISTRIBUTED" | "BLOCK" };
     type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
 
     impure
@@ -60,19 +60,20 @@ architecture arch of ram_v1 is
         return ram;
     end function;
 
-    signal ram : ram_t := ram_read(INIT_FILE_HEX);
+    signal ram : ram_t(2**N-1 downto 0) := ram_read(INIT_FILE_HEX);
 
 begin
 
     process(clk)
     begin
     if rising_edge(clk) then
-        if ( we = '1' ) then
-            ram(to_integer(unsigned(addr))) <= wd;
+        if ( b_we = '1' ) then
+            ram(to_integer(unsigned(b_addr))) <= b_wd;
         end if;
     end if; -- rising_edge
     end process;
 
-    rd <= ram(to_integer(unsigned(addr)));
+    a_rd <= ram(to_integer(unsigned(a_addr)));
+    b_rd <= ram(to_integer(unsigned(b_addr)));
 
 end architecture;
