@@ -20,7 +20,7 @@ architecture arch of tb_ram is
 
 begin
 
-    i_ram : entity work.ram_v1
+    i_ram : entity work.ram_sp
     generic map (
         W => W,
         N => N,
@@ -42,9 +42,9 @@ begin
 
     process
     begin
-        wait until rising_edge(clk);
-        wait until rising_edge(clk);
-        wait until rising_edge(clk);
+        for i in 0 to 9 loop
+            wait until rising_edge(clk);
+        end loop;
 
         for i in 0 to 2**N-1 loop
             addr <= std_logic_vector(to_unsigned(i, N));
