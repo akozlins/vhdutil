@@ -26,13 +26,13 @@ end entity;
 
 architecture arch of ram_dp is
 
-    type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
+    type ram_t is array (natural range <>) of std_logic_vector(W-1 downto 0);
 
     impure
     function ram_read(
         fname : in string--;
     ) return ram_t is
-        variable ram : ram_t;
+        variable ram : ram_t(2**N-1 downto 0);
         variable i : integer := 0;
         file f : text;
         variable fs : file_open_status;
