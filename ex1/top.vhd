@@ -21,7 +21,9 @@ begin
 
     process(pl_clk_100)
     begin
-    if rising_edge(pl_clk_100) then
+    if ( pl_btn(0) = '1' ) then
+        cnt_i <= (others => '0');
+    elsif rising_edge(pl_clk_100) then
         cnt_i <= cnt_i + 1;
     end if;
     end process;
