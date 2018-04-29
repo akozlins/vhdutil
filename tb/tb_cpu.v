@@ -13,16 +13,16 @@ cpu_v4 i_cpu (
 
 initial
 begin
-    clk = 1'b1;
-    forever #5 clk = ~clk;
+    clk <= 1'b1;
+    forever #5 clk <= ~clk;
 end
 
 initial
 begin
-    rst_n = 1'b0;
+    rst_n <= 1'b0;
     #100
     @(posedge clk);
-    rst_n = 1'b1;
+    rst_n <= 1'b1;
 end
 
 initial

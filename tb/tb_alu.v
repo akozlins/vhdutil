@@ -17,37 +17,37 @@ integer i;
 initial
 begin
     // add
-    op = 3'b001;
+    op <= 3'b001;
     for (i = 0; i < 16; i = i + 1) begin
-        a = i % 4; b = i / 4;
+        a <= i % 4; b <= i / 4;
         #10;
     end
 
     // sub
-    op = 3'b010;
+    op <= 3'b010;
     for (i = 0; i < 16; i = i + 1) begin
-        a = i % 4; b = i / 4;
+        a <= i % 4; b <= i / 4;
         #10;
     end
 
     // and
-    op = 3'b100;
+    op <= 3'b100;
     for (i = 0; i < 16; i = i + 1) begin
-        a = i % 4; b = i / 4;
+        a <= i % 4; b <= i / 4;
         #10;
     end
 
     // or
-    op = 3'b101;
+    op <= 3'b101;
     for (i = 0; i < 16; i = i + 1) begin
-        a = i % 4; b = i / 4;
+        a <= i % 4; b <= i / 4;
         #10;
     end
 
     // xor
-    op = 3'b110;
+    op <= 3'b110;
     for (i = 0; i < 16; i = i + 1) begin
-        a = i % 4; b = i / 4;
+        a <= i % 4; b <= i / 4;
         #10;
     end
 

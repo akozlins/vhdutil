@@ -12,17 +12,17 @@ gray_counter #(.W(4)) i_counter (
 
 initial
 begin
-    clk = 1'b1;
-    forever #5 clk = ~clk;
+    clk <= 1'b1;
+    forever #5 clk <= ~clk;
 end
 
 initial
 begin
-    ce = 1'b1;
-    rst_n = 1'b0;
+    ce <= 1'b1;
+    rst_n <= 1'b0;
     #100;
     @(posedge clk);
-    rst_n = 1'b1;
+    rst_n <= 1'b1;
 end
 
 initial

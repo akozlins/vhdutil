@@ -20,8 +20,8 @@ initial
 begin
     for (i = 0; i < 256; i = i + 1)
     begin
-        a = i % 16;
-        b = i / 16;
+        a <= i % 16;
+        b <= i / 16;
         #10;
     end
 
@@ -29,7 +29,7 @@ begin
 end
 
 initial begin
-    $monitor("%b + %b = (%b)%b", a, b, c, s);
+    $monitor("%b + %b = (%b)%b", a, b, co, s);
 end
 
 endmodule
