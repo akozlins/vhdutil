@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 entity fifo_v1 is
     generic (
@@ -21,47 +22,62 @@ end entity;
 
 architecture arch of fifo_v1 is
 
-    type ram_t is array (natural range <>) of std_logic_vector(W-1 downto 0);
-    signal ram : ram_t(2**N-1 downto 0);
-
-    signal re_i, we_i : boolean;
-    signal empty_i, full_i : boolean;
-    signal rptr, wptr : unsigned(N-1 downto 0);
+    signal re_i, we_i : std_logic;
+    signal empty_i, full_i : std_logic;
+    signal rptr, wptr : std_logic_vector(N-1 downto 0);
 
 begin
 
-    empty <= '1' when empty_i else '0';
-    full <= '1' when full_i else '0';
-    re_i <= ( re = '1' and not empty_i );
-    we_i <= ( we = '1' and not full_i );
+    i_ram : entity work.ram_dp
+    generic map (
+        W => W,
+        N => N--,
+    )
+    port map (
+        a_addr  => rptr,
+        a_rd    => rd,
+        b_addr  => wptr,
+        b_rd    => open,
+        b_wd    => wd,
+        b_we    => we_i,
+        clk     => clk--,
+    );
+
+    empty <= empty_i;
+    full <= full_i;
+    re_i <= ( re and not empty_i );
+    we_i <= ( we and not full_i );
 
     process(clk, rst_n)
-        variable rptr_i : unsigned(rptr'range);
-        variable wptr_i : unsigned(wptr'range);
+        variable rptr_i : std_logic_vector(rptr'range);
+        variable wptr_i : std_logic_vector(wptr'range);
     begin
     if ( rst_n = '0' ) then
-        rd <= (others => '-');
+        empty_i <= '1';
+        full_i <= '0';
         rptr <= (others => '0');
         wptr <= (others => '0');
-        empty_i <= true;
-        full_i <= false;
         --
     elsif rising_edge(clk) then
         rptr_i := rptr;
         wptr_i := wptr;
 
-        if ( re_i ) then
-            rd <= ram(to_integer(rptr));
+        if ( re_i = '1' ) then
             rptr_i := rptr_i + 1;
         end if;
 
-        if ( we_i ) then
-            ram(to_integer(wptr)) <= wd;
+        if ( we_i = '1' ) then
             wptr_i := wptr_i + 1;
         end if;
 
-        empty_i <= ( rptr_i = wptr_i );
-        full_i <= ( wptr_i + 1 = rptr_i );
+        if ( re_i = '1' and we_i = '0' ) then
+            empty_i <= work.util.bool_to_logic( rptr_i = wptr_i and full_i = '0' );
+            full_i <= '0';
+        end if;
+        if ( we_i = '1' and re_i = '0' ) then
+            empty_i <= '0';
+            full_i <= work.util.bool_to_logic( wptr_i = rptr_i and empty_i = '0' );
+        end if;
 
         rptr <= rptr_i;
         wptr <= wptr_i;
