@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity alu_v2 is
     generic (
-        W   : integer := 8--;
+        W   : positive := 8--;
     );
     port (
         -- operands

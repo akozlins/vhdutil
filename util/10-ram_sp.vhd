@@ -4,8 +4,8 @@ use ieee.numeric_std.all;
 
 entity ram_sp is
     generic (
-        W   : integer := 8;
-        N   : integer := 8;
+        W   : positive := 8;
+        N   : positive := 8;
         INIT_FILE_HEX : string := ""--;
     );
     port (

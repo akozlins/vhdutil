@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity gray_counter is
     generic (
-        W   : integer := 8--;
+        W   : positive := 8--;
     );
     port (
         cnt     :   out std_logic_vector(W-1 downto 0);

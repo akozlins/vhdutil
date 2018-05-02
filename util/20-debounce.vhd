@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity debounce is
     generic (
-        N   : integer := 1;
+        N   : positive := 1;
         C   : unsigned := X"FFFF"--;
     );
     port (

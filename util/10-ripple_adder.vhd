@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity ripple_adder is
     generic (
-        W   : integer := 8--;
+        W   : positive := 8--;
     );
     port (
         a   :   in  std_logic_vector(W-1 downto 0);

@@ -5,8 +5,8 @@ use ieee.std_logic_unsigned.all;
 
 entity fifo_dc is
     generic (
-        W   : integer := 8;
-        N   : integer := 8--;
+        W   : positive := 8;
+        N   : positive := 8--;
     );
     port (
         re      :   in  std_logic;

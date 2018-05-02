@@ -5,7 +5,7 @@ use ieee.std_logic_unsigned.all;
 
 entity adder is
     generic (
-        W   : integer := 8--;
+        W   : positive := 8--;
     );
     port (
         a   :   in  std_logic_vector(W-1 downto 0);
@@ -45,7 +45,7 @@ use UNISIM.vcomponents.all;
 
 architecture rtl of adder is
 
-    constant N : integer := (W + 3) / 4;
+    constant N : positive := (W + 3) / 4;
 
     signal a_i, b_i, ab_i, s_i : std_logic_vector(4*N-1 downto 0);
     signal co_i : std_logic_vector(4*N-1 downto 0);

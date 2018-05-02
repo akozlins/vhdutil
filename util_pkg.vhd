@@ -9,17 +9,17 @@ package util is
 
     function shift_right (
         v : std_logic_vector;
-        n : integer--;
+        n : natural--;
     ) return std_logic_vector;
 
     function shift_left (
         v : std_logic_vector;
-        n : integer--;
+        n : natural--;
     ) return std_logic_vector;
 
     function resize (
         v : std_logic_vector;
-        n : integer--;
+        n : positive--;
     ) return std_logic_vector;
 
     function bool_to_logic (
@@ -44,7 +44,7 @@ package body util is
 
     function shift_right (
         v : std_logic_vector;
-        n : integer--;
+        n : natural--;
     ) return std_logic_vector is
     begin
         return std_logic_vector(shift_right(unsigned(v), n));
@@ -52,7 +52,7 @@ package body util is
 
     function shift_left (
         v : std_logic_vector;
-        n : integer--;
+        n : natural--;
     ) return std_logic_vector is
     begin
         return std_logic_vector(shift_left(unsigned(v), n));
@@ -60,7 +60,7 @@ package body util is
 
     function resize (
         v : std_logic_vector;
-        n : integer--;
+        n : positive--;
     ) return std_logic_vector is
     begin
         return std_logic_vector(resize(unsigned(v), n));

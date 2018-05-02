@@ -4,8 +4,8 @@ use ieee.numeric_std.all;
 
 entity reg_file_tp is
     generic (
-        W   : integer := 8; -- word width in bits
-        N   : integer := 2--; -- addr bits (2**N words)
+        W   : positive := 8; -- word width in bits
+        N   : positive := 2--; -- addr bits (2**N words)
     );
     port (
         a_addr  :   in  std_logic_vector(N-1 downto 0);
