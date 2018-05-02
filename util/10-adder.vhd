@@ -61,7 +61,7 @@ begin
     s <= s_i(s'range);
     co <= co_i(W-1);
 
-    ci_i <= std_logic_vector(unsigned(co_i) sll 4);
+    ci_i <= work.util.shift_left(co_i, 4);
     cyinit_i <= (0 => ci, others => '0');
 
     gen:

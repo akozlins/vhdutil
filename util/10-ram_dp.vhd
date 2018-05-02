@@ -5,8 +5,6 @@ use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all;
 
-use work.util.all;
-
 entity ram_dp is
     generic (
         W   : integer := 8;
@@ -52,7 +50,7 @@ architecture arch of ram_dp is
             s(1) := c;
             read(l, s(2 to s'right), ok);
             next when ( not ok );
-            string_to_hex(s, ram(i), ok);
+            work.util.string_to_hex(s, ram(i), ok);
             next when ( not ok );
             i := i + 1;
         end loop;

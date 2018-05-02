@@ -7,6 +7,21 @@ use ieee.std_logic_textio.all;
 
 package util is
 
+    function shift_right (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector;
+
+    function shift_left (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector;
+
+    function resize (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector;
+
     function bool_to_logic (
         constant b : in boolean--;
     ) return std_logic;
@@ -26,6 +41,30 @@ package util is
 end package;
 
 package body util is
+
+    function shift_right (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector is
+    begin
+        return std_logic_vector(shift_right(unsigned(v), n));
+    end function;
+
+    function shift_left (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector is
+    begin
+        return std_logic_vector(shift_left(unsigned(v), n));
+    end function;
+
+    function resize (
+        v : std_logic_vector;
+        n : integer--;
+    ) return std_logic_vector is
+    begin
+        return std_logic_vector(resize(unsigned(v), n));
+    end function;
 
     function bool_to_logic (
         constant b : in boolean--;

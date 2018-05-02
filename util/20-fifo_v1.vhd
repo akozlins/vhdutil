@@ -22,9 +22,14 @@ end entity;
 
 architecture arch of fifo_v1 is
 
+    subtype addr_t is std_logic_vector(N-1 downto 0);
+    subtype ptr_t is std_logic_vector(N downto 0);
+
+    constant XOR_FULL : ptr_t := ( N => '1', others => '0' );
+
     signal re_i, we_i : std_logic;
     signal empty_i, full_i : std_logic;
-    signal rptr, wptr : std_logic_vector(N downto 0);
+    signal rptr, wptr : ptr_t;
 
 begin
 
@@ -34,9 +39,9 @@ begin
         N => N--,
     )
     port map (
-        a_addr  => rptr(N-1 downto 0),
+        a_addr  => rptr(addr_t'range),
         a_rd    => rd,
-        b_addr  => wptr(N-1 downto 0),
+        b_addr  => wptr(addr_t'range),
         b_rd    => open,
         b_wd    => wd,
         b_we    => we_i,
@@ -49,8 +54,8 @@ begin
     we_i <= ( we and not full_i );
 
     process(clk, rst_n)
-        variable rptr_i : std_logic_vector(rptr'range);
-        variable wptr_i : std_logic_vector(wptr'range);
+        variable rptr_v : std_logic_vector(rptr'range);
+        variable wptr_v : std_logic_vector(wptr'range);
     begin
     if ( rst_n = '0' ) then
         empty_i <= '1';
@@ -59,22 +64,13 @@ begin
         wptr <= (others => '0');
         --
     elsif rising_edge(clk) then
-        rptr_i := rptr;
-        wptr_i := wptr;
+        rptr_v := rptr + re_i;
+        wptr_v := wptr + we_i;
+        rptr <= rptr_v;
+        wptr <= wptr_v;
 
-        if ( re_i = '1' ) then
-            rptr_i := rptr_i + 1;
-        end if;
-
-        if ( we_i = '1' ) then
-            wptr_i := wptr_i + 1;
-        end if;
-
-        empty_i <= work.util.bool_to_logic( rptr_i(N) = wptr_i(N) and rptr_i(N-1 downto 0) = wptr_i(N-1 downto 0) );
-        full_i <= work.util.bool_to_logic( rptr_i(N) /= wptr_i(N) and rptr_i(N-1 downto 0) = wptr_i(N-1 downto 0) );
-
-        rptr <= rptr_i;
-        wptr <= wptr_i;
+        empty_i <= work.util.bool_to_logic( rptr_v = wptr_v );
+        full_i <= work.util.bool_to_logic( (rptr_v xor wptr_v) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;
