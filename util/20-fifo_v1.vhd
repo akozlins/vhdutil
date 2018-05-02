@@ -24,7 +24,7 @@ architecture arch of fifo_v1 is
 
     signal re_i, we_i : std_logic;
     signal empty_i, full_i : std_logic;
-    signal rptr, wptr : std_logic_vector(N-1 downto 0);
+    signal rptr, wptr : std_logic_vector(N downto 0);
 
 begin
 
@@ -34,9 +34,9 @@ begin
         N => N--,
     )
     port map (
-        a_addr  => rptr,
+        a_addr  => rptr(N-1 downto 0),
         a_rd    => rd,
-        b_addr  => wptr,
+        b_addr  => wptr(N-1 downto 0),
         b_rd    => open,
         b_wd    => wd,
         b_we    => we_i,
@@ -70,14 +70,8 @@ begin
             wptr_i := wptr_i + 1;
         end if;
 
-        if ( re_i = '1' and we_i = '0' ) then
-            empty_i <= work.util.bool_to_logic( rptr_i = wptr_i and full_i = '0' );
-            full_i <= '0';
-        end if;
-        if ( we_i = '1' and re_i = '0' ) then
-            empty_i <= '0';
-            full_i <= work.util.bool_to_logic( wptr_i = rptr_i and empty_i = '0' );
-        end if;
+        empty_i <= work.util.bool_to_logic( rptr_i(N) = wptr_i(N) and rptr_i(N-1 downto 0) = wptr_i(N-1 downto 0) );
+        full_i <= work.util.bool_to_logic( rptr_i(N) /= wptr_i(N) and rptr_i(N-1 downto 0) = wptr_i(N-1 downto 0) );
 
         rptr <= rptr_i;
         wptr <= wptr_i;

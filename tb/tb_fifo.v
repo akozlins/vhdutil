@@ -30,6 +30,7 @@ end
 
 initial
 begin
+    re <= 0; we <= 0;
     @(posedge rst_n);
 
     re <= 0; we <= 1; wd <= 'h0;
