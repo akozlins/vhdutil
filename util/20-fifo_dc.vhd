@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
+-- dual clock fifo
 entity fifo_dc is
     generic (
         W   : positive := 8;
@@ -31,7 +32,7 @@ architecture arch of fifo_dc is
 
     signal re_i, we_i : std_logic;
     signal rempty_i, wfull_i : std_logic;
-    signal rptr, wptr, rptr_next, wptr_next : ptr_t;
+    signal rptr, wptr : ptr_t;
     signal rgray, wgray : ptr_t;
     signal rwgray_q0, rwgray_q1, wrgray_q0, wrgray_q1 : ptr_t;
 

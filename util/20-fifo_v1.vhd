@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
+-- single clock fifo
 entity fifo_v1 is
     generic (
         W   : positive := 8;

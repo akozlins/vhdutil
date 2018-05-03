@@ -91,7 +91,7 @@ begin
 
     i_alu : entity work.alu_v2
     generic map (
-        W => 16--,
+        W => word_t'length--,
     )
     port map (
         a   => alu_a,
@@ -237,14 +237,14 @@ begin
         mm_addr <= (others => '-');
         mm_wd <= (others => '-');
 
-        if ( s_ex.op_store ) then
+        if ( s_ex.op_alu ) then
+            mm_wd <= alu_y;
+            alu_ci <= alu_co;
+        elsif ( s_ex.op_store ) then
             mm_addr <= alu_y(mm_addr'range);
             mm_wd <= reg_a_rd;
         elsif ( s_ex.op_load or s_ex.op_loadi ) then
             mm_addr <= alu_y(mm_addr'range);
-        elsif ( s_ex.op_alu ) then
-            mm_wd <= alu_y;
-            alu_ci <= alu_co;
         end if;
 
         s_mm <= s_ex;
@@ -270,10 +270,10 @@ begin
     elsif rising_edge(clk) then
         wb_wd <= (others => '-');
 
-        if ( s_mm.op_load or s_mm.op_loadi ) then
-            wb_wd <= ram_b_rd;
-        elsif ( s_mm.op_alu ) then
+        if ( s_mm.op_alu ) then
             wb_wd <= mm_wd;
+        elsif ( s_mm.op_load or s_mm.op_loadi ) then
+            wb_wd <= ram_b_rd;
         end if;
 
         s_wb <= s_mm;

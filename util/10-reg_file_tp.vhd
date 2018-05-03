@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- triple port register file
+-- reg(0) = 0
 entity reg_file_tp is
     generic (
         W   : positive := 8; -- word width in bits
@@ -23,8 +25,8 @@ end entity;
 
 architecture arch of reg_file_tp is
 
-    type ram_t is array (0 to 2**N-1) of std_logic_vector(W-1 downto 0);
-    signal ram : ram_t := (
+    type ram_t is array (natural range <>) of std_logic_vector(W-1 downto 0);
+    signal ram : ram_t(0 to 2**N-1) := (
         0 => (others => '0'),
         others => (others => '-')
     );

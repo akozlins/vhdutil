@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 use std.textio.all;
 use ieee.std_logic_textio.all;
 
+-- dual port ram
 entity ram_dp is
     generic (
         W   : positive := 8;

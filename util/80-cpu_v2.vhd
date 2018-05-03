@@ -27,7 +27,7 @@ architecture arch of cpu_v2 is
     -- instruction register
     signal ir : std_logic_vector(3 downto 0);
     -- flags register (carry, overflow, sign, zero)
-    signal fr : std_logic_vector(3 downto 0);
+    signal flags : std_logic_vector(3 downto 0);
 
     signal regA, regB, regC, regC_q : word_t;
     signal regC_addr, regC_addr_q : std_logic_vector(3 downto 0);
@@ -44,7 +44,7 @@ architecture arch of cpu_v2 is
     signal state : state_t;
 
     signal alu_a, alu_b, alu_y : word_t;
-    signal alu_v, alu_co, alu_s, alu_z : std_logic;
+    signal alu_z, alu_s, alu_v, alu_co : std_logic;
 
 begin
 
@@ -100,7 +100,7 @@ begin
     port map (
         a   => alu_a,
         b   => alu_b,
-        ci  => fr(3),
+        ci  => flags(3),
         op  => ir(2 downto 0),
         y   => alu_y,
         z   => alu_z,
@@ -129,16 +129,16 @@ begin
             pc <= pc + 1;
 
             case ir is
-            when X"F" => -- ST : *(regB + regA) = regC
+            when X"F" => -- STORE : *(regB + regA) = regC
                 state <= S_STORE;
-            when X"E" => -- LD : regC = *(regB + regA)
+            when X"E" => -- LOAD : regC = *(regB + regA)
                 state <= S_LOAD;
-            when X"D" => -- LDI : regC = *(pc + 1)
+            when X"D" => -- LOADI : regC = *(pc + 1)
                 state <= S_LOADI;
-            when X"C" => -- DBG
+            when X"C" => -- DEBUG
                 dbg_out <= regB & regA;
-            when X"A" => -- JMP : pc += rdata(7 downto 0)
-                if ( (regC_addr and fr) = regC_addr ) then
+            when X"A" => -- JUMP : pc += rdata(7 downto 0)
+                if ( (regC_addr and flags) = regC_addr ) then
                     pc <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
                 end if;
             when others =>
@@ -146,10 +146,7 @@ begin
             end case;
 
             if ( ir(ir'left) = '0' ) then
-                fr(0) <= alu_z;
-                fr(1) <= alu_s;
-                fr(2) <= alu_v;
-                fr(3) <= alu_co;
+                flags <= alu_co & alu_v & alu_s & alu_z;
             end if;
 
         when S_LOADI =>

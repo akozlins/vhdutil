@@ -3,7 +3,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-entity cpu_v1 is
+-- 16bit cpu
+--
+-- instructions:
+--  - STORE
+--  - LOAD
+--  - LOADI
+--  - JUMP
+--  - ADD
+--
+entity cpu16_v1 is
     port (
         dbg_out :   out std_logic_vector(31 downto 0);
         dbg_in  :   in  std_logic_vector(31 downto 0);
@@ -12,12 +21,13 @@ entity cpu_v1 is
     );
 end entity;
 
-architecture arch of cpu_v1 is
+architecture arch of cpu16_v1 is
 
     subtype word_t is std_logic_vector(15 downto 0);
 
-    type ram_t is array (0 to 2**8-1) of word_t;
-    signal ram : ram_t := (
+    type ram_t is array (natural range <>) of word_t;
+
+    signal ram : ram_t(0 to 255) := (
        X"D100", X"0001", -- LDI : reg1 = 1
        X"DF00", X"0000", -- LDI : reg15 = 0
        X"0FF1", -- ADD : reg15 = reg15 + reg1
@@ -30,16 +40,14 @@ architecture arch of cpu_v1 is
     signal ram_wd : word_t;
     signal ram_we : std_logic;
 
-    type reg_t is array (0 to 15) of word_t;
-    signal reg : reg_t;
+    signal reg : ram_t(15 downto 0);
 
     signal pc : word_t;
 
     signal ir : std_logic_vector(3 downto 0);
-    signal regC_addr : std_logic_vector(3 downto 0);
-    signal regB : word_t;
     signal regA : word_t;
-
+    signal regB : word_t;
+    signal regC_addr : std_logic_vector(3 downto 0);
     signal regC_addr_q : std_logic_vector(3 downto 0);
 
     type state_t is (
@@ -84,19 +92,19 @@ begin
             ram_addr <= pc + 1;
 
             case ir is
-            when X"F" => -- ST : *(regB + regA) = regC
+            when X"F" => -- STORE : *(regB + regA) = regC
                 ram_addr <= regB + regA;
                 ram_wd <= reg(to_integer(unsigned(regC_addr)));
                 ram_we <= '1';
                 state <= S_STORE;
-            when X"E" => -- LD : regC = *(regB + regA)
+            when X"E" => -- LOAD : regC = *(regB + regA)
                 ram_addr <= regB + regA;
                 regC_addr_q <= regC_addr;
                 state <= S_LOAD;
-            when X"D" => -- LDI : regC = *(pc + 1)
+            when X"D" => -- LOADI : regC = *(pc + 1)
                 regC_addr_q <= regC_addr;
                 state <= S_LOADI;
-            when X"A" => -- JMP : pc += rdata(7 downto 0)
+            when X"A" => -- JUMP : pc += rdata(7 downto 0)
                 pc <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
                 ram_addr <= pc + ((7 downto 0 => ram_rd(7)) & ram_rd(7 downto 0));
             when X"0" => -- ADD : regC = regB + regA
