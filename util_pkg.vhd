@@ -42,6 +42,12 @@ package util is
         good : out boolean--;
     );
 
+    procedure read_hex(
+        l : inout line;
+        value : out std_logic_vector;
+        good : out boolean--;
+    );
+
 end package;
 
 package body util is
@@ -134,6 +140,48 @@ package body util is
                 return;
             end if;
         end loop;
+        good := true;
+    end procedure;
+
+    procedure read_hex(
+        l : inout line;
+        value : out std_logic_vector;
+        good : out boolean--;
+    ) is
+        variable v : std_logic_vector(value'range);
+        variable c : character;
+        variable s : string(1 to value'length/4);
+        variable ok : boolean;
+    begin
+        good := false;
+
+        if value'length mod 4 /= 0 then
+            return;
+        end if;
+
+        -- skip spaces
+        loop
+            read(l, c);
+            exit when ((c /= ' ') and (c /= CR) and (c /= HT));
+        end loop;
+
+        -- skip comment
+        if c = '#' then
+            return;
+        end if;
+
+        s(1) := c;
+        read(L, s(2 to s'right), ok);
+        if not ok then
+            return;
+        end if;
+
+        string_to_hex(s, v, ok);
+        if not ok then
+            return;
+        end if;
+
+        value := v;
         good := true;
     end procedure;
 
