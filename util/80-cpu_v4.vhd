@@ -54,7 +54,7 @@ architecture arch of cpu_v4 is
     signal alu_a, alu_b, alu_y : word_t;
     signal alu_ci, alu_co : std_logic;
 
-    signal pc_adder_b, pc_adder_s : ram_addr_t;
+    signal pc_next_a, pc_next_b, pc_next_s : ram_addr_t;
 
 begin
 
@@ -145,20 +145,21 @@ begin
     s_if.reg_c_re <= s_if.reg_c_addr /= 0 and ( s_if.op_store );
     s_if.reg_c_we <= s_if.reg_c_addr /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
 
-    i_pc_adder : entity work.adder
+    i_pc_next : entity work.adder
     generic map (
         W => ram_addr_t'length--,
     )
     port map (
-        a => s_if.pc,
-        b => pc_adder_b,
+        a => pc_next_a,
+        b => pc_next_b,
         ci => '0',
-        s => pc_adder_s,
+        s => pc_next_s,
         co => open--,
     );
-    pc_adder_b <= s_if.reg_b_addr & s_if.reg_a_addr when ( s_if.op_jump ) else
-                  X"02" when ( s_if.op_loadi ) else
-                  X"01";
+    pc_next_a <= s_id.pc when ( s_id.op_jump ) else
+                 s_if.pc;
+    pc_next_b <= s_id.reg_b_addr & s_id.reg_a_addr when ( s_id.op_jump ) else
+                 X"01";
 
     if_p : process(clk, rst_n)
     begin
@@ -170,9 +171,13 @@ begin
     if ( id_stall or ex_stall ) then
         --
     else
-        s_if.pc <= pc_adder_s;
+        s_if.pc <= pc_next_s;
 
         s_id <= s_if;
+
+        if ( s_id.op_loadi or s_id.op_jump ) then
+            s_id <= NOP;
+        end if;
         --
     end if; -- ena
     end if; -- rising_edge
