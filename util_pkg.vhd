@@ -7,6 +7,10 @@ use ieee.std_logic_textio.all;
 
 package util is
 
+    function bin2gray (
+        v : std_logic_vector--;
+    ) return std_logic_vector;
+
     function shift_right (
         v : std_logic_vector;
         n : natural--;
@@ -41,6 +45,13 @@ package util is
 end package;
 
 package body util is
+
+    function bin2gray (
+        v : std_logic_vector--;
+    ) return std_logic_vector is
+    begin
+        return v xor shift_right(v, 1);
+    end function;
 
     function shift_right (
         v : std_logic_vector;

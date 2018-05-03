@@ -69,7 +69,7 @@ begin
         --
     elsif rising_edge(rclk) then
         rptr_v := rptr + re_i;
-        rgray_v := rptr_v xor work.util.shift_right(rptr_v, 1);
+        rgray_v := work.util.bin2gray(rptr_v);
         rptr <= rptr_v;
         rgray <= rgray_v;
 
@@ -92,7 +92,7 @@ begin
         --
     elsif rising_edge(wclk) then
         wptr_v := wptr + we_i;
-        wgray_v := wptr_v xor work.util.shift_right(wptr_v, 1);
+        wgray_v := work.util.bin2gray(wptr_v);
         wptr <= wptr_v;
         wgray <= wgray_v;
 
