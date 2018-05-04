@@ -1,27 +1,27 @@
 # NOP
 0000
 
-# LDI : regC = CC
+# LDI : reg(C) = 0xCC
 DC00
 00CC
-# ST : *(regB + regA) = *(CC) = regC
+# ST : *(reg(B) + reg(A)) = *(0xCC) = reg(C)
 FC0C
-# LD : regC = *(regB + regA) = *(CC)
+# LD : reg(C) = *(reg(B) + reg(A)) = *(0xCC)
 EC0C
 
-# LDI : reg1 = 1
+# LDI : reg(1) = 1
 D100
 0001
-# ADD : regF = reg0 + reg0 = 0
+# ADD : reg(F) = reg(0) + reg(0) = 0
 0F00
-# ADD : regE = reg0 + reg0 = 0
+# ADD : reg(E) = reg(0) + reg(0) = 0
 0E00
 
-# DBG : debug = *regC
-C0EF
-# ADD : regF = regF + reg1
+# DBG : debug = reg(E)
+C00E
+# ADD : reg(F) = reg(F) + reg(1)
 0FF1
-# ADDC : regE = regE + carry
+# ADDC : reg(E) = reg(E) + carry
 1EE0
 # JMP : pc -= 3
 A0FD

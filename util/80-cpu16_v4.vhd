@@ -3,16 +3,23 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
 
-entity cpu_v4 is
+-- 16bit cpu
+-- 5-stage pipeline:
+-- * if - instruction fetch
+-- * id - instruction decode
+-- * ex - execute
+-- * mm - memory access
+-- * wb - register writeback
+entity cpu16_v4 is
     port (
-        dbg_out :   out std_logic_vector(31 downto 0);
-        dbg_in  :   in  std_logic_vector(31 downto 0);
+        dbg_out :   out std_logic_vector(15 downto 0);
+        dbg_in  :   in  std_logic_vector(15 downto 0);
         rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
 
-architecture arch of cpu_v4 is
+architecture arch of cpu16_v4 is
 
     subtype word_t is std_logic_vector(15 downto 0);
     subtype ram_addr_t is std_logic_vector(7 downto 0);
@@ -208,7 +215,7 @@ begin
         end if;
 
         if ( s_id.op_debug ) then
-            dbg_out <= reg_b_rd & reg_a_rd;
+            dbg_out <= reg_a_rd;
         end if;
 
         s_ex <= s_id;

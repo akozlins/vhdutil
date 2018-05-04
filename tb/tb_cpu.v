@@ -3,9 +3,9 @@
 module tb_cpu();
 
 reg clk, rst_n;
-wire [31:0] dbg_out;
+wire [15:0] dbg_out;
 
-cpu_v4 i_cpu (
+cpu16_v4 i_cpu (
     .dbg_out(dbg_out),
     .rst_n(rst_n),
     .clk(clk)

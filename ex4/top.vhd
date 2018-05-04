@@ -16,7 +16,7 @@ architecture arch of top is
     signal areset_i : std_logic;
     signal cnt_i : unsigned(31 downto 0);
 
-    signal debug : std_logic_vector(31 downto 0);
+    signal debug : std_logic_vector(15 downto 0);
 
 begin
 
@@ -26,7 +26,7 @@ begin
         C => X"FFFF"--,
     )
     port map (
-        input(0 downto 0) => pl_btn(0 downto 0),
+        input => (0 => pl_btn(0), others => '-'),
         output(0) => areset_i,
         clk => pl_clk_100--,
     );
@@ -42,7 +42,7 @@ begin
     end if; -- rising_edge
     end process;
 
-    i_cpu : entity work.cpu_v4
+    i_cpu : entity work.cpu16_v4
     port map (
         dbg_out => debug,
         dbg_in => (others => '-'),
@@ -50,6 +50,6 @@ begin
         rst_n => not areset_i--,
     );
 
-    pl_led <= debug(31 downto 24);
+    pl_led <= debug(15 downto 8);
 
 end architecture;

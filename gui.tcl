@@ -2,7 +2,7 @@
 # \
 unset CDPATH ; \
 cd "$(dirname -- "$(readlink -e -- "$0")")" || exit 1 ; \
-exec vivado -jvm Xmx2048m -mode gui -source "$0" -tclargs "$@"
+exec vivado -mode gui -source "$0" -tclargs "$@"
 
 source project.tcl
 

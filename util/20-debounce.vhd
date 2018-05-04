@@ -16,11 +16,10 @@ end entity;
 
 architecture arch of debounce is
 
-    signal input_q0 : std_logic_vector(N-1 downto 0);
-    signal input_q1 : std_logic_vector(N-1 downto 0);
+    signal input_q0, input_q1 : std_logic_vector(input'range);
 
-    type cnt_t is array(N-1 downto 0) of unsigned(C'range);
-    signal cnt : cnt_t;
+    type cnt_t is array(natural range <>) of unsigned(C'range);
+    signal cnt : cnt_t(input'range);
 
 begin
 
@@ -38,7 +37,7 @@ begin
                 cnt(i) <= cnt(i) + 1;
             end if;
         end loop;
-    end if;
+    end if; -- rising_edge
     end process;
 
 end architecture;
