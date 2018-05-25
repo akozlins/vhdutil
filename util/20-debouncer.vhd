@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity debounce is
+entity debouncer is
     generic (
         N   : positive := 1;
         C   : unsigned := X"FFFF"--;
@@ -10,11 +10,12 @@ entity debounce is
     port (
         input   :   in  std_logic_vector(N-1 downto 0);
         output  :   out std_logic_vector(N-1 downto 0);
+        rst_n   :   in  std_logic;
         clk     :   in  std_logic--;
     );
 end entity;
 
-architecture arch of debounce is
+architecture arch of debouncer is
 
     signal input_q0, input_q1 : std_logic_vector(input'range);
 
@@ -23,9 +24,15 @@ architecture arch of debounce is
 
 begin
 
-    process(clk)
+    process(clk, rst_n)
     begin
-    if rising_edge(clk) then
+    if rst_n = '0' then
+        output <= (others => '0');
+        input_q0 <= (others => '0');
+        input_q1 <= (others => '0');
+        cnt <= (others => (others => '0'));
+        --
+    elsif rising_edge(clk) then
         input_q0 <= input;
         input_q1 <= input_q0;
         for i in input'range loop

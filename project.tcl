@@ -18,7 +18,8 @@ proc pgm { bit } {
 
 set part "xc7z020clg484-1"
 
-set dir [ lindex $argv 0 ]
+#set dir [ lindex $argv 0 ]
+set dir .
 if { [ file isdirectory $dir ] == 0 } {
     error "path '$dir' does not exist"
 }
