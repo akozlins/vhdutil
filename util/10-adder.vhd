@@ -43,21 +43,21 @@ end architecture;
 library UNISIM;
 use UNISIM.vcomponents.all;
 
-architecture rtl of adder is
+architecture arch_carry4 of adder is
 
     constant N : positive := (W + 3) / 4;
 
-    signal a_i, b_i, ab_i, s_i : std_logic_vector(4*N-1 downto 0);
-    signal co_i : std_logic_vector(4*N-1 downto 0);
+    subtype data_t is std_logic_vector(4*N-1 downto 0);
 
-    signal ci_i : std_logic_vector(4*N-1 downto 0);
+    signal a_i, b_i, ab_i, s_i : data_t;
+    signal co_i, ci_i : data_t;
     signal cyinit_i : std_logic_vector(N-1 downto 0);
 
 begin
 
-    a_i(a'range) <= a;
-    b_i(b'range) <= b;
-    ab_i <= a_i xor b_i;
+    a_i(s'range) <= a;
+    b_i(s'range) <= b;
+    ab_i(s'range) <= a xor b;
     s <= s_i(s'range);
     co <= co_i(W-1);
 
@@ -66,7 +66,7 @@ begin
 
     gen:
     for i in 0 to N-1 generate
-    i_carry4_i : CARRY4
+    i_carry4 : CARRY4
     port map (
         CO => co_i(4*i+3 downto 4*i),
         O => s_i(4*i+3 downto 4*i),

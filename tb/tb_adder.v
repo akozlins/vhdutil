@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps
 
-module tb_ripple_adder();
+module tb_adder();
 
-reg [3:0] a, b;
-wire [3:0] s;
+reg [4:0] a, b;
+wire [4:0] s;
 wire co;
 
-ripple_adder #(.W(4)) i_adder (
+adder #(.W(5)) i_adder (
     .a(a),
     .b(b),
     .ci(1'b0),
@@ -18,10 +18,10 @@ integer i;
 
 initial
 begin
-    for (i = 0; i < 256; i = i + 1)
+    for (i = 0; i < 1024; i = i + 1)
     begin
-        a <= i % 16;
-        b <= i / 16;
+        a <= i % 32;
+        b <= i / 32;
         #10;
     end
 
