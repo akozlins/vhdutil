@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 entity alu_v2 is
     generic (
@@ -28,8 +29,6 @@ entity alu_v2 is
 end entity;
 
 architecture arch of alu_v2 is
-
-    constant ZERO : std_logic_vector(W-1 downto 0) := (others => '0');
 
     signal ci_i : std_logic;
     signal a_i, b_i, s_i : std_logic_vector(W-1 downto 0);
@@ -60,12 +59,14 @@ begin
         when "000" =>
             -- add
             ci_i <= '0';
+        when "001" =>
+            -- adc
         when "010" =>
             -- sub
             a_i <= not a;
             ci_i <= '1';
         when "011" =>
-            -- subb
+            -- sbb
             a_i <= not a;
             ci_i <= not ci;
         when "100" =>
@@ -82,9 +83,10 @@ begin
     end process;
 
     y <= y_i;
-    z <= '1' when ( y_i = ZERO ) else '0';
+    z <= '1' when ( y_i = 0 ) else '0';
     s <= y_i(y_i'left);
-    v <= (a(a'left) and b(b'left) and not y_i(y_i'left)) or
-         (not a(a'left) and not b(b'left) and y_i(y_i'left));
+--    v <= (a(a'left) and b(b'left) and not y_i(y_i'left)) or
+--         (not a(a'left) and not b(b'left) and y_i(y_i'left));
+    v <= (a(a'left) xnor b(b'left)) and (b(b'left) xor y_i(y_i'left));
 
 end architecture;
