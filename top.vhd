@@ -26,8 +26,8 @@ begin
         C => X"FF"--,
     )
     port map (
-        input(0) => '1',
-        output(0) => rst_n,
+        d(0) => '1',
+        q(0) => rst_n,
         rst_n => not pl_btn(0),
         clk => pl_clk_100--,
     );
@@ -38,8 +38,8 @@ begin
         C => X"FFFF"--,
     )
     port map (
-        input => pl_btn,
-        output => btn_i,
+        d => pl_btn,
+        q => btn_i,
         rst_n => rst_n,
         clk => pl_clk_100--,
     );
