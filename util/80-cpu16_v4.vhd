@@ -47,21 +47,33 @@ architecture arch of cpu16_v4 is
     signal mm_addr : ram_addr_t;
     signal mm_wd, wb_wd : word_t;
 
-    signal id_stall, ex_stall : boolean;
+    signal if_stall, id_stall, ex_stall : boolean;
 
-    signal ram_a_addr, ram_b_addr : ram_addr_t;
-    signal ram_a_rd, ram_b_rd, ram_b_wd : word_t;
-    signal ram_b_we : std_logic;
+    type ram_port_t is record
+        addr : ram_addr_t;
+        rd, wd : word_t;
+        we : std_logic;
+    end record;
 
-    signal reg_a_addr, reg_b_addr : reg_addr_t;
-    signal reg_a_rd, reg_b_rd, reg_b_wd : word_t;
-    signal reg_b_we : std_logic;
+    signal ram_a, ram_b : ram_port_t := ( we => '-', others => (others => '-'));
 
-    signal alu_op : std_logic_vector(2 downto 0);
-    signal alu_a, alu_b, alu_y : word_t;
-    signal alu_ci, alu_co : std_logic;
+    type reg_port_t is record
+        addr : reg_addr_t;
+        rd, wd : word_t;
+        we : std_logic;
+    end record;
 
-    signal pc_next_a, pc_next_b, pc_next_s : ram_addr_t;
+    signal reg_a, reg_b : reg_port_t := ( we => '-', others => (others => '-'));
+
+    type alu_port_t is record
+        op : std_logic_vector(2 downto 0);
+        a, b, y : word_t;
+        ci, z, s, v, co : std_logic;
+    end record;
+
+    signal alu : alu_port_t;
+
+    signal pc_next : ram_addr_t;
 
 begin
 
@@ -72,12 +84,12 @@ begin
         INIT_FILE_HEX => "cpu_v4.hex"--,
     )
     port map (
-        a_addr  => ram_a_addr,
-        a_rd    => ram_a_rd,
-        b_addr  => ram_b_addr,
-        b_rd    => ram_b_rd,
-        b_wd    => ram_b_wd,
-        b_we    => ram_b_we,
+        a_addr  => ram_a.addr,
+        a_rd    => ram_a.rd,
+        b_addr  => ram_b.addr,
+        b_rd    => ram_b.rd,
+        b_wd    => ram_b.wd,
+        b_we    => ram_b.we,
         clk     => clk--,
     );
 
@@ -87,12 +99,12 @@ begin
         N => reg_addr_t'length--,
     )
     port map (
-        a_addr  => reg_a_addr,
-        a_rd    => reg_a_rd,
-        b_addr  => reg_b_addr,
-        b_rd    => reg_b_rd,
-        b_wd    => reg_b_wd,
-        b_we    => reg_b_we,
+        a_addr  => reg_a.addr,
+        a_rd    => reg_a.rd,
+        b_addr  => reg_b.addr,
+        b_rd    => reg_b.rd,
+        b_wd    => reg_b.wd,
+        b_we    => reg_b.we,
         clk     => clk--,
     );
 
@@ -101,25 +113,26 @@ begin
         W => word_t'length--,
     )
     port map (
-        a   => alu_a,
-        b   => alu_b,
-        ci  => alu_ci,
-        op  => alu_op,
-        y   => alu_y,
-        z   => open,
-        s   => open,
-        v   => open,
-        co  => alu_co--,
+        a   => alu.a,
+        b   => alu.b,
+        ci  => alu.ci,
+        op  => alu.op,
+        y   => alu.y,
+        z   => alu.z,
+        s   => alu.s,
+        v   => alu.v,
+        co  => alu.co--,
     );
 
-    reg_a_addr <= s_ex.reg_c_addr when ( s_ex.reg_c_re ) else
+    reg_a.addr <= s_ex.reg_c_addr when ( s_ex.reg_c_re ) else
                   s_id.reg_a_addr when ( s_id.reg_a_re ) else
                   (others => '-');
 
-    reg_b_addr <= s_wb.reg_c_addr when ( s_wb.reg_c_we ) else
+    reg_b.addr <= s_wb.reg_c_addr when ( s_wb.reg_c_we ) else
                   s_id.reg_b_addr when ( s_id.reg_b_re ) else
                   (others => '-');
 
+    if_stall <= false;
     id_stall <= ( s_ex.reg_c_re and s_id.reg_a_re )
              or ( s_wb.reg_c_we and s_id.reg_b_re )
              or ( s_ex.reg_c_we and s_ex.reg_c_addr = s_id.reg_a_addr and s_id.reg_a_re )
@@ -133,52 +146,61 @@ begin
 
     -- Instruction Fetch
 
-    ram_a_addr <= s_if.pc;
+    ram_a.addr <= s_if.pc;
 
-    s_if.op <= ram_a_rd(15 downto 12);
+    s_if.op <= ram_a.rd(15 downto 12);
     s_if.op_store <= s_if.op = X"F";
     s_if.op_load <= s_if.op = X"E";
     s_if.op_loadi <= s_if.op = X"D";
     s_if.op_debug <= s_if.op = X"C";
     s_if.op_jump <= s_if.op = X"A";
-    s_if.op_alu <= ram_a_rd /= 0 and s_if.op(s_if.op'left) = '0';
+    s_if.op_alu <= ram_a.rd /= 0 and s_if.op(s_if.op'left) = '0';
 
-    s_if.reg_a_addr <= ram_a_rd(3 downto 0);
-    s_if.reg_b_addr <= ram_a_rd(7 downto 4);
-    s_if.reg_c_addr <= ram_a_rd(11 downto 8);
+    s_if.reg_a_addr <= ram_a.rd(3 downto 0);
+    s_if.reg_b_addr <= ram_a.rd(7 downto 4);
+    s_if.reg_c_addr <= ram_a.rd(11 downto 8);
 
     s_if.reg_a_re <= s_if.reg_a_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
     s_if.reg_b_re <= s_if.reg_b_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
     s_if.reg_c_re <= s_if.reg_c_addr /= 0 and ( s_if.op_store );
     s_if.reg_c_we <= s_if.reg_c_addr /= 0 and ( s_if.op_alu or s_if.op_load or s_if.op_loadi);
 
-    i_pc_next : entity work.adder
-    generic map (
-        W => ram_addr_t'length--,
-    )
-    port map (
-        a => pc_next_a,
-        b => pc_next_b,
-        ci => '0',
-        s => pc_next_s,
-        co => open--,
-    );
-    pc_next_a <= s_id.pc when ( s_id.op_jump ) else
-                 s_if.pc;
-    pc_next_b <= s_id.reg_b_addr & s_id.reg_a_addr when ( s_id.op_jump ) else
-                 X"01";
+    blk_pc :
+    block
+        signal a, b : ram_addr_t;
+    begin
+        i_adder : entity work.adder
+        generic map (
+            W => ram_addr_t'length--,
+        )
+        port map (
+            a => a,
+            b => b,
+            ci => '0',
+            s => pc_next,
+            co => open--,
+        );
+        a <= s_id.pc when ( s_id.op_jump ) else
+             s_if.pc;
+        b <= s_id.reg_b_addr & s_id.reg_a_addr when ( s_id.op_jump ) else
+             X"01";
+    end block;
 
-    if_p : process(clk, rst_n)
+    proc_fetch :
+    process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
         s_if.pc <= (others => '0');
         s_id <= NOP;
         --
     elsif rising_edge(clk) then
-    if ( id_stall or ex_stall ) then
+    if ( if_stall ) then
+        s_id <= NOP;
+        --
+    elsif ( id_stall or ex_stall ) then
         --
     else
-        s_if.pc <= pc_next_s;
+        s_if.pc <= pc_next;
 
         s_id <= s_if;
 
@@ -192,7 +214,8 @@ begin
 
     -- Instruction Decode
 
-    id_p : process(clk, rst_n)
+    proc_decode :
+    process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
         s_ex <= NOP;
@@ -208,14 +231,14 @@ begin
         ex_reg_b <= (others => '-');
 
         if ( s_id.reg_a_re ) then
-            ex_reg_a <= reg_a_rd;
+            ex_reg_a <= reg_a.rd;
         end if;
         if ( s_id.reg_b_re ) then
-            ex_reg_b <= reg_b_rd;
+            ex_reg_b <= reg_b.rd;
         end if;
 
         if ( s_id.op_debug ) then
-            dbg_out <= reg_a_rd;
+            dbg_out <= reg_a.rd;
         end if;
 
         s_ex <= s_id;
@@ -226,19 +249,20 @@ begin
 
     -- Execute
 
-    alu_a <= ex_reg_a when ( s_ex.reg_a_re ) else
+    alu.a <= ex_reg_a when ( s_ex.reg_a_re ) else
              X"00" & s_ex.pc when ( s_ex.op_loadi ) else
              (others => '0');
-    alu_b <= ex_reg_b when ( s_ex.reg_b_re ) else
+    alu.b <= ex_reg_b when ( s_ex.reg_b_re ) else
              X"0001" when ( s_ex.op_loadi ) else
              (others => '0');
-    alu_op <= s_ex.op(alu_op'range) when ( s_ex.op_alu ) else
+    alu.op <= s_ex.op(alu.op'range) when ( s_ex.op_alu ) else
               (others => '0');
 
-    ex_p : process(clk, rst_n)
+    proc_exec :
+    process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
-        alu_ci <= '0';
+        alu.ci <= '0';
         s_mm <= NOP;
         --
     elsif rising_edge(clk) then
@@ -250,13 +274,13 @@ begin
         mm_wd <= (others => '-');
 
         if ( s_ex.op_alu ) then
-            mm_wd <= alu_y;
-            alu_ci <= alu_co;
+            mm_wd <= alu.y;
+            alu.ci <= alu.co;
         elsif ( s_ex.op_store ) then
-            mm_addr <= alu_y(mm_addr'range);
-            mm_wd <= reg_a_rd;
+            mm_addr <= alu.y(mm_addr'range);
+            mm_wd <= reg_a.rd;
         elsif ( s_ex.op_load or s_ex.op_loadi ) then
-            mm_addr <= alu_y(mm_addr'range);
+            mm_addr <= alu.y(mm_addr'range);
         end if;
 
         s_mm <= s_ex;
@@ -267,14 +291,15 @@ begin
 
     -- Memory access
 
-    ram_b_addr <= mm_addr when ( s_mm.op_store or s_mm.op_load or s_mm.op_loadi ) else
+    ram_b.addr <= mm_addr when ( s_mm.op_store or s_mm.op_load or s_mm.op_loadi ) else
                   (others => '-');
-    ram_b_wd <= mm_wd when ( s_mm.op_store ) else
+    ram_b.wd <= mm_wd when ( s_mm.op_store ) else
                 (others => '-');
-    ram_b_we <= '1' when ( s_mm.op_store ) else
+    ram_b.we <= '1' when ( s_mm.op_store ) else
                 '0';
 
-    mem_p : process(clk, rst_n)
+    proc_mem :
+    process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
         s_wb <= NOP;
@@ -285,7 +310,7 @@ begin
         if ( s_mm.op_alu ) then
             wb_wd <= mm_wd;
         elsif ( s_mm.op_load or s_mm.op_loadi ) then
-            wb_wd <= ram_b_rd;
+            wb_wd <= ram_b.rd;
         end if;
 
         s_wb <= s_mm;
@@ -295,9 +320,9 @@ begin
 
     -- Register write back
 
-    reg_b_wd <= wb_wd when ( s_wb.reg_c_we ) else
+    reg_b.wd <= wb_wd when ( s_wb.reg_c_we ) else
                 (others => '-');
-    reg_b_we <= '1' when ( s_wb.reg_c_we ) else
+    reg_b.we <= '1' when ( s_wb.reg_c_we ) else
                 '0';
 
 end architecture;
