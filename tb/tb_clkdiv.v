@@ -2,9 +2,11 @@
 
 module tb_clkdiv();
 
+parameter FREQ = 100; // MHz
+
 reg clk, rst_n;
 
-clkdiv #(.M(5)) i_clkdiv (
+clkdiv #(.P(5)) i_clkdiv (
     .rst_n(rst_n),
     .clk(clk)
 );
@@ -12,7 +14,7 @@ clkdiv #(.M(5)) i_clkdiv (
 initial
 begin
     clk <= 1'b1;
-    forever #5 clk <= ~clk;
+    forever #(1000.0/2/FREQ) clk <= ~clk;
 end
 
 initial
