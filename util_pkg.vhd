@@ -11,6 +11,10 @@ package util is
         v : std_logic_vector--;
     ) return std_logic_vector;
 
+    function gray2bin (
+        v : std_logic_vector--;
+    ) return std_logic_vector;
+
     function shift_right (
         v : std_logic_vector;
         n : natural--;
@@ -57,6 +61,19 @@ package body util is
     ) return std_logic_vector is
     begin
         return v xor shift_right(v, 1);
+    end function;
+
+    function gray2bin (
+        v : std_logic_vector--;
+    ) return std_logic_vector is
+        variable b : std_logic := '0';
+        variable r : std_logic_vector(v'range);
+    begin
+        for i in v'range loop
+            b := b xor v(i);
+            r(i) := b;
+        end loop;
+        return r;
     end function;
 
     function shift_right (
