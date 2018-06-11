@@ -3,12 +3,14 @@
 module tb_clkmon();
 
 reg clk, rst_n, tst_clk;
+wire tst_ok;
 
-parameter CLK_MHZ = 50;
-parameter TST_MHZ = 125;
+parameter CLK_MHZ = 1;
+parameter TST_MHZ = 100;
 
 clkmon #(.CLK_MHZ(CLK_MHZ), .TST_MHZ(TST_MHZ)) i_clkmon (
     .tst_clk(tst_clk),
+    .tst_ok(tst_ok),
     .rst_n(rst_n),
     .clk(clk)
 );
@@ -28,7 +30,7 @@ end
 initial
 begin
     rst_n <= 1'b0;
-    #100
+    #100;
     @(posedge clk);
     rst_n <= 1'b1;
 end

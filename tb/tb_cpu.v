@@ -20,7 +20,7 @@ end
 initial
 begin
     rst_n <= 1'b0;
-    #100
+    #100;
     @(posedge clk);
     rst_n <= 1'b1;
 end
