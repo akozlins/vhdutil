@@ -3,11 +3,13 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.math_real.all;
 
-entity clkdiv_half is
+-- clock divider
+-- period_{clkout} = 2 * P * period_{clk}
+entity clkdiv2 is
     generic (
         -- counter reset value
         R : natural := 0;
-        -- half period
+        -- period
         P : positive := 1--;
     );
     port (
@@ -17,22 +19,11 @@ entity clkdiv_half is
     );
 end entity;
 
-architecture arch of clkdiv_half is
+architecture arch of clkdiv2 is
 
     signal clkout_i : std_logic;
 
-    function max (
-        l, r: integer
-    ) return integer is
-    begin
-        if l > r then
-            return l;
-        else
-            return r;
-        end if;
-    end function;
-
-    constant W : positive := positive(ceil(log2(real(max(P,2)))));
+    constant W : positive := positive(ceil(log2(real(work.util.max(P,2)))));
     signal cnt : unsigned(W-1 downto 0);
 
 begin
@@ -60,8 +51,9 @@ end architecture;
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
+-- clock divider
+-- period_{clkout} = P * period_{clk}
 entity clkdiv is
     generic (
         -- period
@@ -88,7 +80,7 @@ begin
     gen_even :
     if ( P > 1 and P mod 2 = 0 ) generate
         i_clkdiv_even :
-        entity work.clkdiv_half
+        entity work.clkdiv2
         generic map (
             P => P/2--,
         )
@@ -104,7 +96,7 @@ begin
         clkout <= clkout1 xnor clkout2;
 
         i_clkdiv_odd1 :
-        entity work.clkdiv_half
+        entity work.clkdiv2
         generic map (
             P => P--,
         )
@@ -115,7 +107,7 @@ begin
         );
 
         i_clkdiv_odd2 :
-        entity work.clkdiv_half
+        entity work.clkdiv2
         generic map (
             R => P/2,
             P => P--,

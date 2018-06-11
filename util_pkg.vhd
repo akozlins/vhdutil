@@ -7,6 +7,10 @@ use ieee.std_logic_textio.all;
 
 package util is
 
+    function max (
+        l, r: integer
+    ) return integer;
+
     function bin2gray (
         v : std_logic_vector--;
     ) return std_logic_vector;
@@ -55,6 +59,17 @@ package util is
 end package;
 
 package body util is
+
+    function max (
+        l, r: integer
+    ) return integer is
+    begin
+        if l > r then
+            return l;
+        else
+            return r;
+        end if;
+    end function;
 
     function bin2gray (
         v : std_logic_vector--;
