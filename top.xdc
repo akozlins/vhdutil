@@ -6,6 +6,11 @@ create_clock -period 10 -name pl_clk_100 [get_ports pl_clk_100]
 set_property PACKAGE_PIN "Y9" [get_ports pl_clk_100]
 set_property IOSTANDARD LVCMOS33 [get_ports pl_clk_100]
 
+set i_clk_P [ get_property P [ get_cells {i_clk} ] ]
+create_generated_clock [ get_pins {i_clk/clkout} ] -source [ get_pins {i_clk/clk} ] -divide_by $i_clk_P
+
+set_false_path -to [ get_pins -hierarchical -filter {name=~*/i_gcnt/data_q_reg[0][*]/D} ]
+
 # leds
 
 set_property PACKAGE_PIN T22 [get_ports {pl_led[0]}]
