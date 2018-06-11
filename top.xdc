@@ -11,14 +11,16 @@ create_generated_clock [ get_pins {i_clk/clkout} ] -source [ get_pins {i_clk/clk
 
 # constraints
 
-set clk_src_cells [ get_cells {i_clk_ok/tst_gcnt_reg[*]} ]
-set clk_dst_cells [ get_cells {i_clk_ok/i_gcnt/data_q_reg[0][*]} ]
-set_bus_skew \
-    -from $clk_src_cells -to $clk_dst_cells \
-    [ get_property PERIOD [ get_clocks -of_objects $clk_dst_cells ] ]
-set_max_delay -datapath_only \
-    -from $clk_src_cells -to $clk_dst_cells \
-    [ get_property PERIOD [ get_clocks -of_objects $clk_src_cells ] ]
+foreach cell [ get_cells -hier -filter {ref_name==clkmon} ] {
+    set from_cells [ get_cells "$cell/tst_gcnt_reg\[*\]" ]
+    set to_cells [ get_cells "$cell/i_gcnt/data_q_reg\[0\]\[*\]" ]
+    set_bus_skew \
+        -from $from_cells -to $to_cells \
+        [ get_property PERIOD [ get_clocks -of_objects $to_cells ] ]
+    set_max_delay -datapath_only \
+        -from $from_cells -to $to_cells \
+        [ get_property PERIOD [ get_clocks -of_objects $from_cells ] ]
+}
 
 # leds
 
