@@ -9,7 +9,16 @@ set_property IOSTANDARD LVCMOS33 [get_ports pl_clk_100]
 set i_clk_P [ get_property P [ get_cells {i_clk} ] ]
 create_generated_clock [ get_pins {i_clk/clkout} ] -source [ get_pins {i_clk/clk} ] -divide_by $i_clk_P
 
-set_false_path -to [ get_pins -hierarchical -filter {name=~*/i_gcnt/data_q_reg[0][*]/D} ]
+# constraints
+
+set clk_src_cells [ get_cells {i_clk_ok/tst_gcnt_reg[*]} ]
+set clk_dst_cells [ get_cells {i_clk_ok/i_gcnt/data_q_reg[0][*]} ]
+set_bus_skew \
+    -from $clk_src_cells -to $clk_dst_cells \
+    [ get_property PERIOD [ get_clocks -of_objects $clk_dst_cells ] ]
+set_max_delay -datapath_only \
+    -from $clk_src_cells -to $clk_dst_cells \
+    [ get_property PERIOD [ get_clocks -of_objects $clk_src_cells ] ]
 
 # leds
 
