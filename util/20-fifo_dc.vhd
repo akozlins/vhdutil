@@ -76,7 +76,7 @@ begin
 
         rwgray_q0 <= wgray;
         rwgray_q1 <= rwgray_q0;
-        rempty_i <= work.util.bool_to_logic( rgray_v = rwgray_q1 );
+        rempty_i <= work.util.to_std_logic( rgray_v = rwgray_q1 );
         --
     end if; -- rising_edge
     end process;
@@ -99,7 +99,7 @@ begin
 
         wrgray_q0 <= rgray;
         wrgray_q1 <= wrgray_q0;
-        wfull_i <= work.util.bool_to_logic( (wgray_v xor wrgray_q1) = XOR_FULL );
+        wfull_i <= work.util.to_std_logic( (wgray_v xor wrgray_q1) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;

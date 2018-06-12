@@ -34,7 +34,15 @@ package util is
         n : positive--;
     ) return std_logic_vector;
 
-    function bool_to_logic (
+    function and_reduce(
+        v : std_logic_vector--;
+    ) return std_logic;
+
+    function or_reduce(
+        v : std_logic_vector--;
+    ) return std_logic;
+
+    function to_std_logic (
         constant b : in boolean--;
     ) return std_logic;
 
@@ -115,7 +123,21 @@ package body util is
         return std_logic_vector(resize(unsigned(v), n));
     end function;
 
-    function bool_to_logic (
+    function and_reduce(
+        v : std_logic_vector--;
+    ) return std_logic is
+    begin
+        return to_std_logic(v = (v'range => '1'));
+    end function;
+
+    function or_reduce(
+        v : std_logic_vector--;
+    ) return std_logic is
+    begin
+        return to_std_logic(v /= (v'range => '0'));
+    end function;
+
+    function to_std_logic (
         constant b : in boolean--;
     ) return std_logic is
     begin

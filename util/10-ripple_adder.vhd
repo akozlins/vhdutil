@@ -24,7 +24,7 @@ begin
     c_i(0) <= ci;
     co <= c_i(W);
 
-    gen : for i in 0 to W-1 generate
+    gen_full_adder : for i in s'range generate
         i_full_adder : entity work.full_adder
         port map (
             a => a(i),

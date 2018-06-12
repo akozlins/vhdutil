@@ -21,8 +21,8 @@ begin
     i_sync_chain : entity work.sync_chain
     generic map ( N => N, W => 1 )
     port map (
-        data_out(0) => rstout_n,
-        data_in(0) => '1',
+        d(0) => '1',
+        q(0) => rstout_n,
         rst_n => rst_n,
         clk => clk--,
     );

@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.math_real.all;
 
 -- clock divider
 -- period_{clkout} = 2 * P * period_{clk}
@@ -23,8 +22,7 @@ architecture arch of clkdiv2 is
 
     signal clkout_i : std_logic;
 
-    constant W : positive := positive(ceil(log2(real(work.util.max(P,2)))));
-    signal cnt : unsigned(W-1 downto 0);
+    signal cnt : integer range 0 to P - 1;
 
 begin
 
@@ -34,13 +32,13 @@ begin
     begin
     if rst_n = '0' then
         clkout_i <= '0';
-        cnt <= to_unsigned(R, W);
+        cnt <= R;
         --
     elsif rising_edge(clk) then
         cnt <= cnt + 1;
         if ( cnt = P - 1 ) then
             clkout_i <= not clkout_i;
-            cnt <= (others => '0');
+            cnt <= 0;
         end if;
         --
     end if;

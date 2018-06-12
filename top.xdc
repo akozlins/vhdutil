@@ -11,9 +11,9 @@ create_generated_clock [ get_pins {i_clk/clkout} ] -source [ get_pins {i_clk/clk
 
 # constraints
 
-foreach cell [ get_cells -hier -filter {ref_name==clkmon} ] {
+foreach cell [ get_cells -hier -filter {ref_name==clkmon || orig_ref_name==clkmon} ] {
     set from_cells [ get_cells "$cell/tst_gcnt_reg\[*\]" ]
-    set to_cells [ get_cells "$cell/i_gcnt/data_q_reg\[0\]\[*\]" ]
+    set to_cells [ get_cells "$cell/i_gcnt/chain_reg\[0\]\[*\]" ]
     set_bus_skew \
         -from $from_cells -to $to_cells \
         [ get_property PERIOD [ get_clocks -of_objects $to_cells ] ]

@@ -70,8 +70,8 @@ begin
         rptr <= rptr_v;
         wptr <= wptr_v;
 
-        empty_i <= work.util.bool_to_logic( rptr_v = wptr_v );
-        full_i <= work.util.bool_to_logic( (rptr_v xor wptr_v) = XOR_FULL );
+        empty_i <= work.util.to_std_logic( rptr_v = wptr_v );
+        full_i <= work.util.to_std_logic( (rptr_v xor wptr_v) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;

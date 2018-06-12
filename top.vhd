@@ -4,10 +4,10 @@ use ieee.numeric_std.all;
 
 entity top is
     Port (
-        pl_clk_100  :   in  std_logic;
         pl_led      :   out std_logic_vector(7 downto 0);
         pl_btn      :   in  std_logic_vector(4 downto 0);
-        pl_sw       :   in  std_logic_vector(7 downto 0)--;
+        pl_sw       :   in  std_logic_vector(7 downto 0);
+        pl_clk_100  :   in  std_logic--;
     );
 end entity;
 
@@ -66,8 +66,8 @@ begin
 
     i_btn : entity work.debouncer
     generic map (
-        N => pl_btn'length,
-        C => X"FFFF"--,
+        W => pl_btn'length,
+        N => 16#FFFF#--,
     )
     port map (
         d => pl_btn,
@@ -80,8 +80,8 @@ begin
     port map (
         dbg_out => dbg_i,
         dbg_in => (others => '-'),
-        clk => clk,
-        rst_n => rst_n--,
+        clk => clk_100,
+        rst_n => rst_100_n--,
     );
 
     pl_led(3 downto 0) <= dbg_i(11 downto 8);
