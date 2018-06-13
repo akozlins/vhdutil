@@ -6,8 +6,10 @@ create_clock -period 10 -name pl_clk_100 [ get_ports {pl_clk_100} ]
 set_property PACKAGE_PIN "Y9" [ get_ports {pl_clk_100} ]
 set_property IOSTANDARD "LVCMOS33" [ get_ports {pl_clk_100} ]
 
-set i_clk_P [ get_property P [ get_cells {i_clk} ] ]
-create_generated_clock [ get_pins {i_clk/clkout} ] -source [ get_pins {i_clk/clk} ] -divide_by $i_clk_P
+foreach cell [ get_cells -hier -filter {ref_name==clkdiv || orig_ref_name==clkdiv} ] {
+    set P [ get_property P $cell ]
+    create_generated_clock -source [ get_pins "$cell/clk" ] -divide_by $P [ get_pins "$cell/clkout" ]
+}
 
 # constraints
 

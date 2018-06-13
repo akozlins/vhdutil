@@ -55,13 +55,14 @@ begin
         tst_ok <= '0';
         --
     elsif rising_edge(clk) then
-        cnt <= cnt + 1;
         if ( cnt = 2**W * CLK_MHZ / TST_MHZ - 1 ) then
             cnt <= 0;
             if ( tst_arst_n = '1' ) then
                 tst_ok <= work.util.to_std_logic(gcnt = GCNT_OK);
             end if;
             tst_arst_n <= not tst_arst_n;
+        else
+            cnt <= cnt + 1;
         end if;
         --
     end if;

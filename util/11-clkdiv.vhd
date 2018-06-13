@@ -3,54 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 -- clock divider
--- period_{clkout} = 2 * P * period_{clk}
-entity clkdiv2 is
-    generic (
-        -- counter reset value
-        R : natural := 0;
-        -- period
-        P : positive := 1--;
-    );
-    port (
-        clkout  :   out std_logic;
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
-end entity;
-
-architecture arch of clkdiv2 is
-
-    signal clkout_i : std_logic;
-
-    signal cnt : integer range 0 to P - 1;
-
-begin
-
-    clkout <= clkout_i;
-
-    process(clk, rst_n)
-    begin
-    if rst_n = '0' then
-        clkout_i <= '0';
-        cnt <= R;
-        --
-    elsif rising_edge(clk) then
-        cnt <= cnt + 1;
-        if ( cnt = P - 1 ) then
-            clkout_i <= not clkout_i;
-            cnt <= 0;
-        end if;
-        --
-    end if;
-    end process;
-
-end architecture;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
--- clock divider
 -- period_{clkout} = P * period_{clk}
 entity clkdiv is
     generic (
@@ -67,6 +19,7 @@ end entity;
 architecture arch of clkdiv is
 
     signal clkout1, clkout2 : std_logic;
+    signal cnt1, cnt2 : integer range 0 to P - 1;
 
 begin
 
@@ -77,44 +30,65 @@ begin
 
     gen_even :
     if ( P > 1 and P mod 2 = 0 ) generate
-        i_clkdiv_even :
-        entity work.clkdiv2
-        generic map (
-            P => P/2--,
-        )
-        port map (
-            clkout => clkout,
-            rst_n => rst_n,
-            clk => clk--,
-        );
+        clkout <= clkout1;
+
+        process(clk, rst_n)
+        begin
+        if rst_n = '0' then
+            clkout1 <= '0';
+            cnt1 <= 0;
+            --
+        elsif rising_edge(clk) then
+            if ( cnt1 = P/2 - 1 or cnt1 = P - 1 ) then
+                cnt1 <= 0;
+                clkout1 <= not clkout1;
+            else
+                cnt1 <= cnt1 + 1;
+            end if;
+            --
+        end if;
+        end process;
+
     end generate;
 
     gen_odd :
     if ( P > 1 and P mod 2 = 1 ) generate
-        clkout <= clkout1 xnor clkout2;
+        clkout <= clkout1 xor clkout2;
 
-        i_clkdiv_odd1 :
-        entity work.clkdiv2
-        generic map (
-            P => P--,
-        )
-        port map (
-            clkout => clkout1,
-            rst_n => rst_n,
-            clk => clk--,
-        );
+        process(clk, rst_n)
+        begin
+        if rst_n = '0' then
+            clkout1 <= '0';
+            cnt1 <= 0;
+            --
+        elsif rising_edge(clk) then
+            if ( cnt1 = P - 1 ) then
+                cnt1 <= 0;
+                clkout1 <= not clkout1;
+            else
+                cnt1 <= cnt1 + 1;
+            end if;
+            --
+        end if;
+        end process;
 
-        i_clkdiv_odd2 :
-        entity work.clkdiv2
-        generic map (
-            R => P/2,
-            P => P--,
-        )
-        port map (
-            clkout => clkout2,
-            rst_n => rst_n,
-            clk => not clk--,
-        );
+        process(clk, rst_n)
+        begin
+        if rst_n = '0' then
+            clkout2 <= '0';
+            cnt2 <= P/2;
+            --
+        elsif falling_edge(clk) then
+            if ( cnt2 = P - 1 ) then
+                cnt2 <= 0;
+                clkout2 <= not clkout2;
+            else
+                cnt2 <= cnt2 + 1;
+            end if;
+            --
+        end if;
+        end process;
+
     end generate;
 
 end architecture;

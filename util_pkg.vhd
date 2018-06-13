@@ -34,11 +34,11 @@ package util is
         n : positive--;
     ) return std_logic_vector;
 
-    function and_reduce(
+    function and_reduce (
         v : std_logic_vector--;
     ) return std_logic;
 
-    function or_reduce(
+    function or_reduce (
         v : std_logic_vector--;
     ) return std_logic;
 
@@ -46,19 +46,19 @@ package util is
         constant b : in boolean--;
     ) return std_logic;
 
-    procedure char_to_hex(
+    procedure char_to_hex (
         c : in character;
         v : out std_logic_vector(3 downto 0);
         good : out boolean--;
     );
 
-    procedure string_to_hex(
+    procedure string_to_hex (
         s : in string;
         v : out std_logic_vector;
         good : out boolean--;
     );
 
-    procedure read_hex(
+    procedure read_hex (
         l : inout line;
         value : out std_logic_vector;
         good : out boolean--;
@@ -123,14 +123,14 @@ package body util is
         return std_logic_vector(resize(unsigned(v), n));
     end function;
 
-    function and_reduce(
+    function and_reduce (
         v : std_logic_vector--;
     ) return std_logic is
     begin
         return to_std_logic(v = (v'range => '1'));
     end function;
 
-    function or_reduce(
+    function or_reduce (
         v : std_logic_vector--;
     ) return std_logic is
     begin
@@ -148,7 +148,7 @@ package body util is
         end if;
     end function;
 
-    procedure char_to_hex(
+    procedure char_to_hex (
         c : in character;
         v : out std_logic_vector(3 downto 0);
         good : out boolean--;
@@ -180,7 +180,7 @@ package body util is
         end case;
     end procedure;
 
-    procedure string_to_hex(
+    procedure string_to_hex (
         s : in string;
         v : out std_logic_vector;
         good : out boolean--;
@@ -197,7 +197,7 @@ package body util is
         good := true;
     end procedure;
 
-    procedure read_hex(
+    procedure read_hex (
         l : inout line;
         value : out std_logic_vector;
         good : out boolean--;
