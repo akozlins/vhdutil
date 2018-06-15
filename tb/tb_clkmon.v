@@ -5,8 +5,8 @@ module tb_clkmon();
 reg clk, rst_n, tst_clk;
 wire tst_ok;
 
-parameter CLK_MHZ = 1;
-parameter TST_MHZ = 100;
+parameter CLK_MHZ = 53;
+parameter TST_MHZ = 29;
 
 clkmon #(.CLK_MHZ(CLK_MHZ), .TST_MHZ(TST_MHZ)) i_clkmon (
     .tst_clk(tst_clk),
