@@ -32,9 +32,7 @@ architecture arch of fifo_dc is
 
     signal re_i, we_i : std_logic;
     signal rempty_i, wfull_i : std_logic;
-    signal rptr, wptr : ptr_t;
-    signal rgray, wgray : ptr_t;
-    signal rwgray_q0, rwgray_q1, wrgray_q0, wrgray_q1 : ptr_t;
+    signal rptr, rgray, rwgray, wptr, wgray, wrgray : ptr_t;
 
 begin
 
@@ -58,6 +56,15 @@ begin
     re_i <= ( re and not rempty_i );
     we_i <= ( we and not wfull_i );
 
+    i_rwgray : entity work.sync_chain
+    generic map ( W => rwgray'length )
+    port map (
+        d => wgray,
+        q => rwgray,
+        rst_n => rrst_n,
+        clk => rclk--,
+    );
+
     process(rclk, rrst_n)
         variable rptr_v, rgray_v : std_logic_vector(ptr_t'range);
     begin
@@ -65,8 +72,6 @@ begin
         rempty_i <= '1';
         rptr <= (others => '0');
         rgray <= (others => '0');
-        rwgray_q0 <= (others => '0');
-        rwgray_q1 <= (others => '0');
         --
     elsif rising_edge(rclk) then
         rptr_v := rptr + re_i;
@@ -74,12 +79,19 @@ begin
         rptr <= rptr_v;
         rgray <= rgray_v;
 
-        rwgray_q0 <= wgray;
-        rwgray_q1 <= rwgray_q0;
-        rempty_i <= work.util.to_std_logic( rgray_v = rwgray_q1 );
+        rempty_i <= work.util.to_std_logic( rgray_v = rwgray );
         --
     end if; -- rising_edge
     end process;
+
+    i_wrgray : entity work.sync_chain
+    generic map ( W => wrgray'length )
+    port map (
+        d => rgray,
+        q => wrgray,
+        rst_n => wrst_n,
+        clk => wclk--,
+    );
 
     process(wclk, wrst_n)
         variable wptr_v, wgray_v : std_logic_vector(ptr_t'range);
@@ -88,8 +100,6 @@ begin
         wfull_i <= '0';
         wptr <= (others => '0');
         wgray <= (others => '0');
-        wrgray_q0 <= (others => '0');
-        wrgray_q1 <= (others => '0');
         --
     elsif rising_edge(wclk) then
         wptr_v := wptr + we_i;
@@ -97,9 +107,7 @@ begin
         wptr <= wptr_v;
         wgray <= wgray_v;
 
-        wrgray_q0 <= rgray;
-        wrgray_q1 <= wrgray_q0;
-        wfull_i <= work.util.to_std_logic( (wgray_v xor wrgray_q1) = XOR_FULL );
+        wfull_i <= work.util.to_std_logic( (wgray_v xor wrgray) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;
