@@ -26,6 +26,9 @@ if { [ file isdirectory $dir ] == 0 } {
 
 create_project -in_memory -part $part
 read_xdc -unmanaged "top.xdc"
+foreach { file } [ lsort [ glob -nocomplain -- "util/*.xdc" ] ] {
+    read_xdc -unmanaged "$file"
+}
 
 read_vhdl "util_pkg.vhd"
 foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" "util/*.v" ] ] {

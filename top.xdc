@@ -6,23 +6,7 @@ create_clock -period 10 -name pl_clk_100 [ get_ports {pl_clk_100} ]
 set_property PACKAGE_PIN "Y9" [ get_ports {pl_clk_100} ]
 set_property IOSTANDARD "LVCMOS33" [ get_ports {pl_clk_100} ]
 
-foreach cell [ get_cells -hier -filter {ref_name==clkdiv || orig_ref_name==clkdiv} ] {
-    set P [ get_property P $cell ]
-    create_generated_clock -source [ get_pins "$cell/clk" ] -divide_by $P [ get_pins "$cell/clkout" ]
-}
-
 # constraints
-
-foreach cell [ get_cells -hier -filter {ref_name==clkmon || orig_ref_name==clkmon} ] {
-    set from_cells [ get_cells "$cell/tst_gcnt_reg\[*\]" ]
-    set to_cells [ get_cells "$cell/i_gcnt/chain_reg\[0\]\[*\]" ]
-    set_bus_skew \
-        -from $from_cells -to $to_cells \
-        [ get_property PERIOD [ get_clocks -of_objects $to_cells ] ]
-    set_max_delay -datapath_only \
-        -from $from_cells -to $to_cells \
-        [ get_property PERIOD [ get_clocks -of_objects $from_cells ] ]
-}
 
 #set_false_path -to [ get_ports {pl_led[*]} ]
 #set_false_path -from [ get_ports {pl_btn[*]} ]
