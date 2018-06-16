@@ -53,7 +53,7 @@ begin
 
     gen_odd :
     if ( P > 1 and P mod 2 = 1 ) generate
-        clkout <= clkout1 xor clkout2;
+        clkout <= clkout1 and clkout2;
 
         process(clk, rst_n)
         begin
@@ -62,9 +62,11 @@ begin
             cnt1 <= 0;
             --
         elsif rising_edge(clk) then
+            if ( cnt1 = 0 or cnt1 = (P+1)/2 ) then
+                clkout1 <= not clkout1;
+            end if;
             if ( cnt1 = P - 1 ) then
                 cnt1 <= 0;
-                clkout1 <= not clkout1;
             else
                 cnt1 <= cnt1 + 1;
             end if;
@@ -76,12 +78,14 @@ begin
         begin
         if rst_n = '0' then
             clkout2 <= '0';
-            cnt2 <= P/2;
+            cnt2 <= 0;
             --
         elsif falling_edge(clk) then
+            if ( cnt2 = 0 or cnt2 = (P+1)/2 ) then
+                clkout2 <= not clkout2;
+            end if;
             if ( cnt2 = P - 1 ) then
                 cnt2 <= 0;
-                clkout2 <= not clkout2;
             else
                 cnt2 <= cnt2 + 1;
             end if;
