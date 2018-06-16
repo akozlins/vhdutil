@@ -5,8 +5,8 @@ use ieee.numeric_std.all;
 -- synchronizer chain
 entity sync_chain is
     generic (
-        W : positive := 8;
-        N : positive := 2--;
+        W : positive := 1;
+        N : positive := 1--;
     );
     port (
         d       :   in  std_logic_vector(W-1 downto 0);
@@ -18,19 +18,19 @@ end entity;
 
 architecture arch of sync_chain is
 
-    type array_t is array (natural range <>) of std_logic_vector(d'range);
-    signal chain : array_t(N downto 0);
+    type ff_array_t is array (natural range <>) of std_logic_vector(d'range);
+    signal ff : ff_array_t(N downto 0);
 
 begin
 
-    q <= chain(N);
+    q <= ff(N);
 
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
-        chain <= (others => (others => '0'));
+        ff <= (others => (others => '0'));
     elsif rising_edge(clk) then
-        chain <= chain(N-1 downto 0) & d;
+        ff <= ff(N-1 downto 0) & d;
     end if;
     end process;
 

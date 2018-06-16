@@ -27,7 +27,7 @@ begin
     clk_100 <= pl_clk_100;
 
     i_rst_100 : entity work.reset_sync
-    port map ( rstout_n => rst_100_n, rst_n => not pl_btn(0), clk => clk_100 );
+    port map ( rstout_n => rst_100_n, arst_n => not pl_btn(0), clk => clk_100 );
 
     i_clk : entity work.clkdiv
     generic map (
@@ -52,7 +52,7 @@ begin
     );
 
     i_rst : entity work.reset_sync
-    port map ( rstout_n => rst_n, rst_n => rst_100_n, clk => clk );
+    port map ( rstout_n => rst_n, arst_n => rst_100_n, clk => clk );
 
     i_clk_hz : entity work.clkdiv
     generic map (

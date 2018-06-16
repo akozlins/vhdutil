@@ -17,10 +17,11 @@ end entity;
 
 architecture arch of debouncer is
 
-    signal q0, q1, q2 : std_logic_vector(d'range);
+    type ff_array_t is array (natural range <>) of std_logic_vector(d'range);
+    signal ff : ff_array_t(2 downto 0);
 
-    type cnt_t is array(natural range <>) of integer range 0 to N;
-    signal cnt : cnt_t(d'range);
+    type cnt_array_t is array(natural range <>) of integer range 0 to N;
+    signal cnt : cnt_array_t(d'range);
 
 begin
 
@@ -28,20 +29,17 @@ begin
     begin
     if rst_n = '0' then
         q <= (others => '0');
-        q0 <= (others => '0');
-        q1 <= (others => '0');
-        q2 <= (others => '0');
+        ff <= (others => (others => '0'));
         cnt <= (others => 0);
         --
     elsif rising_edge(clk) then
-        q0 <= d;
-        q1 <= q0;
-        q2 <= q1;
+        ff <= ff(ff'left-1 downto 0) & d;
+
         for i in d'range loop
-            if ( q1(i) /= q2(i) ) then
+            if ( ff(ff'left)(i) /= ff(ff'left-1)(i) ) then
                 cnt(i) <= 0;
             elsif ( cnt(i) = N ) then
-                q(i) <= q2(i);
+                q(i) <= ff(ff'left)(i);
             else
                 cnt(i) <= cnt(i) + 1;
             end if;

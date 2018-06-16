@@ -25,12 +25,12 @@ architecture arch of clkmon is
 
     -- clk clock domain
     signal cnt : std_logic_vector(W-1 downto 0);
-    signal q0, q1, q2 : std_logic;
+    signal ff : std_logic_vector(2 downto 0);
 
     -- tst_clk clock domain
     signal tst_rst_n : std_logic;
     signal tst_cnt : integer range 0 to 2**W * 63 / 64 * TST_MHZ / CLK_MHZ;
-    signal tst_d : std_logic;
+    signal tst_clk_slow : std_logic;
 
 begin
 
@@ -38,13 +38,14 @@ begin
     begin
     if ( rst_n = '0' ) then
         cnt <= (others => '0');
-        q2 <= '0'; q1 <= '0'; q0 <= '0';
+        ff <= (others => '0');
         tst_ok <= '0';
         --
     elsif rising_edge(clk) then
-        q2 <= q1; q1 <= q0; q0 <= tst_d;
+        -- sync tst_clk_slow to clk domain
+        ff <= ff(ff'left-1 downto 0) & tst_clk_slow;
 
-        if ( q1 /= q2 ) then
+        if ( ff(ff'left) /= ff(ff'left-1) ) then
             cnt <= (others => '0');
             tst_ok <= work.util.and_reduce(cnt(cnt'left downto cnt'left - 4));
         elsif ( cnt = 2**W - 1 ) then
@@ -56,16 +57,16 @@ begin
     end if;
     end process;
 
-    -- sync rst_n from clk to tst_clk
+    -- sync rst_n to tst_clk domain
     i_tst_rst : entity work.reset_sync
-    port map ( rstout_n => tst_rst_n, rst_n => rst_n, clk => tst_clk );
+    port map ( rstout_n => tst_rst_n, arst_n => rst_n, clk => tst_clk );
 
-    i_tst_clk_d : entity work.clkdiv
+    i_tst_clk_slow : entity work.clkdiv
     generic map (
         P => 2**W * 63 / 64 * TST_MHZ / CLK_MHZ * 2--,
     )
     port map (
-        clkout => tst_d,
+        clkout => tst_clk_slow,
         rst_n => tst_rst_n,
         clk => tst_clk--,
     );
