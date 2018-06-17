@@ -2,7 +2,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
-use ieee.math_real.all;
 
 -- clock monitor
 -- ...
@@ -21,7 +20,7 @@ end entity;
 
 architecture arch of clkmon is
 
-    constant W : positive := 8 + work.util.log2(work.util.max(1, CLK_MHZ / TST_MHZ));
+    constant W : positive := 8 + work.util.vector_width(CLK_MHZ / TST_MHZ);
 
     -- clk clock domain
     signal cnt : std_logic_vector(W-1 downto 0);
@@ -29,7 +28,6 @@ architecture arch of clkmon is
 
     -- tst_clk clock domain
     signal tst_rst_n : std_logic;
-    signal tst_cnt : integer range 0 to 2**W * 63 / 64 * TST_MHZ / CLK_MHZ;
     signal tst_clk_slow : std_logic;
 
 begin

@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
 
 use std.textio.all;
 use ieee.std_logic_textio.all;
@@ -10,6 +11,10 @@ package util is
     function max (
         l, r: integer
     ) return integer;
+
+    function vector_width (
+        entries : natural--;
+    ) return positive;
 
     function bin2gray (
         v : std_logic_vector--;
@@ -77,6 +82,16 @@ package body util is
         else
             return r;
         end if;
+    end function;
+
+    function vector_width (
+        entries : natural--;
+    ) return positive is
+    begin
+        if ( entries = 0 or entries = 1 ) then
+            return 1;
+        end if;
+        return positive(ceil(log2(real(entries))));
     end function;
 
     function bin2gray (
