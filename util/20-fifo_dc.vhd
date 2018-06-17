@@ -56,7 +56,7 @@ begin
     re_i <= ( re and not rempty_i );
     we_i <= ( we and not wfull_i );
 
-    i_rwgray : entity work.sync_chain
+    i_rwgray : entity work.ff_sync
     generic map ( W => rwgray'length )
     port map (
         d => wgray,
@@ -84,7 +84,7 @@ begin
     end if; -- rising_edge
     end process;
 
-    i_wrgray : entity work.sync_chain
+    i_wrgray : entity work.ff_sync
     generic map ( W => wrgray'length )
     port map (
         d => rgray,

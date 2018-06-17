@@ -2,10 +2,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
--- synchronizer chain
-entity sync_chain is
+-- ff (chain) synchronizer
+entity ff_sync is
     generic (
+        -- bus width
         W : positive := 1;
+        -- number of stages
         N : positive := 1--;
     );
     port (
@@ -16,7 +18,7 @@ entity sync_chain is
     );
 end entity;
 
-architecture arch of sync_chain is
+architecture arch of ff_sync is
 
     type ff_array_t is array (natural range <>) of std_logic_vector(d'range);
     signal ff : ff_array_t(N downto 0);

@@ -5,6 +5,7 @@ use ieee.numeric_std.all;
 -- reset synchronizer
 entity reset_sync is
     generic (
+        -- number of stages
         N : positive := 1--;
     );
     port (
