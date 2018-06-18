@@ -31,7 +31,10 @@ foreach { file } [ lsort [ glob -nocomplain -- "util/*.xdc" ] ] {
 }
 
 read_vhdl "util_pkg.vhd"
-foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" "util/*.v" ] ] {
+foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" ] ] {
+    add_files -fileset sources_1 "$file"
+}
+foreach { file } [ lsort [ glob -nocomplain -- "cpu/*.vhd" ] ] {
     add_files -fileset sources_1 "$file"
 }
 foreach { file } [ lsort [ glob -nocomplain -- "tb/*.v" ] ] {
