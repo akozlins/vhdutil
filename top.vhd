@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity top is
     port (
@@ -26,7 +25,7 @@ begin
 
     clk_100 <= pl_clk_100;
 
-    i_rst_100 : entity work.reset_sync
+    i_rst_100_n : entity work.reset_sync
     port map ( rstout_n => rst_100_n, arst_n => not pl_btn(0), clk => clk_100 );
 
     i_clk : entity work.clkdiv

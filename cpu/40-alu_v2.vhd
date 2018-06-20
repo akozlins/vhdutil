@@ -1,7 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 entity alu_v2 is
     generic (
@@ -83,7 +81,7 @@ begin
     end process;
 
     y <= y_i;
-    z <= '1' when ( y_i = 0 ) else '0';
+    z <= not work.util.or_reduce(y_i);
     s <= y_i(y_i'left);
 --    v <= (a(a'left) and b(b'left) and not y_i(y_i'left)) or
 --         (not a(a'left) and not b(b'left) and y_i(y_i'left));

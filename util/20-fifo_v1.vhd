@@ -10,12 +10,12 @@ entity fifo_v1 is
         N   : positive := 8--;
     );
     port (
-        re      :   in  std_logic;
-        rd      :   out std_logic_vector(W-1 downto 0);
-        empty   :   out std_logic;
         we      :   in  std_logic;
         wd      :   in  std_logic_vector(W-1 downto 0);
         full    :   out std_logic;
+        re      :   in  std_logic;
+        rd      :   out std_logic_vector(W-1 downto 0);
+        empty   :   out std_logic;
         clk     :   in  std_logic;
         rst_n   :   in  std_logic--;
     );

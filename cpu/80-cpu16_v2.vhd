@@ -51,7 +51,7 @@ begin
     generic map (
         W => word_t'length,
         N => ram_addr_t'length,
-        INIT_FILE_HEX => "cpu_v2.hex"--,
+        INIT_FILE_HEX => "../cpu/cpu_v2.hex"--,
     )
     port map (
         addr    => ram_addr,

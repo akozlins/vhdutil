@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 -- reset synchronizer
 entity reset_sync is
@@ -16,20 +15,10 @@ entity reset_sync is
 end entity;
 
 architecture arch of reset_sync is
-
-    signal ff : std_logic_vector(N downto 0);
-
 begin
 
-    rstout_n <= ff(N);
-
-    process(clk, arst_n)
-    begin
-    if ( arst_n = '0' ) then
-        ff <= (others => '0');
-    elsif rising_edge(clk) then
-        ff <= ff(N-1 downto 0) & '1';
-    end if;
-    end process;
+    i_ff_sync : entity work.ff_sync
+    generic map ( W => 1, N => N )
+    port map ( d(0) => '1', q(0) => rstout_n, rst_n => arst_n, clk => clk );
 
 end architecture;

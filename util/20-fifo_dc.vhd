@@ -10,16 +10,16 @@ entity fifo_dc is
         N   : positive := 8--;
     );
     port (
-        re      :   in  std_logic;
-        rd      :   out std_logic_vector(W-1 downto 0);
-        rempty  :   out std_logic;
-        rclk    :   in  std_logic;
-        rrst_n  :   in  std_logic;
         we      :   in  std_logic;
         wd      :   in  std_logic_vector(W-1 downto 0);
         wfull   :   out std_logic;
         wclk    :   in  std_logic;
-        wrst_n  :   in  std_logic--;
+        wrst_n  :   in  std_logic;
+        re      :   in  std_logic;
+        rd      :   out std_logic_vector(W-1 downto 0);
+        rempty  :   out std_logic;
+        rclk    :   in  std_logic;
+        rrst_n  :   in  std_logic--;
     );
 end entity;
 
@@ -33,6 +33,10 @@ architecture arch of fifo_dc is
     signal re_i, we_i : std_logic;
     signal rempty_i, wfull_i : std_logic;
     signal rptr, rgray, rwgray, wptr, wgray, wrgray : ptr_t;
+
+    attribute KEEP : string;
+    attribute KEEP of rgray : signal is "true";
+    attribute KEEP of wgray : signal is "true";
 
 begin
 

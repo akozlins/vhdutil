@@ -24,7 +24,7 @@ begin
     generic map (
         W => W,
         N => N,
-        INIT_FILE_HEX => "ram.hex"--,
+        INIT_FILE_HEX => "../tb/tb_ram.hex"--,
     )
     port map (
         addr => addr,

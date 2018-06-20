@@ -24,7 +24,7 @@ architecture arch of clkmon is
 
     -- clk clock domain
     signal cnt : std_logic_vector(W-1 downto 0);
-    signal ff : std_logic_vector(2 downto 0);
+    signal ff0, ff1 : std_logic;
 
     -- tst_clk clock domain
     signal tst_rst_n : std_logic;
@@ -32,18 +32,23 @@ architecture arch of clkmon is
 
 begin
 
+    -- sync tst_clk_slow to clk domain
+    i_ff_sync : entity work.ff_sync
+    generic map ( W => 1 )
+    port map ( d(0) => tst_clk_slow, q(0) => ff0, rst_n => rst_n, clk => clk );
+
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
         cnt <= (others => '0');
-        ff <= (others => '0');
+        ff1 <= '0';
         tst_ok <= '0';
         --
     elsif rising_edge(clk) then
         -- sync tst_clk_slow to clk domain
-        ff <= ff(ff'left-1 downto 0) & tst_clk_slow;
+        ff1 <= ff0;
 
-        if ( ff(ff'left) /= ff(ff'left-1) ) then
+        if ( ff0 /= ff1 ) then
             cnt <= (others => '0');
             tst_ok <= work.util.and_reduce(cnt(cnt'left downto cnt'left - 4));
         elsif ( cnt = 2**W - 1 ) then

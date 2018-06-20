@@ -26,14 +26,15 @@ if { [ file isdirectory $dir ] == 0 } {
 
 create_project -in_memory -part $part
 read_xdc -unmanaged "top.xdc"
+
+read_vhdl "util.vhd"
+foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" ] ] {
+    add_files -fileset sources_1 "$file"
+}
 foreach { file } [ lsort [ glob -nocomplain -- "util/*.xdc" ] ] {
     read_xdc -unmanaged "$file"
 }
 
-read_vhdl "util_pkg.vhd"
-foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" ] ] {
-    add_files -fileset sources_1 "$file"
-}
 foreach { file } [ lsort [ glob -nocomplain -- "cpu/*.vhd" ] ] {
     add_files -fileset sources_1 "$file"
 }
