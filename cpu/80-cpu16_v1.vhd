@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 -- 16bit cpu
 --
@@ -20,6 +19,9 @@ entity cpu16_v1 is
         clk     :   in  std_logic--;
     );
 end entity;
+
+library ieee;
+use ieee.std_logic_unsigned."+";
 
 architecture arch of cpu16_v1 is
 

@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned.all;
 
 entity adder is
     generic (
@@ -16,6 +15,9 @@ entity adder is
     );
 end entity;
 
+library ieee;
+use ieee.std_logic_unsigned."+";
+
 architecture arch1 of adder is
 
     signal s_i : std_logic_vector(W downto 0);
@@ -27,6 +29,9 @@ begin
     co <= s_i(s_i'left);
 
 end architecture;
+
+library ieee;
+use ieee.std_logic_unsigned."+";
 
 architecture arch2 of adder is
 
@@ -40,8 +45,7 @@ begin
 
 end architecture;
 
-library UNISIM;
-use UNISIM.vcomponents.all;
+library unisim;
 
 architecture arch_carry4 of adder is
 
@@ -66,7 +70,7 @@ begin
 
     gen:
     for i in 0 to N-1 generate
-    i_carry4 : CARRY4
+    i_carry4 : unisim.vcomponents.CARRY4
     port map (
         CO => co_i(4*i+3 downto 4*i),
         O => s_i(4*i+3 downto 4*i),
