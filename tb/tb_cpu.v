@@ -2,7 +2,23 @@
 
 module tb_cpu();
 
+parameter CLK_MHZ = 100;
 reg clk, rst_n;
+
+initial
+begin
+    clk <= 0;
+    repeat(CLK_MHZ*2000) #(500.0/CLK_MHZ) clk <= ~clk;
+    $finish;
+end
+
+initial
+begin
+    rst_n <= 0;
+    repeat(10) @(posedge clk);
+    rst_n <= 1;
+end
+
 wire [15:0] dbg_out;
 
 cpu16_v4 i_cpu (
@@ -13,23 +29,7 @@ cpu16_v4 i_cpu (
 
 initial
 begin
-    clk <= 1'b1;
-    forever #5 clk <= ~clk;
-end
-
-initial
-begin
-    rst_n <= 1'b0;
-    #100;
-    @(posedge clk);
-    rst_n <= 1'b1;
-end
-
-initial
-begin
     @(posedge rst_n);
-    repeat(1000*1000) @(posedge clk);
-    $finish;
 end
 
 endmodule

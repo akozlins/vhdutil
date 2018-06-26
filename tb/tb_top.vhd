@@ -6,41 +6,47 @@ end entity;
 
 architecture arch of tb_top is
 
-    constant clk_period : time := 10 ns;
+    constant CLK_MHZ : positive := 100;
+    signal clk, rst_n : std_logic;
 
-    signal clk : std_logic := '0';
-    signal led : std_logic_vector(7 downto 0);
-    signal btn : std_logic_vector(4 downto 0) := (others => '0');
-    signal sw  : std_logic_vector(7 downto 0) := (others => '0');
+    signal btn : std_logic_vector(4 downto 0);
 
 begin
 
-    i_top : entity work.top
-    port map (
-        pl_clk_100  => clk,
-        pl_led      => led,
-        pl_btn      => btn,
-        pl_sw       => sw--;
-    );
-
-    -- clock generator
     process
     begin
-        clk <= not clk;
-        wait for (clk_period / 2);
+        clk <= '0';
+        for i in 1 to CLK_MHZ*2000 loop
+            wait for (500 ns / CLK_MHZ);
+            clk <= not clk;
+        end loop;
+        wait;
     end process;
 
     process
     begin
-        -- press button 0
-        btn(0) <= '1';
-        -- wait for 10 clock cycles
-        for i in 0 to 9 loop
+        rst_n <= '0';
+        for i in 1 to 10 loop
             wait until rising_edge(clk);
         end loop;
-        -- release button 0
-        btn(0) <= '0';
+        rst_n <= '1';
+        wait;
+    end process;
 
+    i_top : entity work.top
+    port map (
+        pl_led      => open,
+        pl_btn      => btn,
+        pl_sw       => (others => '0'),
+        pl_clk_100  => clk--,
+    );
+
+    process
+    begin
+        btn <= (others => '0');
+        btn(0) <= '1';
+        wait until rising_edge(clk);
+        btn(0) <= '0';
         wait;
     end process;
 

@@ -7,7 +7,8 @@ end entity;
 
 architecture arch of tb_ram is
 
-    constant clk_period : time := 10 ns;
+    constant CLK_MHZ : positive := 100;
+    signal clk, rst_n : std_logic;
 
     constant W : integer := 16;
     constant N : integer := 4;
@@ -15,10 +16,29 @@ architecture arch of tb_ram is
     signal addr : std_logic_vector(N-1 downto 0);
     signal dout : std_logic_vector(W-1 downto 0);
     signal din : std_logic_vector(W-1 downto 0);
-    signal we : std_logic := '0';
-    signal clk : std_logic := '0';
+    signal we : std_logig;
 
 begin
+
+    process
+    begin
+        clk <= '0';
+        for i in 1 to CLK_MHZ*2000 loop
+            wait for (500 ns / CLK_MHZ);
+            clk <= not clk;
+        end loop;
+        wait;
+    end process;
+
+    process
+    begin
+        rst_n <= '0';
+        for i in 1 to 10 loop
+            wait until rising_edge(clk);
+        end loop;
+        rst_n <= '1';
+        wait;
+    end process;
 
     i_ram : entity work.ram_sp
     generic map (
@@ -36,27 +56,22 @@ begin
 
     process
     begin
-        clk <= not clk;
-        wait for (clk_period / 2);
-    end process;
-
-    process
-    begin
-        for i in 0 to 9 loop
-            wait until rising_edge(clk);
-        end loop;
+        addr <= (others => '0');
+        din <= (others => '0');
+        we <= '0';
+        wait until rising_edge(rst_n);
 
         for i in 0 to 2**N-1 loop
+            wait until rising_edge(clk);
             addr <= std_logic_vector(to_unsigned(i, N));
             din <= std_logic_vector(to_unsigned(i, W));
             we <= '1';
-            wait until rising_edge(clk);
         end loop;
 
         for i in 0 to 2**N-1 loop
-            we <= '0';
-            addr <= std_logic_vector(to_unsigned(i, N));
             wait until rising_edge(clk);
+            addr <= std_logic_vector(to_unsigned(i, N));
+            we <= '0';
         end loop;
 
         wait;

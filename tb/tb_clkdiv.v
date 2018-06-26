@@ -2,9 +2,23 @@
 
 module tb_clkdiv();
 
-parameter FREQ = 100; // MHz
-
+parameter CLK_MHZ = 100;
 reg clk, rst_n;
+
+initial
+begin
+    clk <= 0;
+    repeat(CLK_MHZ*2000) #(500.0/CLK_MHZ) clk <= ~clk;
+    $finish;
+end
+
+initial
+begin
+    rst_n <= 0;
+    repeat(10) @(posedge clk);
+    rst_n <= 1;
+end
+
 wire [1:5] clkout;
 
 clkdiv #(.P(1)) i_clkdiv1 (
@@ -30,24 +44,7 @@ clkdiv #(.P(5)) i_clkdiv5 (
 
 initial
 begin
-    clk <= 1'b1;
-    forever #(1000.0/2/FREQ) clk <= ~clk;
-end
-
-initial
-begin
-    rst_n <= 1'b0;
-    #100;
-    @(posedge clk);
-    rst_n <= 1'b1;
-end
-
-initial
-begin
     @(posedge rst_n);
-
-    repeat(100) @(posedge clk);
-    $finish;
 end
 
 endmodule
