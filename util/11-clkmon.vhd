@@ -22,7 +22,7 @@ architecture arch of clkmon is
     constant W : positive := 8 + work.util.vector_width(CLK_MHZ / TST_MHZ);
 
     -- clk clock domain
-    signal cnt : std_logic_vector(W-1 downto 0);
+    signal cnt : unsigned(W-1 downto 0);
     signal ff0, ff1 : std_logic;
 
     -- tst_clk clock domain
@@ -49,8 +49,8 @@ begin
 
         if ( ff0 /= ff1 ) then
             cnt <= (others => '0');
-            tst_ok <= work.util.and_reduce(cnt(cnt'left downto cnt'left - 4));
-        elsif ( cnt = 2**W - 1 ) then
+            tst_ok <= work.util.to_std_logic(cnt(W-1 downto W-4) = X"F");
+        elsif ( cnt = 2**W-1 ) then
             tst_ok <= '0';
         else
             cnt <= cnt + 1;

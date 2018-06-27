@@ -17,8 +17,8 @@ entity fifo_v1 is
         re      :   in  std_logic;
         rd      :   out std_logic_vector(W-1 downto 0);
         empty   :   out std_logic;
-        clk     :   in  std_logic;
-        rst_n   :   in  std_logic--;
+        rst_n   :   in  std_logic;
+        clk     :   in  std_logic--;
     );
 end entity;
 

@@ -18,7 +18,7 @@ end entity;
 architecture arch of clkdiv is
 
     signal clkout1, clkout2 : std_logic;
-    signal cnt1, cnt2 : integer range 0 to P - 1;
+    signal cnt1, cnt2 : integer range 0 to P-1;
 
 begin
 
@@ -38,7 +38,7 @@ begin
             cnt1 <= 0;
             --
         elsif rising_edge(clk) then
-            if ( cnt1 = P/2 - 1 or cnt1 = P - 1 ) then
+            if ( cnt1 = P/2-1 or cnt1 = P-1 ) then
                 cnt1 <= 0;
                 clkout1 <= not clkout1;
             else
@@ -64,7 +64,7 @@ begin
             if ( cnt1 = 0 or cnt1 = (P+1)/2 ) then
                 clkout1 <= not clkout1;
             end if;
-            if ( cnt1 = P - 1 ) then
+            if ( cnt1 = P-1 ) then
                 cnt1 <= 0;
             else
                 cnt1 <= cnt1 + 1;
@@ -83,7 +83,7 @@ begin
             if ( cnt2 = 0 or cnt2 = (P+1)/2 ) then
                 clkout2 <= not clkout2;
             end if;
-            if ( cnt2 = P - 1 ) then
+            if ( cnt2 = P-1 ) then
                 cnt2 <= 0;
             else
                 cnt2 <= cnt2 + 1;

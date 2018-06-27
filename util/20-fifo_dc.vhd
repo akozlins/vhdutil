@@ -14,13 +14,13 @@ entity fifo_dc is
         we      :   in  std_logic;
         wd      :   in  std_logic_vector(W-1 downto 0);
         wfull   :   out std_logic;
-        wclk    :   in  std_logic;
         wrst_n  :   in  std_logic;
+        wclk    :   in  std_logic;
         re      :   in  std_logic;
         rd      :   out std_logic_vector(W-1 downto 0);
         rempty  :   out std_logic;
-        rclk    :   in  std_logic;
-        rrst_n  :   in  std_logic--;
+        rrst_n  :   in  std_logic;
+        rclk    :   in  std_logic--;
     );
 end entity;
 
