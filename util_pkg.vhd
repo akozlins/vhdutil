@@ -69,6 +69,14 @@ package util is
         good : out boolean--;
     );
 
+    function to_string (
+        v : in std_logic--;
+    ) return string;
+
+    function to_string (
+        v : in std_logic_vector--;
+    ) return string;
+
 end package;
 
 package body util is
@@ -253,5 +261,32 @@ package body util is
         value := v;
         good := true;
     end procedure;
+
+    function to_string (
+        v : in std_logic--;
+    ) return string is
+        variable s : string(1 to 1);
+        variable c : character;
+    begin
+        c := 'X';
+        if ( v = '0' ) then
+            c := '0';
+        elsif ( v = '1' ) then
+            c := '1';
+        end if;
+        s(1) := c;
+        return s;
+    end function;
+
+    function to_string (
+        v : in std_logic_vector--;
+    ) return string is
+        variable s : string(1 to v'length);
+    begin
+        for i in v'range loop
+            s(v'length - i + v'right) := to_string(v(i))(1);
+        end loop;
+        return s;
+    end function;
 
 end package body;
