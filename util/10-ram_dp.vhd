@@ -1,9 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-use std.textio.all;
-use ieee.std_logic_textio.all;
 
 -- dual port ram
 entity ram_dp is
@@ -23,43 +19,25 @@ entity ram_dp is
     );
 end entity;
 
+library ieee;
+use ieee.numeric_std.all;
+
 architecture arch of ram_dp is
 
     type ram_t is array (natural range <>) of std_logic_vector(W-1 downto 0);
 
-    impure
-    function ram_read(
-        fname : in string--;
+    function ram_read (
+        data : in std_logic_vector--;
     ) return ram_t is
         variable ram : ram_t(2**N-1 downto 0);
-        variable i : integer := 0;
-        file f : text;
-        variable fs : file_open_status;
-        variable l : line;
-        variable c : character;
-        variable s : string(1 to W/4);
-        variable ok : boolean;
     begin
-        if fname = "" then
-            return ram;
-        end if;
-        file_open(fs, f, fname, READ_MODE);
-        while ( endfile(f) /= true ) loop
-            readline(f, l);
-            read(l, c, ok);
-            next when ( not ok or c = '#' );
-            s(1) := c;
-            read(l, s(2 to s'right), ok);
-            next when ( not ok );
-            work.util.string_to_hex(s, ram(i), ok);
-            next when ( not ok );
-            i := i + 1;
+        for i in ram'range loop
+            ram(i) := data(W-1+i*W downto i*W);
         end loop;
-        file_close(f);
         return ram;
     end function;
 
-    signal ram : ram_t(2**N-1 downto 0) := ram_read(INIT_FILE_HEX);
+    signal ram : ram_t(2**N-1 downto 0) := ram_read(work.util.read_hex(INIT_FILE_HEX, 2**N, W));
 
 begin
 

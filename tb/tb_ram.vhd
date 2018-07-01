@@ -16,7 +16,7 @@ architecture arch of tb_ram is
     signal addr : std_logic_vector(N-1 downto 0);
     signal dout : std_logic_vector(W-1 downto 0);
     signal din : std_logic_vector(W-1 downto 0);
-    signal we : std_logig;
+    signal we : std_logic;
 
 begin
 

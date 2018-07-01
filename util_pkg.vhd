@@ -69,6 +69,13 @@ package util is
         good : out boolean--;
     );
 
+    impure
+    function read_hex (
+        fname : in string;
+        N : in natural;
+        W : in natural--;
+    ) return std_logic_vector;
+
     function to_string (
         v : in std_logic--;
     ) return string;
@@ -212,7 +219,7 @@ package body util is
     begin
         good := false;
         for i in 0 to s'length-1 loop
-            char_to_hex(s(s'length-i), v(4*i+3 downto 4*i), ok);
+            char_to_hex(s(s'length-i), v(3+4*i downto 4*i), ok);
             if not ok then
                 return;
             end if;
@@ -233,6 +240,7 @@ package body util is
         good := false;
 
         if value'length mod 4 /= 0 then
+            assert false report "ERROR read_hex: value'length mod 4 /= 0";
             return;
         end if;
 
@@ -261,6 +269,42 @@ package body util is
         value := v;
         good := true;
     end procedure;
+
+    impure
+    function read_hex (
+        fname : in string;
+        N : in natural;
+        W : in natural--;
+    ) return std_logic_vector is
+        variable data : std_logic_vector(N*W-1 downto 0);
+        variable data_i : std_logic_vector(W-1 downto 0);
+        variable i : integer := 0;
+        file f : text;
+        variable fs : file_open_status;
+        variable l : line;
+        variable c : character;
+        variable s : string(1 to W/4);
+        variable ok : boolean;
+    begin
+        if fname = "" then
+            return data;
+        end if;
+        file_open(fs, f, fname, READ_MODE);
+        while ( endfile(f) /= true ) loop
+            readline(f, l);
+            read(l, c, ok);
+            next when ( not ok or c = '#' );
+            s(1) := c;
+            read(l, s(2 to s'right), ok);
+            next when ( not ok );
+            work.util.string_to_hex(s, data_i, ok);
+            next when ( not ok );
+            data(W-1+i*W downto i*W) := data_i;
+            i := i + 1;
+        end loop;
+        file_close(f);
+        return data;
+    end function;
 
     function to_string (
         v : in std_logic--;
