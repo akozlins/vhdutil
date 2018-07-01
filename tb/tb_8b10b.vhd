@@ -10,9 +10,12 @@ architecture arch of tb_8b10b is
     constant CLK_MHZ : positive := 100;
     signal clk, rst_n : std_logic;
 
-    signal data8b : std_logic_vector(8 downto 0);
-    signal data10b : std_logic_vector(9 downto 0);
-    signal dispin, dispout, err : std_logic;
+    signal e8b : std_logic_vector(8 downto 0);
+    signal e10b : std_logic_vector(9 downto 0);
+    signal edin, edout, eerr : std_logic;
+    signal d8b : std_logic_vector(8 downto 0);
+    signal d10b : std_logic_vector(9 downto 0);
+    signal ddin, ddout, dderr, derr : std_logic;
 
 begin
 
@@ -39,31 +42,48 @@ begin
 
     i_enc : entity work.enc_8b10b
     port map (
-        datain => data8b,
-        dispin => dispin,
-        dataout => data10b,
-        dispout => dispout,
-        err => err--,
+        datain => e8b,
+        dispin => edin,
+        dataout => e10b,
+        dispout => edout,
+        err => eerr--,
+    );
+
+    i_dec : entity work.dec_8b10b
+    port map (
+        datain => d10b,
+        dispin => ddin,
+        dataout => d8b,
+        dispout => ddout,
+        disperr => dderr,
+        err => derr--,
     );
 
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
-        dispin <= '0';
+        edin <= '0';
+        ddin <= '0';
     elsif rising_edge(clk) then
-        dispin <= dispout;
+        edin <= edout;
+        ddin <= ddout;
     end if;
     end process;
+
+    d10b <= e10b;
 
     process
     begin
         wait until rising_edge(rst_n);
 
         for i in 0 to 511 loop
-            data8b <= std_logic_vector(to_unsigned(i, data8b'length));
+            e8b <= std_logic_vector(to_unsigned(i, e8b'length));
             wait until rising_edge(clk);
-            report "data8b = " & work.util.to_string(data8b) & " / err = " & work.util.to_string(err);
-            report "data10b => " & work.util.to_string(data10b);
+            if ( e8b(7 downto 0) /= d8b(7 downto 0) or ( eerr = '0' and e8b /= d8b ) ) then
+                report "--" & integer'image(i) & "--";
+                report "enc: " & work.util.to_string(e8b) & " => " & work.util.to_string(e10b) & " " & work.util.to_string(eerr);
+                report "dec: " & work.util.to_string(d8b) & " <= " & work.util.to_string(d10b) & " " & work.util.to_string(derr);
+            end if;
         end loop;
 
         wait;

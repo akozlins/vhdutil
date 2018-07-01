@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+-- 8b10b encoder
+-- https://en.wikipedia.org/wiki/8b/10b_encoding
 entity enc_8b10b is
     port (
         -- input data (K bit & 8 data bits)
@@ -11,26 +13,30 @@ entity enc_8b10b is
         dataout :   out std_logic_vector(9 downto 0);
         -- output disparity
         dispout :   out std_logic;
+        -- error if invalid control symbol
         err     :   out std_logic--;
     );
 end entity;
 
 architecture arch of enc_8b10b is
 
+    -- control (K) symbol
     signal K : std_logic;
 
-    -- 6-bit group (A7 & RD bit & 5b/6b part)
+    -- 6-bit group --
+    -- A7 & RD & 6 bits out
     signal g6 : std_logic_vector(7 downto 0);
+    -- RD & 5 bits in
     signal g6sel : std_logic_vector(5 downto 0);
-    -- 4-bit group (RD bit & 3b/4b part)
+
+    -- 4-bit group --
+    -- RD & 4 bits out
     signal g4 : std_logic_vector(4 downto 0);
-    signal g4sel : std_logic_vector(3 downto 0);
+    -- K & RD & 3 bits in
+    signal g4sel : std_logic_vector(4 downto 0);
 
 begin
 
-    -- https://en.wikipedia.org/wiki/8b/10b_encoding
-
-    -- control (K) symbol
     K <= datain(8) and work.util.to_std_logic(
         datain(7 downto 0) = "111" & "10111" or -- K.23.7
         datain(7 downto 0) = "111" & "11011" or -- K.27.7
@@ -39,7 +45,6 @@ begin
         datain(4 downto 0) = "11100" -- K.28
     );
 
-    -- error if invalid K
     err <= datain(8) and not K;
 
     g6sel <= dispin & datain(4 downto 0);
@@ -58,8 +63,8 @@ begin
         '0' & '1' & "100101" when '1' & "00101",
         '0' & '0' & "100110" when '0' & "00110",
         '0' & '1' & "100110" when '1' & "00110",
-        '0' & '1' & "000111" when '0' & "00111",
-        '0' & '0' & "111000" when '1' & "00111",
+        '0' & '0' & "000111" when '0' & "00111", -- D.07
+        '0' & '1' & "111000" when '1' & "00111", -- D.07
         '0' & '1' & "100111" when '0' & "01000",
         '0' & '0' & "011000" when '1' & "01000",
         '0' & '0' & "101001" when '0' & "01001",
@@ -100,6 +105,8 @@ begin
         '0' & '1' & "011010" when '1' & "11010",
         '0' & '1' & "011011" when '0' & "11011",
         '0' & '0' & "100100" when '1' & "11011",
+--        '0' & '0' & "011100" when '0' & "11100", -- D.28
+--        '0' & '1' & "011100" when '1' & "11100", -- D.28
         '0' & '1' & "111100" when '0' & "11100", -- K.28
         '0' & '0' & "000011" when '1' & "11100", -- K.28
         '0' & '1' & "011101" when '0' & "11101",
@@ -113,31 +120,48 @@ begin
     g4sel(2 downto 0) <= datain(7 downto 5);
     g4sel(3) <= dispin when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
                 g6(6);
+    g4sel(4) <= K;
     with g4sel select g4 <=
-        '1' & "1101" when '0' & "000",
-        '0' & "0010" when '1' & "000",
-        '0' & "1001" when '0' & "001",
-        '1' & "1001" when '1' & "001",
-        '0' & "1010" when '0' & "010",
-        '1' & "1010" when '1' & "010",
-        '1' & "0011" when '0' & "011",
-        '0' & "1100" when '1' & "011",
-        '1' & "1011" when '0' & "100",
-        '0' & "0100" when '1' & "100",
-        '0' & "0101" when '0' & "101",
-        '1' & "0101" when '1' & "101",
-        '0' & "0110" when '0' & "110",
-        '1' & "0110" when '1' & "110",
-        '1' & "1110" when '0' & "111", -- D.x.A7, K.x.7
-        '0' & "0001" when '1' & "111", -- D.x.A7, K.x.7
+        '1' & "1101" when '0' & '0' & "000", -- D.x.0
+        '0' & "0010" when '0' & '1' & "000", -- D.x.0
+        '1' & "1101" when '1' & '0' & "000", -- K.x.0
+        '0' & "0010" when '1' & '1' & "000", -- K.x.0
+        '0' & "1001" when '0' & '0' & "001", -- D.x.1
+        '1' & "1001" when '0' & '1' & "001", -- D.x.1
+        '0' & "1001" when '1' & '0' & "001", -- K.x.1
+        '1' & "0110" when '1' & '1' & "001", -- K.x.1
+        '0' & "1010" when '0' & '0' & "010", -- D.x.2
+        '1' & "1010" when '0' & '1' & "010", -- D.x.2
+        '0' & "1010" when '1' & '0' & "010", -- K.x.2
+        '1' & "0101" when '1' & '1' & "010", -- K.x.2
+        '0' & "0011" when '0' & '0' & "011", -- D.x.3
+        '1' & "1100" when '0' & '1' & "011", -- D.x.3
+        '0' & "0011" when '1' & '0' & "011", -- K.x.3
+        '1' & "1100" when '1' & '1' & "011", -- K.x.3
+        '1' & "1011" when '0' & '0' & "100", -- D.x.4
+        '0' & "0100" when '0' & '1' & "100", -- D.x.4
+        '1' & "1011" when '1' & '0' & "100", -- K.x.4
+        '0' & "0100" when '1' & '1' & "100", -- K.x.4
+        '0' & "0101" when '0' & '0' & "101", -- D.x.5
+        '1' & "0101" when '0' & '1' & "101", -- D.x.5
+        '0' & "0101" when '1' & '0' & "101", -- K.x.5
+        '1' & "1010" when '1' & '1' & "101", -- K.x.5
+        '0' & "0110" when '0' & '0' & "110", -- D.x.6
+        '1' & "0110" when '0' & '1' & "110", -- D.x.6
+        '0' & "0110" when '1' & '0' & "110", -- K.x.6
+        '1' & "1001" when '1' & '1' & "110", -- K.x.6
+        '1' & "0111" when '0' & '0' & "111", -- D.x.P7
+        '0' & "1000" when '0' & '1' & "111", -- D.x.P7
+--        '1' & "1110" when '0' & '0' & "111", -- D.x.A7
+--        '0' & "0001" when '0' & '1' & "111", -- D.x.A7
+        '1' & "1110" when '1' & '0' & "111", -- K.x.7
+        '0' & "0001" when '1' & '1' & "111", -- K.x.7
         '0' & "XXXX" when others;
 
     dataout(5 downto 0) <= "011100" when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
                            g6(5 downto 0);
-    -- D.x.A7 : RD-/0001, RD+/1110
-    -- D.x.P7 : RD-/1000, RD+/0111
-    dataout(9 downto 6) <= g4(0) & g4(2) & g4(1) & g4(3) when ( K = '0' and datain(7 downto 5) = "111" and g6(7) = '0' ) else -- D.x.P7
-                           g4(3) & g4(2) & g4(1) & g4(0);
+    dataout(9 downto 6) <= g4(0) & g4(2) & g4(1) & g4(3) when ( K = '0' and datain(7 downto 5) = "111" and g6(7) = '1' ) else -- D.x.A7
+                           g4(3 downto 0);
     dispout <= g4(4);
 
 end architecture;
