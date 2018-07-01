@@ -16,31 +16,29 @@ proc pgm { bit } {
     program_hw_devices $dev
 }
 
-set part "xc7z020clg484-1"
-
-#set dir [ lindex $argv 0 ]
-set dir .
-if { [ file isdirectory $dir ] == 0 } {
-    error "path '$dir' does not exist"
+proc add_files_glob { pattern { fileset "sources_1" }  } {
+    foreach { file } [ lsort [ glob -nocomplain -- $pattern ] ] {
+        add_files -fileset $fileset $file
+    }
 }
+
+proc read_xdc_glob { pattern  } {
+    foreach { file } [ lsort [ glob -nocomplain -- $pattern ] ] {
+        read_xdc -unmanaged $file
+    }
+}
+
+set part "xc7z020clg484-1"
 
 create_project -in_memory -part $part
 read_xdc -unmanaged "top.xdc"
 
 read_vhdl "util_pkg.vhd"
-foreach { file } [ lsort [ glob -nocomplain -- "util/*.vhd" ] ] {
-    add_files -fileset sources_1 "$file"
-}
-foreach { file } [ lsort [ glob -nocomplain -- "util/*.xdc" ] ] {
-    read_xdc -unmanaged "$file"
-}
+add_files_glob "util/*.vhd"
+read_xdc_glob "util/*.xdc"
 
-foreach { file } [ lsort [ glob -nocomplain -- "cpu/*.vhd" ] ] {
-    add_files -fileset sources_1 "$file"
-}
-foreach { file } [ lsort [ glob -nocomplain -- "tb/*.v" ] ] {
-    add_files -fileset sim_1 "$file"
-}
+add_files_glob "cpu/*.vhd"
+add_files_glob "tb/*.vhd" sim_1
 
-read_vhdl "$dir/top.vhd"
+read_vhdl "top.vhd"
 set_property top top [ current_fileset ]
