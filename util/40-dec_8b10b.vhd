@@ -26,22 +26,23 @@ architecture arch of dec_8b10b is
     signal K : std_logic;
 
     -- 6-bit group --
-    -- err & disperr & RD & 5 bits out
-    signal g6 : std_logic_vector(7 downto 0);
-    -- RD & 6 bits in
+    -- disp & 6 bits in
     signal g6sel : std_logic_vector(6 downto 0);
-    signal k28, kx7 : std_logic;
+    -- err & disperr & disp & 5 bits out
+    signal g6 : std_logic_vector(7 downto 0);
+
+    signal K28, Kx7 : std_logic;
 
     -- 4-bit group --
-    -- err & disperr & RD & 3 bits out
-    signal g4 : std_logic_vector(5 downto 0);
-    -- RD & 4 bits in
+    -- K.28 & disp & 4 bits in
     signal g4sel : std_logic_vector(5 downto 0);
+    -- err & disperr & disp & 3 bits out
+    signal g4 : std_logic_vector(5 downto 0);
 
 begin
 
-    k28 <= work.util.to_std_logic( datain(5 downto 0) = "111100" or datain(5 downto 0) = "000011" );
-    kx7 <= work.util.to_std_logic( ( datain(9 downto 6) = "0001" or datain(9 downto 6) = "1110" ) and (
+    K28 <= work.util.to_std_logic( datain(5 downto 0) = "111100" or datain(5 downto 0) = "000011" );
+    Kx7 <= work.util.to_std_logic( ( datain(9 downto 6) = "0001" or datain(9 downto 6) = "1110" ) and (
         g6(4 downto 0) = "10111" or -- D.23
         g6(4 downto 0) = "11011" or -- D.27
         g6(4 downto 0) = "11101" or -- D.29
@@ -49,18 +50,20 @@ begin
     );
     K <= '0';
 
+    -- disp & 6 bits in
     g6sel <= dispin & datain(5 downto 0);
+    -- err & disperr & disp & 5 bits out
     with g6sel select g6 <=
         '0' & '0' & '1' & "00000" when '0' & "111001",
         '0' & '0' & '0' & "00000" when '1' & "000110",
         '0' & '0' & '1' & "00001" when '0' & "101110",
         '0' & '0' & '0' & "00001" when '1' & "010001",
-        '0' & '0' & '0' & "00010" when '0' & "101101",
-        '0' & '0' & '1' & "00010" when '1' & "010010",
+        '0' & '0' & '1' & "00010" when '0' & "101101",
+        '0' & '0' & '0' & "00010" when '1' & "010010",
         '0' & '0' & '0' & "00011" when '0' & "100011",
         '0' & '0' & '1' & "00011" when '1' & "100011",
-        '0' & '0' & '0' & "00100" when '0' & "101011",
-        '0' & '0' & '1' & "00100" when '1' & "010100",
+        '0' & '0' & '1' & "00100" when '0' & "101011",
+        '0' & '0' & '0' & "00100" when '1' & "010100",
         '0' & '0' & '0' & "00101" when '0' & "100101",
         '0' & '0' & '1' & "00101" when '1' & "100101",
         '0' & '0' & '0' & "00110" when '0' & "100110",
@@ -146,9 +149,10 @@ begin
         '0' & '1' & '0' & "11110" when '0' & "100001",
         '0' & '1' & '1' & "11111" when '1' & "110101",
         '0' & '1' & '0' & "11111" when '0' & "001010",
+        --
+        '0' & '1' & '1' & "00111" when '1' & "000111", -- D.07
+        '0' & '1' & '0' & "00111" when '0' & "111000", -- D.07
         -- invalid code
-        '1' & '0' & '1' & "00111" when '1' & "000111", -- D.07
-        '1' & '0' & '0' & "00111" when '0' & "111000", -- D.07
         '1' & '0' & '1' & "XXXXX" when '0' & "001111",
         '1' & '0' & '0' & "XXXXX" when '1' & "110000",
         -- invalid code and disparity
@@ -184,7 +188,9 @@ begin
         '1' & '1' & '0' & "XXXXX" when '0' & "100000",
         '1' & '1' & '0' & "XXXXX" when others;
 
-    g4sel <= k28 & g6(5) & datain(9 downto 6);
+    -- K.28 & disp & 4 bits in
+    g4sel <= K28 & g6(5) & datain(9 downto 6);
+    -- err & disperr & disp & 3 bits out
     with g4sel select g4 <=
         '0' & '0' & '1' & "000" when '0' & '0' & "1101", -- D.x.0
         '0' & '0' & '0' & "000" when '0' & '1' & "0010", -- D.x.0
@@ -223,46 +229,57 @@ begin
         -- invalid disparity
         '0' & '1' & '1' & "000" when '0' & '1' & "1101", -- D.x.0
         '0' & '1' & '0' & "000" when '0' & '0' & "0010", -- D.x.0
-        '0' & '1' & '1' & "011" when '0' & '1' & "0011", -- D.x.3
-        '0' & '1' & '0' & "011" when '0' & '0' & "1100", -- D.x.3
+        '0' & '1' & '1' & "000" when '1' & '1' & "1101", -- K.28.0
+        '0' & '1' & '0' & "000" when '1' & '0' & "0010", -- K.28.0
         '0' & '1' & '1' & "100" when '0' & '1' & "1011", -- D.x.4
         '0' & '1' & '0' & "100" when '0' & '0' & "0100", -- D.x.4
+        '0' & '1' & '1' & "100" when '1' & '1' & "1011", -- K.28.4
+        '0' & '1' & '0' & "100" when '1' & '0' & "0100", -- K.28.4
         '0' & '1' & '1' & "111" when '0' & '1' & "0111", -- D.x.P7
         '0' & '1' & '0' & "111" when '0' & '0' & "1000", -- D.x.P7
         '0' & '1' & '1' & "111" when '0' & '1' & "1110", -- D.x.A7
         '0' & '1' & '0' & "111" when '0' & '0' & "0001", -- D.x.A7
-        -- invalid control symbol
-        '1' & '1' & '1' & "000" when '1' & '1' & "1101", -- K.28.0
-        '1' & '1' & '0' & "000" when '1' & '0' & "0010", -- K.28.0
-        '1' & '0' & '1' & "011" when '1' & '1' & "0011", -- K.28.3
-        '1' & '0' & '0' & "011" when '1' & '0' & "1100", -- K.28.3
-        '1' & '1' & '1' & "100" when '1' & '1' & "1011", -- K.28.4
-        '1' & '1' & '0' & "100" when '1' & '0' & "0100", -- K.28.4
+        '0' & '1' & '1' & "111" when '1' & '1' & "1110", -- K.28.7
+        '0' & '1' & '0' & "111" when '1' & '0' & "0001", -- K.28.7
+        --
+        '0' & '1' & '1' & "011" when '0' & '1' & "0011", -- D.x.3
+        '0' & '1' & '0' & "011" when '0' & '0' & "1100", -- D.x.3
+        '0' & '1' & '1' & "011" when '1' & '1' & "0011", -- K.28.3
+        '0' & '1' & '0' & "011" when '1' & '0' & "1100", -- K.28.3
+        -- invalid code
         '1' & '0' & '1' & "111" when '1' & '0' & "0111", -- D.x.P7
         '1' & '0' & '0' & "111" when '1' & '1' & "1000", -- D.x.P7
         '1' & '1' & '1' & "111" when '1' & '1' & "0111", -- D.x.P7
         '1' & '1' & '0' & "111" when '1' & '0' & "1000", -- D.x.P7
-        '1' & '1' & '1' & "111" when '1' & '1' & "1110", -- K.28.7
-        '1' & '1' & '0' & "111" when '1' & '0' & "0001", -- K.28.7
         -- invalid code and disparity
-        '1' & '1' & '1' & "XXX" when '0' & '1' & "1111",
-        '1' & '1' & '0' & "XXX" when '0' & '0' & "0000",
         '1' & '1' & '1' & "XXX" when '0' & '0' & "1111",
         '1' & '1' & '0' & "XXX" when '0' & '1' & "0000",
-        '1' & '1' & '1' & "XXX" when '1' & '1' & "1111",
-        '1' & '1' & '0' & "XXX" when '1' & '0' & "0000",
+        '1' & '1' & '1' & "XXX" when '0' & '1' & "1111",
+        '1' & '1' & '0' & "XXX" when '0' & '0' & "0000",
         '1' & '1' & '1' & "XXX" when '1' & '0' & "1111",
         '1' & '1' & '0' & "XXX" when '1' & '1' & "0000",
+        '1' & '1' & '1' & "XXX" when '1' & '1' & "1111",
+        '1' & '1' & '0' & "XXX" when '1' & '0' & "0000",
         '1' & '1' & '0' & "XXX" when others;
 
     dataout(4 downto 0) <= g6(4 downto 0);
     dataout(7 downto 5) <= g4(2 downto 0);
-    dataout(8) <= k28 or kx7;
+    dataout(8) <= K28 or Kx7;
     dispout <= g4(3);
 
     disperr <= g6(6) or g4(4);
-    err <= g6(7) or g4(5)
-        or work.util.to_std_logic( ( g6(4 downto 0) = "10001" or g6(4 downto 0) = "10010" or g6(4 downto 0) = "10100" ) xor datain(9 downto 6) = "1110" )
-        or work.util.to_std_logic( ( g6(4 downto 0) = "01110" or g6(4 downto 0) = "01101" or g6(4 downto 0) = "01011" ) xor datain(9 downto 6) = "0001" );
+
+    err <=
+       work.util.to_std_logic(
+           ( g6(4 downto 0) = "10001" or g6(4 downto 0) = "10010" or g6(4 downto 0) = "10100" )
+           and g4(2 downto 0) = "111"
+           and datain(9 downto 6) /= "1110" -- D.x.A7
+       ) or
+       work.util.to_std_logic(
+           ( g6(4 downto 0) = "01110" or g6(4 downto 0) = "01101" or g6(4 downto 0) = "01011" )
+           and g4(2 downto 0) = "111"
+           and datain(9 downto 6) /= "0001" -- D.x.A7
+       ) or
+       g6(7) or g4(5);
 
 end architecture;

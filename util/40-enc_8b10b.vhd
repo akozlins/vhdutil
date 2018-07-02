@@ -24,16 +24,16 @@ architecture arch of enc_8b10b is
     signal K : std_logic;
 
     -- 6-bit group --
-    -- A7 & RD & 6 bits out
-    signal g6 : std_logic_vector(7 downto 0);
-    -- RD & 5 bits in
+    -- disp & 5 bits in
     signal g6sel : std_logic_vector(5 downto 0);
+    -- A7 & disp & 6 bits out
+    signal g6 : std_logic_vector(7 downto 0);
 
     -- 4-bit group --
-    -- RD & 4 bits out
-    signal g4 : std_logic_vector(4 downto 0);
-    -- K & RD & 3 bits in
+    -- K & disp & 3 bits in
     signal g4sel : std_logic_vector(4 downto 0);
+    -- disp & 4 bits out
+    signal g4 : std_logic_vector(4 downto 0);
 
 begin
 
@@ -47,18 +47,20 @@ begin
 
     err <= datain(8) and not K;
 
+    -- disp & 5 bits in
     g6sel <= dispin & datain(4 downto 0);
+    -- A7 & disp & 6 bits out
     with g6sel select g6 <=
         '0' & '1' & "111001" when '0' & "00000",
         '0' & '0' & "000110" when '1' & "00000",
         '0' & '1' & "101110" when '0' & "00001",
         '0' & '0' & "010001" when '1' & "00001",
-        '0' & '0' & "101101" when '0' & "00010",
-        '0' & '1' & "010010" when '1' & "00010",
+        '0' & '1' & "101101" when '0' & "00010",
+        '0' & '0' & "010010" when '1' & "00010",
         '0' & '0' & "100011" when '0' & "00011",
         '0' & '1' & "100011" when '1' & "00011",
-        '0' & '0' & "101011" when '0' & "00100",
-        '0' & '1' & "010100" when '1' & "00100",
+        '0' & '1' & "101011" when '0' & "00100",
+        '0' & '0' & "010100" when '1' & "00100",
         '0' & '0' & "100101" when '0' & "00101",
         '0' & '1' & "100101" when '1' & "00101",
         '0' & '0' & "100110" when '0' & "00110",
@@ -117,10 +119,12 @@ begin
         '0' & '0' & "001010" when '1' & "11111",
         '0' & '0' & "XXXXXX" when others;
 
+    -- K & disp & 3 bits in
     g4sel(2 downto 0) <= datain(7 downto 5);
     g4sel(3) <= dispin when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
                 g6(6);
     g4sel(4) <= K;
+    -- disp & 4 bits out
     with g4sel select g4 <=
         '1' & "1101" when '0' & '0' & "000", -- D.x.0
         '0' & "0010" when '0' & '1' & "000", -- D.x.0
