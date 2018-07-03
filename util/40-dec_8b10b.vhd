@@ -155,7 +155,7 @@ begin
         -- invalid code
         '1' & '0' & '1' & "XXXXX" when '0' & "001111",
         '1' & '0' & '0' & "XXXXX" when '1' & "110000",
-        -- invalid code and disparity
+        -- invalid code
         '1' & '1' & '1' & "XXXXX" when '1' & "001111",
         '1' & '1' & '0' & "XXXXX" when '0' & "110000",
         '1' & '1' & '1' & "XXXXX" when '0' & "111111",
@@ -251,7 +251,7 @@ begin
         '1' & '0' & '0' & "111" when '1' & '1' & "1000", -- D.x.P7
         '1' & '1' & '1' & "111" when '1' & '1' & "0111", -- D.x.P7
         '1' & '1' & '0' & "111" when '1' & '0' & "1000", -- D.x.P7
-        -- invalid code and disparity
+        -- invalid code
         '1' & '1' & '1' & "XXX" when '0' & '0' & "1111",
         '1' & '1' & '0' & "XXX" when '0' & '1' & "0000",
         '1' & '1' & '1' & "XXX" when '0' & '1' & "1111",
@@ -271,14 +271,14 @@ begin
 
     err <=
        work.util.to_std_logic(
-           ( g6(4 downto 0) = "10001" or g6(4 downto 0) = "10010" or g6(4 downto 0) = "10100" )
-           and g4(2 downto 0) = "111"
-           and datain(9 downto 6) /= "1110" -- D.x.A7
+           ( datain(5 downto 0) = "110001" or datain(5 downto 0) = "110010" or datain(5 downto 0) = "110100" )
+           and dispin = '0'
+           and g4(2 downto 0) = "111" and datain(9 downto 6) /= "1110" -- D.x.A7
        ) or
        work.util.to_std_logic(
-           ( g6(4 downto 0) = "01110" or g6(4 downto 0) = "01101" or g6(4 downto 0) = "01011" )
-           and g4(2 downto 0) = "111"
-           and datain(9 downto 6) /= "0001" -- D.x.A7
+           ( datain(5 downto 0) = "001110" or datain(5 downto 0) = "001101" or datain(5 downto 0) = "001011" )
+           and dispin = '1'
+           and g4(2 downto 0) = "111" and datain(9 downto 6) /= "0001" -- D.x.A7
        ) or
        g6(7) or g4(5);
 

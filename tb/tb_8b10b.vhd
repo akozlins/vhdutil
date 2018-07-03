@@ -79,7 +79,7 @@ begin
         for i in 0 to 511 loop
             e8b <= std_logic_vector(to_unsigned(i, e8b'length));
             wait until rising_edge(clk);
-            if ( e8b(7 downto 0) /= d8b(7 downto 0) or ( eerr = '0' and e8b /= d8b ) ) then
+            if ( e8b(7 downto 0) /= d8b(7 downto 0) or ( eerr /= e8b(8) ) ) then
                 report "--" & integer'image(i) & "--";
                 report "enc: " & work.util.to_string(e8b) & " => " & work.util.to_string(e10b) & " " & work.util.to_string(eerr);
                 report "dec: " & work.util.to_string(d8b) & " <= " & work.util.to_string(d10b) & " " & work.util.to_string(derr);

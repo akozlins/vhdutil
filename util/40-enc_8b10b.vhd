@@ -120,10 +120,9 @@ begin
         '0' & '0' & "XXXXXX" when others;
 
     -- K & disp & 3 bits in
-    g4sel(2 downto 0) <= datain(7 downto 5);
-    g4sel(3) <= dispin when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
-                g6(6);
-    g4sel(4) <= K;
+    g4sel <= K & dispin & datain(7 downto 5) when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
+             '1' & g6(6) & datain(7 downto 5) when ( K = '0' and datain(7 downto 5) = "111" and g6(7) = '1' ) else -- D.x.A7
+             K & g6(6) & datain(7 downto 5);
     -- disp & 4 bits out
     with g4sel select g4 <=
         '1' & "1101" when '0' & '0' & "000", -- D.x.0
@@ -156,16 +155,13 @@ begin
         '1' & "1001" when '1' & '1' & "110", -- K.x.6
         '1' & "0111" when '0' & '0' & "111", -- D.x.P7
         '0' & "1000" when '0' & '1' & "111", -- D.x.P7
---        '1' & "1110" when '0' & '0' & "111", -- D.x.A7
---        '0' & "0001" when '0' & '1' & "111", -- D.x.A7
-        '1' & "1110" when '1' & '0' & "111", -- K.x.7
-        '0' & "0001" when '1' & '1' & "111", -- K.x.7
+        '1' & "1110" when '1' & '0' & "111", -- D.x.A7, K.x.7
+        '0' & "0001" when '1' & '1' & "111", -- D.x.A7, K.x.7
         '0' & "XXXX" when others;
 
     dataout(5 downto 0) <= "011100" when ( K = '0' and datain(4 downto 0) = "11100" ) else -- D.28
                            g6(5 downto 0);
-    dataout(9 downto 6) <= g4(0) & g4(2) & g4(1) & g4(3) when ( K = '0' and datain(7 downto 5) = "111" and g6(7) = '1' ) else -- D.x.A7
-                           g4(3 downto 0);
+    dataout(9 downto 6) <= g4(3 downto 0);
     dispout <= g4(4);
 
 end architecture;
