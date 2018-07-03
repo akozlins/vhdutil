@@ -1,8 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-use ieee.std_logic_unsigned."+";
 
 -- single clock fifo
 entity fifo_v1 is
@@ -21,6 +18,10 @@ entity fifo_v1 is
         clk     :   in  std_logic--;
     );
 end entity;
+
+library ieee;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned."+";
 
 architecture arch of fifo_v1 is
 

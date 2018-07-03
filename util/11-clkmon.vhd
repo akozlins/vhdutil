@@ -1,6 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 -- clock monitor
 -- ...
@@ -16,6 +15,9 @@ entity clkmon is
         clk     :   in  std_logic--;
     );
 end entity;
+
+library ieee;
+use ieee.numeric_std.all;
 
 architecture arch of clkmon is
 

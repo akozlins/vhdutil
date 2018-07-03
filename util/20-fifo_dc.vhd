@@ -1,8 +1,5 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-use ieee.std_logic_unsigned."+";
 
 -- dual clock fifo
 entity fifo_dc is
@@ -23,6 +20,10 @@ entity fifo_dc is
         rclk    :   in  std_logic--;
     );
 end entity;
+
+library ieee;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned."+";
 
 architecture arch of fifo_dc is
 

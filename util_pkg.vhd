@@ -47,6 +47,10 @@ package util is
         v : std_logic_vector--;
     ) return std_logic;
 
+    function xor_reduce (
+        v : std_logic_vector--;
+    ) return std_logic;
+
     function to_std_logic (
         constant b : in boolean--;
     ) return std_logic;
@@ -165,6 +169,17 @@ package body util is
     ) return std_logic is
     begin
         return to_std_logic(v /= (v'range => '0'));
+    end function;
+
+    function xor_reduce (
+        v : std_logic_vector--;
+    ) return std_logic is
+        variable r : std_logic := '0';
+    begin
+        for i in v'range loop
+            r := r xor v(i);
+        end loop;
+        return r;
     end function;
 
     function to_std_logic (
