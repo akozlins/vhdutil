@@ -36,7 +36,6 @@ begin
             wait until rising_edge(clk);
         end loop;
         rst_n <= '1';
-        report "rst_n <= '1'";
         wait;
     end process;
 
@@ -84,6 +83,7 @@ begin
                 report "enc: " & work.util.to_string(e8b) & " => " & work.util.to_string(e10b) & " " & work.util.to_string(eerr);
                 report "dec: " & work.util.to_string(d8b) & " <= " & work.util.to_string(d10b) & " " & work.util.to_string(derr);
             end if;
+            assert edout = ddout report "edout /= ddout" severity failure;
         end loop;
 
         wait;
