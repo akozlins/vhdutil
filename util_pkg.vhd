@@ -13,7 +13,7 @@ package util is
     ) return integer;
 
     function vector_width (
-        entries : natural--;
+        v : natural--;
     ) return positive;
 
     function bin2gray (
@@ -52,7 +52,7 @@ package util is
     ) return std_logic;
 
     function to_std_logic (
-        constant b : in boolean--;
+        b : in boolean--;
     ) return std_logic;
 
     procedure char_to_hex (
@@ -76,8 +76,8 @@ package util is
     impure
     function read_hex (
         fname : in string;
-        N : in natural;
-        W : in natural--;
+        N : in positive;
+        W : in positive--;
     ) return std_logic_vector;
 
     function to_string (
@@ -104,13 +104,13 @@ package body util is
     end function;
 
     function vector_width (
-        entries : natural--;
+        v : natural--;
     ) return positive is
     begin
-        if ( entries = 0 or entries = 1 ) then
+        if ( v = 0 or v = 1 ) then
             return 1;
         end if;
-        return positive(ceil(log2(real(entries))));
+        return positive(ceil(log2(real(v))));
     end function;
 
     function bin2gray (
@@ -183,7 +183,7 @@ package body util is
     end function;
 
     function to_std_logic (
-        constant b : in boolean--;
+        b : in boolean--;
     ) return std_logic is
     begin
         if b then
@@ -220,7 +220,7 @@ package body util is
         when 'f' | 'F' => v := X"F";
 
         when others =>
-           assert false report "ERROR char_to_hex: invalid hex character '" & c & "'";
+           assert false report "ERROR (char_to_hex) invalid hex character '" & c & "'";
            good := false;
         end case;
     end procedure;
@@ -234,7 +234,7 @@ package body util is
     begin
         good := false;
         for i in 0 to s'length-1 loop
-            char_to_hex(s(s'length-i), v(3+4*i downto 4*i), ok);
+            char_to_hex(s(s'right-i), v(3+4*i+v'right downto 4*i+v'right), ok);
             if not ok then
                 return;
             end if;
@@ -255,7 +255,7 @@ package body util is
         good := false;
 
         if value'length mod 4 /= 0 then
-            assert false report "ERROR read_hex: value'length mod 4 /= 0";
+            assert false report "ERROR (read_hex) value'length mod 4 /= 0";
             return;
         end if;
 
@@ -288,8 +288,8 @@ package body util is
     impure
     function read_hex (
         fname : in string;
-        N : in natural;
-        W : in natural--;
+        N : in positive;
+        W : in positive--;
     ) return std_logic_vector is
         variable data : std_logic_vector(N*W-1 downto 0);
         variable data_i : std_logic_vector(W-1 downto 0);
