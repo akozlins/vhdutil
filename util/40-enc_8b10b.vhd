@@ -26,16 +26,12 @@ architecture arch of enc_8b10b is
     signal K28, Kx7 : std_logic;
 
     -- 6-bit group --
-    -- disp & 5 bits
-    signal G6sel : std_logic_vector(5 downto 0);
-    -- disp & 6 bits
+    -- out : disp & 6 bits
     signal G6 : std_logic_vector(6 downto 0);
     signal A7 : std_logic;
 
     -- 4-bit group --
-    -- disp & 3 bits
-    signal G4sel : std_logic_vector(3 downto 0);
-    -- disp & 4 bits
+    -- out : disp & 4 bits
     signal G4 : std_logic_vector(4 downto 0);
 
     signal a, b, c : std_logic;
@@ -45,20 +41,21 @@ begin
     K28 <= datain(8) and work.util.to_std_logic(
         datain(4 downto 0) = "11100"
     );
-    Kx7 <= datain(8) and work.util.to_std_logic(
+    Kx7 <= datain(8) and work.util.to_std_logic( datain(7 downto 5) = "111" ) and work.util.to_std_logic(
         datain(4 downto 0) = "10111" or -- K.23.7
         datain(4 downto 0) = "11011" or -- K.27.7
         datain(4 downto 0) = "11101" or -- K.29.7
         datain(4 downto 0) = "11110" or -- K.30.7
         datain(4 downto 0) = "11100" -- K.28.7
-    )
-    and work.util.to_std_logic( datain(7 downto 5) = "111" );
+    );
 
-    -- disp & 5 bits in
-    G6sel <= dispin & datain(4 downto 0);
-    -- disp & 6 bits out
-    process(G6sel)
+    -- out : disp & 6 bits
+    process(datain, dispin, K28)
+        -- in : disp & 5 bits
+        variable G6sel : std_logic_vector(5 downto 0);
     begin
+        G6sel := dispin & datain(4 downto 0);
+
         A7 <= '0';
 
         case G6sel is
@@ -132,11 +129,13 @@ begin
         end case;
     end process;
 
-    -- disp & 3 bits in
-    G4sel <= G6(6) & datain(7 downto 5);
-    -- disp & 4 bits out
-    process(G4sel, A7, K28, Kx7)
+    -- out : disp & 4 bits out
+    process(dispin, datain, G6, A7, K28, Kx7)
+        -- in : disp & 3 bits
+        variable G4sel : std_logic_vector(3 downto 0);
     begin
+        G4sel := G6(6) & datain(7 downto 5);
+
         case G4sel is
         when '0' & "000" => G4 <= '1' & "1101"; -- D.x.0
         when '1' & "000" => G4 <= '0' & "0010"; -- D.x.0
@@ -164,7 +163,8 @@ begin
         end case;
     end process;
 
-    dataout <= G4(3 downto 0) & G6(5 downto 0);
+    dataout(9 downto 6) <= G4(3 downto 0);
+    dataout(5 downto 0) <= G6(5 downto 0);
     dispout <= G4(4);
 
     err <= datain(8) and not (K28 or Kx7);
