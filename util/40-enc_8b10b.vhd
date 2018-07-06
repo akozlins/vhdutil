@@ -42,13 +42,17 @@ architecture arch of enc_8b10b is
 
 begin
 
-    Kx7 <= datain(8) and work.util.to_std_logic(
-        datain(7 downto 0) = "111" & "10111" or -- K.23.7
-        datain(7 downto 0) = "111" & "11011" or -- K.27.7
-        datain(7 downto 0) = "111" & "11101" or -- K.29.7
-        datain(7 downto 0) = "111" & "11110" or -- K.30.7
-        datain(7 downto 0) = "111" & "11100" -- K.28.7
+    K28 <= datain(8) and work.util.to_std_logic(
+        datain(4 downto 0) = "11100"
     );
+    Kx7 <= datain(8) and work.util.to_std_logic(
+        datain(4 downto 0) = "10111" or -- K.23.7
+        datain(4 downto 0) = "11011" or -- K.27.7
+        datain(4 downto 0) = "11101" or -- K.29.7
+        datain(4 downto 0) = "11110" or -- K.30.7
+        datain(4 downto 0) = "11100" -- K.28.7
+    )
+    and work.util.to_std_logic( datain(7 downto 5) = "111" );
 
     -- disp & 5 bits in
     G6sel <= dispin & datain(4 downto 0);
@@ -56,7 +60,6 @@ begin
     process(G6sel)
     begin
         A7 <= '0';
-        K28 <= '0';
 
         case G6sel is
         when '0' & "00000" => G6 <= '1' & "111001";
@@ -116,9 +119,9 @@ begin
         when '0' & "11011" => G6 <= '1' & "011011";
         when '1' & "11011" => G6 <= '0' & "100100";
         when '0' & "11100" => G6 <= '0' & "011100"; -- D.28
-            if ( datain(8) = '1' ) then G6 <= '1' & "111100"; K28 <= '1'; end if; -- K.28
+            if ( K28 = '1' ) then G6 <= '1' & "111100"; end if; -- K.28
         when '1' & "11100" => G6 <= '1' & "011100"; -- D.28
-            if ( datain(8) = '1' ) then G6 <= '0' & "000011"; K28 <= '1'; end if; -- K.28
+            if ( K28 = '1' ) then G6 <= '0' & "000011"; end if; -- K.28
         when '0' & "11101" => G6 <= '1' & "011101";
         when '1' & "11101" => G6 <= '0' & "100010";
         when '0' & "11110" => G6 <= '1' & "011110";
