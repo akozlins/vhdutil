@@ -1,8 +1,14 @@
+--
+-- 8b10b decoder
+-- https://en.wikipedia.org/wiki/8b/10b_encoding
+--
+-- Author: Alexandr Kozlinskiy
+-- Date: 2018-07-01
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 
--- 8b10b decoder
--- https://en.wikipedia.org/wiki/8b/10b_encoding
 entity dec_8b10b is
     port (
         -- input 10-bit data (8b10b encoded)

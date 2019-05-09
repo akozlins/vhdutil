@@ -1,7 +1,13 @@
+--
+-- single clock fifo
+--
+-- Author: Alexandr Kozlinskiy
+-- Date: 2018-04-29
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 
--- single clock fifo
 entity fifo_v1 is
     generic (
         W   : positive := 8;

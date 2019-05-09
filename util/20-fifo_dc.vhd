@@ -1,7 +1,13 @@
+--
+-- dual clock fifo
+--
+-- Author: Alexandr Kozlinskiy
+-- Date: 2018-05-02
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 
--- dual clock fifo
 entity fifo_dc is
     generic (
         W   : positive := 8;

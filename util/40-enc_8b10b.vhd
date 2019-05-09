@@ -1,8 +1,14 @@
+--
+-- 8b10b encoder
+-- https://en.wikipedia.org/wiki/8b/10b_encoding
+--
+-- Author: Alexandr Kozlinskiy
+-- Date: 2018-06-29
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 
--- 8b10b encoder
--- https://en.wikipedia.org/wiki/8b/10b_encoding
 entity enc_8b10b is
     port (
         -- input data (K bit & 8 data bits)
