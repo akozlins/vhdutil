@@ -79,10 +79,35 @@ begin
             edin <= data_enc(i)(0);
             e8b <= data_enc(i)(1 to 9);
             wait until rising_edge(clk);
-            report integer'image(i);
-            assert ( edout = data_enc(i)(10) ) report ": edout != " & work.util.to_string(data_enc(i)(10)) severity failure;
-            assert ( e10b = data_enc(i)(11 to 20) ) report "e10b != " & work.util.to_string(data_enc(i)(11 to 20)) severity failure;
-            assert ( eerr = data_enc(i)(21) ) report "eerr != " & work.util.to_string(data_enc(i)(21)) severity failure;
+            if ( edout & e10b & eerr /= data_enc(i)(10 to 21) ) then
+                report integer'image(i);
+                report "edout & e10b & eerr /= " & work.util.to_string(data_enc(i)(10 to 21));
+            end if;
+        end loop;
+
+
+
+        for i in data_dec'range loop
+            ddin <= data_dec(i)(0);
+            d10b <= data_dec(i)(1 to 10);
+            wait until rising_edge(clk);
+
+            assert ( ddout = data_dec(i)(11) ) report "" severity failure;
+            assert ( (derr or dderr) = (data_dec(i)(21) or data_dec(i)(22)) ) report "" severity failure;
+
+            if ( derr = '0' and dderr = '0' and data_dec(i)(21 to 22) = "00" ) then
+                assert ( ddout & d8b & derr & dderr = data_dec(i)(11 to 22) ) report "" severity failure;
+            end if;
+
+            if ( derr = '1' and data_dec(i)(21) = '1' ) then
+                --
+            elsif ( ddout & d8b & derr & dderr /= data_dec(i)(11 to 22) ) then
+                report integer'image(i);
+                report work.util.to_string(data_dec(i)(0 to 10)) & " =>                " & work.util.to_string(ddout & d8b & derr & dderr);
+                report "ddout & d8b & derr & dderr /= " & work.util.to_string(data_dec(i)(11 to 22));
+                report "                              " & work.util.to_string(ddout & d8b & derr & dderr xor data_dec(i)(11 to 22));
+            end if;
+
         end loop;
 
         wait;
