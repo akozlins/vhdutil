@@ -9,6 +9,28 @@
 
 
 
+std::string bits(int n, int x) {
+    std::string s(n, '0');
+    for(int i = 0; i < n; i++) {
+        if(x & 1) s[i] = '1';
+        x = x >> 1;
+    }
+    return s;
+}
+
+void print_enc_tb() {
+    enc_8b10b_t enc;
+    for(int k : { 0, 1 }) for(int d8 = 0; d8 < 256; d8++) for(int dispin : { 0, 1 }) {
+        enc.disp = dispin;
+        int d10 = enc.encode(d8, k);
+//        if(enc.err) continue;
+
+        int dispout = enc.disp;
+        std::cout << "\"" << dispin << k << std::bitset<8>(d8) << dispout << std::bitset<10>(d10) << enc.err << "\",";
+    }
+    std::cout << std::endl;
+}
+
 void print_enc() {
     enc_8b10b_t enc;
     for(int k : { 0, 1 }) for(int d8 = 0; d8 < 256; d8++) for(int dispin : { 0, 1 }) {
@@ -21,21 +43,6 @@ void print_enc() {
         std::cout << " ";
         std::cout << (dispin ? "+" : "-") << " " << std::bitset<8>(d8) << " => "
                   << std::bitset<10>(d10) << " " << (dispout ? "+" : "-") << std::endl;
-    }
-}
-
-void print_enc_bin() {
-    enc_8b10b_t enc;
-    for(int k : { 0, 1 }) for(int d8 = 0; d8 < 256; d8++) {
-        enc.disp = 0;
-        int d10n = enc.encode(d8, k);
-        if(enc.err) continue;
-
-        enc.disp = 1;
-        int d10p = enc.encode(d8, k);
-        if(enc.err) continue;
-
-        std::cout << k << std::bitset<8>(d8) << bits(10, d10n) << bits(10, d10p) << (ones(d10n) != 5) << std::endl;
     }
 }
 
@@ -85,7 +92,7 @@ void print_dec() {
 }
 
 int main() {
-    print_dec();
+    print_enc_tb();
 
     return 0;
 }

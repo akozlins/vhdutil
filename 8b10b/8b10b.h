@@ -10,15 +10,6 @@ int ones(int x) {
     return n;
 }
 
-std::string bits(int n, int x) {
-    std::string s(n, '0');
-    for(int i = 0; i < n; i++) {
-        if(x & 1) s[i] = '1';
-        x = x >> 1;
-    }
-    return s;
-}
-
 int G6[33][2] {
     { 0b111001, 0b000110 },
     { 0b101110, 0b010001 },

@@ -40,8 +40,6 @@ architecture arch of enc_8b10b is
     -- out : disp & 4 bits
     signal G4 : std_logic_vector(4 downto 0);
 
-    signal a, b, c : std_logic;
-
 begin
 
     K28 <= datain(8) and work.util.to_std_logic(
@@ -116,20 +114,20 @@ begin
         when '0' & "000" => G4 <= '1' & "1101"; -- D.x.0
         when '1' & "000" => G4 <= '0' & "0010"; -- D.x.0
         when '0' & "001" => G4 <= '0' & "1001"; -- D.x.1
-            if ( K28 = '1' ) then G4 <= '1' & "0110"; end if; -- K.x.1
+            if ( K28 = '1' ) then G4 <= '0' & "0110"; end if; -- K.x.1
         when '1' & "001" => G4 <= '1' & "1001"; -- D.x.1
         when '0' & "010" => G4 <= '0' & "1010"; -- D.x.2
-            if ( K28 = '1' ) then G4 <= '1' & "0101"; end if; -- K.x.2
+            if ( K28 = '1' ) then G4 <= '0' & "0101"; end if; -- K.x.2
         when '1' & "010" => G4 <= '1' & "1010"; -- D.x.2
         when '0' & "011" => G4 <= '0' & "0011"; -- D.x.3
         when '1' & "011" => G4 <= '1' & "1100"; -- D.x.3
         when '0' & "100" => G4 <= '1' & "1011"; -- D.x.4
         when '1' & "100" => G4 <= '0' & "0100"; -- D.x.4
         when '0' & "101" => G4 <= '0' & "0101"; -- D.x.5
-            if ( K28 = '1' ) then G4 <= '1' & "1010"; end if; -- K.x.5
+            if ( K28 = '1' ) then G4 <= '0' & "1010"; end if; -- K.x.5
         when '1' & "101" => G4 <= '1' & "0101"; -- D.x.5
         when '0' & "110" => G4 <= '0' & "0110"; -- D.x.6
-            if ( K28 = '1' ) then G4 <= '1' & "1001"; end if; -- K.x.6
+            if ( K28 = '1' ) then G4 <= '0' & "1001"; end if; -- K.x.6
         when '1' & "110" => G4 <= '1' & "0110"; -- D.x.6
         when '0' & "111" => G4 <= '1' & "0111"; -- D.x.P7
             if ( A7 = '1' or Kx7 = '1' ) then G4 <= '1' & "1110"; end if; -- D.x.A7, K.x.7
