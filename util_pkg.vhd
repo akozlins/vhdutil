@@ -9,7 +9,6 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 use std.textio.all;
-use ieee.std_logic_textio.all;
 
 package util is
 
@@ -330,15 +329,8 @@ package body util is
         v : in std_logic--;
     ) return string is
         variable s : string(1 to 1);
-        variable c : character;
     begin
-        c := 'X';
-        if ( v = '0' ) then
-            c := '0';
-        elsif ( v = '1' ) then
-            c := '1';
-        end if;
-        s(1) := c;
+        s(1) := std_logic'image(v)(2);
         return s;
     end function;
 
@@ -346,9 +338,11 @@ package body util is
         v : in std_logic_vector--;
     ) return string is
         variable s : string(1 to v'length);
+        variable j : integer := 1;
     begin
         for i in v'range loop
-            s(v'length - i + v'right) := to_string(v(i))(1);
+            s(j) := to_string(v(i))(1);
+            j := j + 1;
         end loop;
         return s;
     end function;
