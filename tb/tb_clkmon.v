@@ -40,8 +40,8 @@ clkmon #(.CLK_MHZ(CLK_MHZ), .TST_MHZ(TST_MHZ)) i_clkmon (
 initial
 begin
     @(posedge rst_n);
-    @(tst_ok = 1);
-    @(tst_ok = 0);
+    @(tst_ok == 1);
+    @(tst_ok == 0);
     repeat(1000) @(posedge clk);
     $finish;
 end
