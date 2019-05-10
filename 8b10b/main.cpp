@@ -71,20 +71,26 @@ void print_dec() {
             else disperr = 1;
         }
 
-        int o = ones(d10);
-        if(dispin == 0 && o != 5 && o != 6) disperr = 1;
-        if(dispin == 1 && o != 4 && o != 5) disperr = 1;
-        int dispout = dispin;
-        if(dispin == 0 && o > 5) dispout = 1;
-        if(dispin == 1 && o < 5) dispout = 0;
+        int o6 = ones(d10 & 0x3F);
+        if(dispin == 0 && o6 != 3 && o6 != 4) disperr = 1;
+        if(dispin == 1 && o6 != 2 && o6 != 3) disperr = 1;
+        int disp64 = dispin;
+        if(dispin == 0 && o6 > 3) disp64 = 1;
+        if(dispin == 1 && o6 < 3) disp64 = 0;
+        int o4 = ones(d10 >> 6);
+        if(disp64 == 0 && o4 != 2 && o4 != 3) disperr = 1;
+        if(disp64 == 1 && o4 != 1 && o4 != 2) disperr = 1;
+        int dispout = disp64;
+        if(disp64 == 0 && o4 > 2) dispout = 1;
+        if(disp64 == 1 && o4 < 2) dispout = 0;
 
 //        if(d8 >= 0) printf("%s%02d.%d", (d8 >> 8) ? "K" : "D", d8 & 0x1F, (d8 >> 5) & 0x7);
 //        else printf("     ");
 //        std::cout << " ";
 
         std::cout << (dispin ? "+" : "-") << " " << std::bitset<10>(d10) << " => ";
-        if(d8 >= 0) std::cout << std::bitset<8>(d8);
-        else std::cout << "XXXXXXXX";
+        if(d8 >= 0) std::cout << std::bitset<9>(d8);
+        else std::cout << "XXXXXXXXX";
         std::cout << " " << (dispout ? "+" : "-");
         if(disperr) std::cout << " disperr";
         std::cout << std::endl;
@@ -92,7 +98,7 @@ void print_dec() {
 }
 
 int main() {
-    print_enc_tb();
+    print_dec();
 
     return 0;
 }
