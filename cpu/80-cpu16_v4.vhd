@@ -4,7 +4,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 -- 16bit cpu
 -- 5-stage pipeline:
@@ -23,13 +22,22 @@ entity cpu16_v4 is
 end entity;
 
 library ieee;
-use ieee.std_logic_unsigned."+";
-use ieee.std_logic_unsigned."/=";
+use ieee.numeric_std.all;
 
 architecture arch of cpu16_v4 is
 
+    function "/=" (
+        l : in std_logic_vector;
+        r : in integer--;
+    ) return boolean is
+    begin
+        return unsigned(l) /= r;
+    end function;
+
+
+
     subtype word_t is std_logic_vector(15 downto 0);
-    subtype ram_addr_t is std_logic_vector(7 downto 0);
+    subtype ram_addr_t is unsigned(7 downto 0);
     subtype reg_addr_t is std_logic_vector(3 downto 0);
 
     type stage_t is record
@@ -62,7 +70,7 @@ architecture arch of cpu16_v4 is
         we : std_logic;
     end record;
 
-    signal ram_a, ram_b : ram_port_t := ( we => '-', others => (others => '-'));
+    signal ram_a, ram_b : ram_port_t := ( addr => (others => '0'), we => '-', others => (others => '-'));
 
     type reg_port_t is record
         addr : reg_addr_t;
@@ -91,9 +99,9 @@ begin
         INIT_FILE_HEX => "../cpu/cpu_v4.hex"--,
     )
     port map (
-        a_addr  => ram_a.addr,
+        a_addr  => std_logic_vector(ram_a.addr),
         a_rd    => ram_a.rd,
-        b_addr  => ram_b.addr,
+        b_addr  => std_logic_vector(ram_b.addr),
         b_rd    => ram_b.rd,
         b_wd    => ram_b.wd,
         b_we    => ram_b.we,
@@ -106,9 +114,9 @@ begin
         N => reg_addr_t'length--,
     )
     port map (
-        a_addr  => reg_a.addr,
+        a_addr  => std_logic_vector(reg_a.addr),
         a_rd    => reg_a.rd,
-        b_addr  => reg_b.addr,
+        b_addr  => std_logic_vector(reg_b.addr),
         b_rd    => reg_b.rd,
         b_wd    => reg_b.wd,
         b_we    => reg_b.we,
@@ -163,9 +171,9 @@ begin
     s_if.op_jump <= s_if.op = X"A";
     s_if.op_alu <= ram_a.rd /= 0 and s_if.op(s_if.op'left) = '0';
 
-    s_if.reg_a_addr <= ram_a.rd(3 downto 0);
-    s_if.reg_b_addr <= ram_a.rd(7 downto 4);
-    s_if.reg_c_addr <= ram_a.rd(11 downto 8);
+    s_if.reg_a_addr <= reg_addr_t(ram_a.rd(3 downto 0));
+    s_if.reg_b_addr <= reg_addr_t(ram_a.rd(7 downto 4));
+    s_if.reg_c_addr <= reg_addr_t(ram_a.rd(11 downto 8));
 
     s_if.reg_a_re <= s_if.reg_a_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
     s_if.reg_b_re <= s_if.reg_b_addr /= 0 and ( s_if.op_alu or s_if.op_store or s_if.op_load or s_if.op_debug );
@@ -174,7 +182,7 @@ begin
 
     blk_pc :
     block
-        signal a, b : ram_addr_t;
+        signal a, b, s : std_logic_vector(ram_addr_t'range);
     begin
         i_adder : entity work.adder
         generic map (
@@ -184,13 +192,14 @@ begin
             a => a,
             b => b,
             ci => '0',
-            s => pc_next,
+            s => s,
             co => open--,
         );
-        a <= s_id.pc when ( s_id.op_jump ) else
-             s_if.pc;
+        a <= std_logic_vector(s_id.pc) when ( s_id.op_jump ) else
+             std_logic_vector(s_if.pc);
         b <= s_id.reg_b_addr & s_id.reg_a_addr when ( s_id.op_jump ) else
              X"01";
+        pc_next <= ram_addr_t(s);
     end block;
 
     proc_fetch :
@@ -257,7 +266,7 @@ begin
     -- Execute
 
     alu.a <= ex_reg_a when ( s_ex.reg_a_re ) else
-             X"00" & s_ex.pc when ( s_ex.op_loadi ) else
+             std_logic_vector(resize(s_ex.pc, word_t'length)) when ( s_ex.op_loadi ) else
              (others => '0');
     alu.b <= ex_reg_b when ( s_ex.reg_b_re ) else
              X"0001" when ( s_ex.op_loadi ) else
@@ -284,10 +293,10 @@ begin
             mm_wd <= alu.y;
             alu.ci <= alu.co;
         elsif ( s_ex.op_store ) then
-            mm_addr <= alu.y(mm_addr'range);
+            mm_addr <= ram_addr_t(alu.y(mm_addr'range));
             mm_wd <= reg_a.rd;
         elsif ( s_ex.op_load or s_ex.op_loadi ) then
-            mm_addr <= alu.y(mm_addr'range);
+            mm_addr <= ram_addr_t(alu.y(mm_addr'range));
         end if;
 
         s_mm <= s_ex;

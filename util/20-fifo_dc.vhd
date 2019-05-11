@@ -29,7 +29,6 @@ end entity;
 
 library ieee;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned."+";
 
 architecture arch of fifo_dc is
 
@@ -86,7 +85,7 @@ begin
         rgray <= (others => '0');
         --
     elsif rising_edge(rclk) then
-        rptr_v := rptr + re_i;
+        rptr_v := std_logic_vector(unsigned(rptr) + ("" & re_i));
         rgray_v := work.util.bin2gray(rptr_v);
         rptr <= rptr_v;
         rgray <= rgray_v;
@@ -114,7 +113,7 @@ begin
         wgray <= (others => '0');
         --
     elsif rising_edge(wclk) then
-        wptr_v := wptr + we_i;
+        wptr_v := std_logic_vector(unsigned(wptr) + ("" & we_i));
         wgray_v := work.util.bin2gray(wptr_v);
         wptr <= wptr_v;
         wgray <= wgray_v;

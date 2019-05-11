@@ -4,7 +4,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 -- 16bit cpu
 --
@@ -25,12 +24,12 @@ entity cpu16_v1 is
 end entity;
 
 library ieee;
-use ieee.std_logic_unsigned."+";
+use ieee.numeric_std.all;
 
 architecture arch of cpu16_v1 is
 
     subtype word_t is std_logic_vector(15 downto 0);
-    subtype ram_addr_t is std_logic_vector(7 downto 0);
+    subtype ram_addr_t is unsigned(7 downto 0);
     subtype reg_addr_t is std_logic_vector(3 downto 0);
 
     type state_t is (
@@ -74,12 +73,12 @@ begin
     begin
     if rising_edge(clk) then
         if ( ram_we = '1' ) then
-            ram(to_integer(unsigned(ram_addr))) <= ram_wd;
+            ram(to_integer(ram_addr)) <= ram_wd;
         end if;
     end if; -- rising_edge
     end process;
 
-    ram_rd <= ram(to_integer(unsigned(ram_addr)));
+    ram_rd <= ram(to_integer(ram_addr));
 
     ir <= ram_rd(15 downto 12);
     reg_c_addr <= ram_rd(11 downto 8);
@@ -87,6 +86,7 @@ begin
     reg_a_rd <= reg(to_integer(unsigned(ram_rd(3 downto 0))));
 
     process(clk, rst_n)
+        variable v_addr : ram_addr_t;
     begin
     if ( rst_n = '0' ) then
         state <= S_RESET;
@@ -100,22 +100,24 @@ begin
 
             case ir is
             when X"F" => -- STORE : *(reg_b + reg_a) = reg_c
-                ram_addr <= reg_b_rd(ram_addr_t'range) + reg_a_rd(ram_addr_t'range);
+                ram_addr <= unsigned(reg_b_rd(ram_addr_t'range)) + unsigned(reg_a_rd(ram_addr_t'range));
                 ram_wd <= reg(to_integer(unsigned(reg_c_addr)));
                 ram_we <= '1';
                 state <= S_STORE;
             when X"E" => -- LOAD : reg_c = *(reg_b + reg_a)
-                ram_addr <= reg_b_rd(ram_addr_t'range) + reg_a_rd(ram_addr_t'range);
+                ram_addr <= unsigned(reg_b_rd(ram_addr_t'range)) + unsigned(reg_a_rd(ram_addr_t'range));
                 reg_c_addr_q <= reg_c_addr;
                 state <= S_LOAD;
             when X"D" => -- LOADI : reg_c = *(pc + 1)
                 reg_c_addr_q <= reg_c_addr;
                 state <= S_LOADI;
             when X"A" => -- JUMP : pc += rdata(7 downto 0)
-                pc <= pc + std_logic_vector(resize(signed(ram_rd(7 downto 0)), ram_addr_t'length));
-                ram_addr <= pc + std_logic_vector(resize(signed(ram_rd(7 downto 0)), ram_addr_t'length));
+                v_addr := (others => ram_rd(7));
+                v_addr(7 downto 0) := unsigned(ram_rd(7 downto 0));
+                pc <= pc + v_addr;
+                ram_addr <= pc + v_addr;
             when X"0" => -- ADD : reg_c = reg_b + reg_a
-                reg(to_integer(unsigned(reg_c_addr))) <= reg_b_rd + reg_a_rd;
+                reg(to_integer(unsigned(reg_c_addr))) <= std_logic_vector(unsigned(reg_b_rd) + unsigned(reg_a_rd));
             when others =>
                 null;
             end case;

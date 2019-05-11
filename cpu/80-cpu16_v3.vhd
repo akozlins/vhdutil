@@ -4,7 +4,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity cpu16_v3 is
     port (
@@ -15,10 +14,13 @@ entity cpu16_v3 is
     );
 end entity;
 
+library ieee;
+use ieee.numeric_std.all;
+
 architecture arch of cpu16_v3 is
 
     subtype word_t is std_logic_vector(15 downto 0);
-    subtype ram_addr_t is std_logic_vector(7 downto 0);
+    subtype ram_addr_t is unsigned(7 downto 0);
     subtype reg_addr_t is std_logic_vector(3 downto 0);
 
     type state_t is (
@@ -61,7 +63,7 @@ begin
         INIT_FILE_HEX => "../cpu/cpu_v3.hex"--,
     )
     port map (
-        addr    => ram_addr,
+        addr    => std_logic_vector(ram_addr),
         rd      => ram_rd,
         wd      => ram_wd,
         we      => ram_we,
@@ -113,7 +115,7 @@ begin
     --
 
     ram_addr <= pc when ( state = S_FETCH ) else
-                alu_y_q(ram_addr_t'range) when ( state = S_STORE or state = S_LOAD or state = S_LOADI) else
+                unsigned(alu_y_q(ram_addr_t'range)) when ( state = S_STORE or state = S_LOAD or state = S_LOADI) else
                 (others => '-');
     ram_wd <= reg_b_rd when ( state = S_STORE ) else
               (others => '-');
@@ -136,7 +138,7 @@ begin
     alu_ci <= flags(3) when ( state = S_ALU and ir(ir'left) = '0' ) else
               '-';
     alu_a <= reg_a_rd_q when ( state = S_ALU ) else
-             work.util.resize(pc, word_t'length) when ( state = S_FETCH or state = S_JUMP or state = S_LOADI ) else
+             std_logic_vector(resize(pc, word_t'length)) when ( state = S_FETCH or state = S_JUMP or state = S_LOADI ) else
              (others => '-');
     alu_b <= reg_b_rd_q when ( state = S_ALU ) else
              X"0001" when ( state = S_FETCH ) else
@@ -180,7 +182,7 @@ begin
 
         if ( state = S_FETCH ) then
             ir <= ram_rd;
-            pc_next <= alu_y(ram_addr_t'range); -- pc_next <= pc + 1
+            pc_next <= unsigned(alu_y(ram_addr_t'range)); -- pc_next <= pc + 1
         end if;
 
         if ( state = S_REG and ir(15 downto 12) = X"C") then -- DEBUG
@@ -192,7 +194,7 @@ begin
         end if;
 
         if ( state = S_JUMP or state = S_LOADI ) then
-            pc <= alu_y(ram_addr_t'range);
+            pc <= unsigned(alu_y(ram_addr_t'range));
         elsif ( state_next = S_FETCH ) then
             pc <= pc_next;
         end if;

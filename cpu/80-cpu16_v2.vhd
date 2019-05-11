@@ -4,9 +4,6 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-use ieee.std_logic_unsigned."+";
 
 entity cpu16_v2 is
     port (
@@ -17,10 +14,13 @@ entity cpu16_v2 is
     );
 end entity;
 
+library ieee;
+use ieee.numeric_std.all;
+
 architecture arch of cpu16_v2 is
 
     subtype word_t is std_logic_vector(15 downto 0);
-    subtype ram_addr_t is std_logic_vector(7 downto 0);
+    subtype ram_addr_t is unsigned(7 downto 0);
     subtype reg_addr_t is std_logic_vector(3 downto 0);
 
     type state_t is (
@@ -59,7 +59,7 @@ begin
         INIT_FILE_HEX => "../cpu/cpu_v2.hex"--,
     )
     port map (
-        addr    => ram_addr,
+        addr    => std_logic_vector(ram_addr),
         rd      => ram_rd,
         wd      => ram_wd,
         we      => ram_we,
@@ -119,13 +119,14 @@ begin
     ir <= ram_rd(15 downto 12);
 
     process(clk, rst_n)
+        variable v_addr : ram_addr_t;
     begin
     if ( rst_n = '0' ) then
         state <= S_RESET;
         --
     elsif rising_edge(clk) then
         state <= S_EXEC;
-        ram_addr_q <= reg_b_rd(ram_addr_t'range) + reg_a_rd(ram_addr_t'range);
+        ram_addr_q <= unsigned(reg_b_rd(ram_addr_t'range)) + unsigned(reg_a_rd(ram_addr_t'range));
         reg_c_addr_q <= reg_c_addr;
         reg_c_rd_q <= reg_c_rd;
 
@@ -144,7 +145,9 @@ begin
                 dbg_out <= reg_a_rd;
             when X"A" => -- JUMP : pc += rdata(7 downto 0)
                 if ( (reg_c_addr and flags) = reg_c_addr ) then
-                    pc <= pc + std_logic_vector(resize(signed(ram_rd(7 downto 0)), ram_addr_t'length));
+                    v_addr := (others => ram_rd(7));
+                    v_addr(7 downto 0) := unsigned(ram_rd(7 downto 0));
+                    pc <= pc + v_addr;
                 end if;
             when others =>
                 null;

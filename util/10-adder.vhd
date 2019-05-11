@@ -20,7 +20,6 @@ end entity;
 
 library ieee;
 use ieee.numeric_std.all;
-use ieee.std_logic_unsigned."+";
 
 architecture arch1 of adder is
 
@@ -28,14 +27,14 @@ architecture arch1 of adder is
 
 begin
 
-    s_i <= ('0' & a) + b + ci;
+    s_i <= std_logic_vector(unsigned('0' & a) + unsigned(b) + ("" & ci));
     s <= s_i(s'range);
     co <= s_i(s_i'left);
 
 end architecture;
 
 library ieee;
-use ieee.std_logic_unsigned."+";
+use ieee.numeric_std.all;
 
 architecture arch2 of adder is
 
@@ -43,7 +42,7 @@ architecture arch2 of adder is
 
 begin
 
-    s_i <= ('0' & a & '1') + ('0' & b & ci);
+    s_i <= std_logic_vector(unsigned('0' & a & '1') + unsigned('0' & b & ci));
     s <= s_i(W downto 1);
     co <= s_i(s_i'left);
 
