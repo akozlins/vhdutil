@@ -1,3 +1,6 @@
 
-all :
-	g++ -o main -Wall -Wextra -std=c++14 main.cpp
+CPPFLAGS += -std=c++14
+CPPFLAGS += -Wall -Wextra
+
+main : main.o
+	g++ -o main main.o

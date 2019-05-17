@@ -84,9 +84,21 @@ void print_dec() {
         if(disp64 == 0 && o4 > 2) dispout = 1;
         if(disp64 == 1 && o4 < 2) dispout = 0;
 
-//        if(d8 >= 0) printf("%s%02d.%d", (d8 >> 8) ? "K" : "D", d8 & 0x1F, (d8 >> 5) & 0x7);
-//        else printf("     ");
-//        std::cout << " ";
+        // print test sequence
+        if(0) {
+            std::cout << "\"" << dispin << std::bitset<10>(d10) << dispout;
+            if(d8 >= 0) std::cout << std::bitset<9>(d8);
+            else std::cout << "0XXXXXXXX";
+            std::cout << err << disperr << "\",";
+            continue;
+        }
+
+        // print label (i.e. K28.5)
+        if(0) {
+            if(d8 >= 0) printf("%s%02d.%d", (d8 >> 8) ? "K" : "D", d8 & 0x1F, (d8 >> 5) & 0x7);
+            else printf("     ");
+            std::cout << " ";
+        }
 
         std::cout << (dispin ? "+" : "-") << " " << std::bitset<10>(d10) << " => ";
         if(d8 >= 0) std::cout << std::bitset<9>(d8);

@@ -11,7 +11,7 @@ use ieee.std_logic_1164.all;
 
 entity enc_8b10b is
     port (
-        -- input data (K bit & 8 data bits)
+        -- input data (K bit & 8-bit data)
         datain  :   in  std_logic_vector(8 downto 0);
         -- input disparity
         dispin  :   in  std_logic;
@@ -31,13 +31,11 @@ architecture arch of enc_8b10b is
 
     signal K28, Kx7 : std_logic;
 
-    -- 6-bit group --
-    -- out : isD+ & 6 bits
+    -- out : isD+ & 6-bit group
     signal G6 : std_logic_vector(6 downto 0);
     signal A7 : std_logic;
 
-    -- 4-bit group --
-    -- out : disp & 4 bits
+    -- out : disp & 4-bit group
     signal G4 : std_logic_vector(4 downto 0);
 
 begin

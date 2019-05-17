@@ -15,7 +15,7 @@ entity dec_8b10b is
         datain  :   in  std_logic_vector(9 downto 0);
         -- input disparity
         dispin  :   in  std_logic;
-        -- output data (K bit & 8 data bits)
+        -- output data (K bit & 8-bit data)
         dataout :   out std_logic_vector(8 downto 0);
         -- output disparity
         dispout :   out std_logic;
@@ -28,19 +28,17 @@ end entity;
 
 architecture arch of dec_8b10b is
 
-    -- 6-bit group --
-    -- disp & 6 bits
+    -- disp & 6-bit group
     signal G6sel : std_logic_vector(6 downto 0);
-    -- err & disperr & disp & 5 bits
+    -- err & disperr & disp & 5-bit group
     signal G5 : std_logic_vector(7 downto 0);
     signal A7 : std_logic;
 
     signal K28, Kx7 : std_logic;
 
-    -- 4-bit group --
-    -- disp & 4 bits
+    -- disp & 4-bit group
     signal G4sel : std_logic_vector(4 downto 0);
-    -- err & disperr & disp & 3 bits
+    -- err & disperr & disp & 3-bit group
     signal G3 : std_logic_vector(5 downto 0);
 
 begin
