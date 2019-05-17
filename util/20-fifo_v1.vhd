@@ -33,7 +33,7 @@ architecture arch of fifo_v1 is
     subtype addr_t is std_logic_vector(N-1 downto 0);
     subtype ptr_t is std_logic_vector(N downto 0);
 
-    constant XOR_FULL : ptr_t := ( N => '1', others => '0' );
+    constant XOR_FULL : ptr_t := "10" & ( N-2 downto 0 => '0' );
 
     signal re_i, we_i : std_logic;
     signal empty_i, full_i : std_logic;
@@ -62,12 +62,11 @@ begin
     we_i <= ( we and not full_i );
 
     process(clk, rst_n)
-        variable rptr_v : std_logic_vector(rptr'range);
-        variable wptr_v : std_logic_vector(wptr'range);
+        variable rptr_v, wptr_v : ptr_t;
     begin
     if ( rst_n = '0' ) then
         empty_i <= '1';
-        full_i <= '0';
+        full_i <= '1';
         rptr <= (others => '0');
         wptr <= (others => '0');
         --

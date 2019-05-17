@@ -35,7 +35,7 @@ architecture arch of fifo_dc is
     subtype addr_t is std_logic_vector(N-1 downto 0);
     subtype ptr_t is std_logic_vector(N downto 0);
 
-    constant XOR_FULL : ptr_t := ( N downto N-1 => '1', others => '0' );
+    constant XOR_FULL : ptr_t := "11" & ( N-2 downto 0 => '0' );
 
     signal re_i, we_i : std_logic;
     signal rempty_i, wfull_i : std_logic;
@@ -77,7 +77,7 @@ begin
     );
 
     process(rclk, rrst_n)
-        variable rptr_v, rgray_v : std_logic_vector(ptr_t'range);
+        variable rptr_v, rgray_v : ptr_t;
     begin
     if ( rrst_n = '0' ) then
         rempty_i <= '1';
@@ -105,10 +105,10 @@ begin
     );
 
     process(wclk, wrst_n)
-        variable wptr_v, wgray_v : std_logic_vector(ptr_t'range);
+        variable wptr_v, wgray_v : ptr_t;
     begin
     if ( wrst_n = '0' ) then
-        wfull_i <= '0';
+        wfull_i <= '1';
         wptr <= (others => '0');
         wgray <= (others => '0');
         --
