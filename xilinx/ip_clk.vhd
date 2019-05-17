@@ -8,7 +8,8 @@ use ieee.std_logic_1164.all;
 entity ip_clk is
     generic (
         M : positive := 8;
-        D : positive := 4--;
+        D : positive := 4;
+        CLK_PERIOD : real := 0.0--;
     );
     port (
         clkout  :   out std_logic;
@@ -47,7 +48,7 @@ begin
       BANDWIDTH => "OPTIMIZED",  -- OPTIMIZED, HIGH, LOW
       CLKFBOUT_MULT => M,        -- Multiply value for all CLKOUT, (2-64)
       CLKFBOUT_PHASE => 0.0,     -- Phase offset in degrees of CLKFB, (-360.000-360.000).
-      CLKIN1_PERIOD => 0.0,      -- Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
+      CLKIN1_PERIOD => CLK_PERIOD,      -- Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
       -- CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: Divide amount for each CLKOUT (1-128)
       CLKOUT0_DIVIDE => D,
       CLKOUT1_DIVIDE => 1,

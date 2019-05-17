@@ -27,7 +27,7 @@ begin
     port map ( rstout_n => rst_100_n, arst_n => not pl_btn(0), clk => clk_100 );
 
     i_clk_200 : entity work.ip_clk
-    generic map ( M => 8, D => 4 )
+    generic map ( M => 8, D => 4, CLK_PERIOD => 10.0 )
     port map (
         clkout => clk_200,
         locked => clk_200_locked,
