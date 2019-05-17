@@ -59,6 +59,10 @@ package util is
         b : in boolean--;
     ) return std_logic;
 
+    function reverse (
+        v : std_logic_vector--;
+    ) return std_logic_vector;
+
     procedure char_to_hex (
         c : in character;
         v : out std_logic_vector(3 downto 0);
@@ -197,6 +201,18 @@ package body util is
         end if;
     end function;
 
+    function reverse (
+        v : std_logic_vector--;
+    ) return std_logic_vector is
+        variable r : std_logic_vector(v'range);
+        alias a : std_logic_vector(v'reverse_range) is v;
+    begin
+        for i in a'range loop
+            r(i) := a(i);
+        end loop;
+        return r;
+    end function;
+
     procedure char_to_hex (
         c : in character;
         v : out std_logic_vector(3 downto 0);
@@ -309,6 +325,7 @@ package body util is
             return data;
         end if;
         file_open(fs, f, fname, READ_MODE);
+        assert ( fs = open_ok ) report "(read_hex) file_open_status = '" & FILE_OPEN_STATUS'image(fs) & "'" severity failure;
         while ( endfile(f) /= true ) loop
             readline(f, l);
             read(l, c, ok);
