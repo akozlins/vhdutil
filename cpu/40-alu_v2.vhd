@@ -78,7 +78,7 @@ begin
         when "110" =>
             y_i <= a xor b;
         when "111" =>
-            y_i <= not (a or b);
+            y_i <= not (a xor b);
         when others =>
             null;
         end case;

@@ -96,7 +96,7 @@ begin
     generic map (
         W => word_t'length,
         N => ram_addr_t'length,
-        INIT_FILE_HEX => "../cpu/cpu_v4.hex"--,
+        INIT_FILE_HEX => "cpu/cpu_v4.hex"--,
     )
     port map (
         a_addr  => std_logic_vector(ram_a.addr),
@@ -202,7 +202,8 @@ begin
         pc_next <= ram_addr_t(s);
     end block;
 
-    proc_fetch :
+    ----------------------------------------------------------------
+
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
@@ -228,9 +229,10 @@ begin
     end if; -- rising_edge
     end process;
 
+    ----------------------------------------------------------------
     -- Instruction Decode
+    ----------------------------------------------------------------
 
-    proc_decode :
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
@@ -263,7 +265,9 @@ begin
     end if; -- rising_edge
     end process;
 
+    ----------------------------------------------------------------
     -- Execute
+    ----------------------------------------------------------------
 
     alu.a <= ex_reg_a when ( s_ex.reg_a_re ) else
              std_logic_vector(resize(s_ex.pc, word_t'length)) when ( s_ex.op_loadi ) else
@@ -274,7 +278,6 @@ begin
     alu.op <= s_ex.op(alu.op'range) when ( s_ex.op_alu ) else
               (others => '0');
 
-    proc_exec :
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
@@ -305,7 +308,9 @@ begin
     end if; -- rising_edge
     end process;
 
+    ----------------------------------------------------------------
     -- Memory access
+    ----------------------------------------------------------------
 
     ram_b.addr <= mm_addr when ( s_mm.op_store or s_mm.op_load or s_mm.op_loadi ) else
                   (others => '-');
@@ -314,7 +319,6 @@ begin
     ram_b.we <= '1' when ( s_mm.op_store ) else
                 '0';
 
-    proc_mem :
     process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then

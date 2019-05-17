@@ -62,8 +62,12 @@ architecture arch of cpu16_v1 is
 
     signal reg : ram_t(0 to 2**reg_addr_t'length-1);
 
+    alias reg_a_addr : reg_addr_t is ram_rd(3 downto 0);
+    alias reg_b_addr : reg_addr_t is ram_rd(7 downto 4);
+    alias reg_c_addr : reg_addr_t is ram_rd(11 downto 8);
+
     signal reg_a_rd, reg_b_rd : word_t;
-    signal reg_c_addr, reg_c_addr_q : reg_addr_t;
+    signal reg_c_addr_q : reg_addr_t;
 
 begin
 
@@ -81,15 +85,15 @@ begin
     ram_rd <= ram(to_integer(ram_addr));
 
     ir <= ram_rd(15 downto 12);
-    reg_c_addr <= ram_rd(11 downto 8);
-    reg_b_rd <= reg(to_integer(unsigned(ram_rd(7 downto 4))));
-    reg_a_rd <= reg(to_integer(unsigned(ram_rd(3 downto 0))));
+    reg_b_rd <= reg(to_integer(unsigned(reg_b_addr)));
+    reg_a_rd <= reg(to_integer(unsigned(reg_a_addr)));
 
     process(clk, rst_n)
-        variable v_addr : ram_addr_t;
+        variable addr_v : ram_addr_t;
     begin
     if ( rst_n = '0' ) then
         state <= S_RESET;
+        --
     elsif rising_edge(clk) then
         ram_we <= '0';
 
@@ -112,12 +116,12 @@ begin
                 reg_c_addr_q <= reg_c_addr;
                 state <= S_LOADI;
             when X"A" => -- JUMP : pc += rdata(7 downto 0)
-                v_addr := (others => ram_rd(7));
-                v_addr(7 downto 0) := unsigned(ram_rd(7 downto 0));
-                pc <= pc + v_addr;
-                ram_addr <= pc + v_addr;
+                addr_v := (others => ram_rd(7));
+                addr_v(7 downto 0) := unsigned(ram_rd(7 downto 0));
+                pc <= pc + addr_v;
+                ram_addr <= pc + addr_v;
             when X"0" => -- ADD : reg_c = reg_b + reg_a
-                reg(to_integer(unsigned(reg_c_addr))) <= std_logic_vector(unsigned(reg_b_rd) + unsigned(reg_a_rd));
+                reg(to_integer(unsigned(reg_c_addr))) <= word_t(unsigned(reg_b_rd) + unsigned(reg_a_rd));
             when others =>
                 null;
             end case;
@@ -147,6 +151,8 @@ begin
         end case;
 
         reg(0) <= (others => '0');
+
+        --
     end if; -- rising_edge
     end process;
 
