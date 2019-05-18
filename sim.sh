@@ -1,14 +1,20 @@
 #!/bin/sh
 set -eux
 
-work=work
-tb=$1
+TB=$1
 
-ghdl -i --workdir=$work util_pkg.vhd util/*.vhd cpu/*.vhd tb/*.vhd
-ghdl -m --workdir=$work --ieee=synopsys -fexplicit -P"$XDG_CACHE_HOME/xilinx-vivado" $tb
-ghdl -e --workdir=$work --ieee=synopsys -fexplicit -P"$XDG_CACHE_HOME/xilinx-vivado" $tb
-ghdl -r --workdir=$work $tb --stop-time=1ms --vcd=$work/$tb.vcd --wave=work/$tb.ghw
+STOPTIME=50us
 
-ghdl --clean --workdir=$work
+SRC="util_pkg.vhd util/*.vhd cpu/*.vhd tb/$TB.vhd"
 
-gtkwave $work/$tb.ghw
+WORK=work
+
+#ghdl -s --workdir=$WORK $SRC
+ghdl -i --workdir=$WORK $SRC
+ghdl -m --workdir=$WORK -P"$XDG_CACHE_HOME/xilinx-vivado" $TB
+ghdl -e --workdir=$WORK -P"$XDG_CACHE_HOME/xilinx-vivado" $TB
+ghdl -r --workdir=$WORK $TB --stop-time=$STOPTIME --vcd=$WORK/$TB.vcd --wave=$WORK/$TB.ghw
+
+#ghdl --clean --workdir=$WORK
+
+gtkwave $WORK/$TB.ghw
