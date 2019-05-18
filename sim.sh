@@ -2,19 +2,19 @@
 set -eux
 
 TB=$1
-
 STOPTIME=50us
 
-SRC="util_pkg.vhd util/*.vhd cpu/*.vhd tb/$TB.vhd"
+mkdir -p work
+unset CDPATH
+cd work || exit 1
 
-WORK=work
+DIR=..
+SRC="$DIR/util_pkg.vhd $DIR/util/*.vhd $DIR/cpu/*.vhd $DIR/tb/$TB.vhd"
 
-#ghdl -s --workdir=$WORK $SRC
-ghdl -i --workdir=$WORK $SRC
-ghdl -m --workdir=$WORK -P"$XDG_CACHE_HOME/xilinx-vivado" $TB
-ghdl -e --workdir=$WORK -P"$XDG_CACHE_HOME/xilinx-vivado" $TB
-ghdl -r --workdir=$WORK $TB --stop-time=$STOPTIME --vcd=$WORK/$TB.vcd --wave=$WORK/$TB.ghw
+ghdl -i $SRC
+ghdl -s $SRC
+ghdl -m -P"$XDG_CACHE_HOME/xilinx-vivado" "$TB"
+ghdl -e -P"$XDG_CACHE_HOME/xilinx-vivado" "$TB"
+ghdl -r "$TB" --stop-time="$STOPTIME" --vcd="$TB.vcd" --wave="$TB.ghw"
 
-#ghdl --clean --workdir=$WORK
-
-gtkwave $WORK/$TB.ghw
+gtkwave "$TB.ghw"
