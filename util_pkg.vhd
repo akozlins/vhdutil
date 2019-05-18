@@ -28,6 +28,10 @@ package util is
         v : std_logic_vector--;
     ) return std_logic_vector;
 
+    function grayinc (
+        v : std_logic_vector--;
+    ) return std_logic_vector;
+
     function shift_right (
         v : std_logic_vector;
         n : natural--;
@@ -96,6 +100,10 @@ package util is
         v : in std_logic_vector--;
     ) return string;
 
+    function to_string (
+        v : in unsigned--;
+    ) return string;
+
 end package;
 
 package body util is
@@ -139,6 +147,22 @@ package body util is
             r(i) := b;
         end loop;
         return r;
+    end function;
+
+    function grayinc (
+        v : std_logic_vector--;
+    ) return std_logic_vector is
+        variable r : std_logic_vector(v'range) := (others => '0');
+    begin
+        r(r'right) := '1';
+        if ( xor_reduce(v) /= '0' ) then
+            for i in v'reverse_range loop
+                exit when ( i = v'left );
+                r := shift_left(r, 1);
+                exit when ( v(i) = '1' );
+            end loop;
+        end if;
+        return v xor r;
     end function;
 
     function shift_right (
@@ -362,6 +386,13 @@ package body util is
             j := j + 1;
         end loop;
         return s;
+    end function;
+
+    function to_string (
+        v : in unsigned--;
+    ) return string is
+    begin
+        return to_string(std_logic_vector(v));
     end function;
 
 end package body;
