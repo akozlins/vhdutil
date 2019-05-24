@@ -27,6 +27,11 @@ package rv32i_pkg is
         inst : std_logic_vector(31 downto 0)--;
     ) return string;
 
+    function jal (
+        imm : std_logic_vector(20 downto 0);
+        rd : std_logic_vector(4 downto 0)--;
+    ) return std_logic_vector;
+
 end package;
 
 package body rv32i_pkg is
@@ -106,6 +111,14 @@ package body rv32i_pkg is
         if ( inst(6 downto 0) = OP_c      and inst(14 downto 12) = "110" and inst(31 downto 25) = "0000000" ) then return "or"; end if;
         if ( inst(6 downto 0) = OP_c      and inst(14 downto 12) = "111" and inst(31 downto 25) = "0000000" ) then return "and"; end if;
         return "invalid";
+    end function;
+
+    function jal (
+        imm : std_logic_vector(20 downto 0);
+        rd : std_logic_vector(4 downto 0)--;
+    ) return std_logic_vector is
+    begin
+        return imm(20) & imm(10 downto 1) & imm(11) & imm(19 downto 12) & rd & JAL_c;
     end function;
 
 end package body;

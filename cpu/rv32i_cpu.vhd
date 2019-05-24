@@ -23,8 +23,14 @@ architecture arch of rv32i_cpu_v1 is
     type ram_t is array (natural range <>) of std_logic_vector(31 downto 0);
 
     signal ram : ram_t(0 to 255) := (
+        -- reset vector
+        work.rv32i_pkg.jal('0' & X"00004", "00000"),
         -- set sp
         X"400" & "00000" & "000" & "00010" & work.rv32i_pkg.OP_IMM_c,
+        -- set ra
+        work.rv32i_pkg.jal('0' & X"00008", "00001"),
+        -- hlt
+        work.rv32i_pkg.jal('0' & X"00000", "00000"),
         --
         X"ff010113",
         X"00112623",
@@ -36,7 +42,7 @@ architecture arch of rv32i_cpu_v1 is
         X"00c12083",
         X"00812403",
         X"01010113",
-        X"00000" & "00000" & work.rv32i_pkg.JAL_c,--X"00008067",
+        X"00008067",
         X"fe010113",
         X"00812e23",
         X"02010413",
@@ -73,7 +79,7 @@ architecture arch of rv32i_cpu_v1 is
         X"02010113",
         X"00008067",
         --
-        others => (others => '-')
+        others => (others => 'U')
     );
 
     signal regs : ram_t(0 to 31) := (
