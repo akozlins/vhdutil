@@ -104,6 +104,14 @@ package util is
         v : in unsigned--;
     ) return string;
 
+    function to_hstring (
+        v : std_logic_vector--;
+    ) return string;
+
+    function to_hstring (
+        v : unsigned--;
+    ) return string;
+
 end package;
 
 package body util is
@@ -393,6 +401,28 @@ package body util is
     ) return string is
     begin
         return to_string(std_logic_vector(v));
+    end function;
+
+    function to_hstring (
+        v : std_logic_vector--;
+    ) return string is
+        variable r : string(1 to (v'length + 3) / 4) := (others => 'X');
+        variable u : unsigned(v'length+3 downto 0);
+        constant lut : string(1 to 16) := "0123456789ABCDEF";
+    begin
+        u := resize(unsigned(v), u'length);
+        for i in r'range loop
+            next when ( is_x(u(4*i-1)) or is_x(u(4*i-2)) or is_x(u(4*i-3)) or is_x(u(4*i-4)) );
+            r(r'length-i+1) := lut(1 + to_integer(unsigned(u(4*i-1 downto 4*i-4))));
+        end loop;
+        return r;
+    end function;
+
+    function to_hstring (
+        v : unsigned--;
+    ) return string is
+    begin
+        return to_hstring(std_logic_vector(v));
     end function;
 
 end package body;
