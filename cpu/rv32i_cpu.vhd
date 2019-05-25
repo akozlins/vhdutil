@@ -96,6 +96,7 @@ architecture arch of rv32i_cpu_v1 is
 
     signal alu_s1, alu_s2, alu_d : std_logic_vector(31 downto 0);
     signal alu_op : std_logic_vector(3 downto 0);
+    signal alu_eq, alu_lt, alu_ltu : std_logic;
 
 begin
 
@@ -156,16 +157,17 @@ begin
         s1  => alu_s1,
         s2  => alu_s2,
         op  => alu_op,
+        eq  => alu_eq, lt => alu_lt, ltu => alu_ltu,
         d   => alu_d--,
     );
 
     alu_s1 <=
         pc when ( opcode = work.rv32i_pkg.AUIPC_c ) else
         pc when ( opcode = work.rv32i_pkg.JAL_c ) else
-        pc when ( opcode = work.rv32i_pkg.BRANCH_c ) else
         reg_rd1;
 
     alu_s2 <=
+        reg_rd2 when ( opcode = work.rv32i_pkg.BRANCH_c ) else
         reg_rd2 when ( opcode = work.rv32i_pkg.OP_c ) else
         imm;
 
@@ -200,12 +202,12 @@ begin
             report "    pc <= " & integer'image(to_integer(unsigned(alu_d)));
             --
         elsif ( opcode = work.rv32i_pkg.BRANCH_c and (
-            ( funct3 = "000" and reg_rd1 = reg_rd2 ) or
-            ( funct3 = "001" and reg_rd1 /= reg_rd2 ) or
-            ( funct3 = "100" and signed(reg_rd1) < signed(reg_rd2) ) or
-            ( funct3 = "101" and signed(reg_rd1) >= signed(reg_rd2) ) or
-            ( funct3 = "110" and unsigned(reg_rd1) < unsigned(reg_rd2) ) or
-            ( funct3 = "111" and unsigned(reg_rd1) >= unsigned(reg_rd2) )
+            ( funct3 = "000" and alu_eq = '1' ) or
+            ( funct3 = "001" and alu_eq = '0' ) or
+            ( funct3 = "100" and alu_lt = '1' ) or
+            ( funct3 = "101" and alu_lt = '0' ) or
+            ( funct3 = "110" and alu_ltu = '1' ) or
+            ( funct3 = "111" and alu_ltu = '0' )
         ) ) then
             pc <= std_logic_vector(unsigned(pc) + unsigned(imm));
             report "    pc <= " & integer'image(to_integer(unsigned(pc) + unsigned(imm)));
