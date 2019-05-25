@@ -87,9 +87,10 @@ architecture arch of rv32i_cpu_v1 is
     );
 
     signal pc, ram_addr : std_logic_vector(31 downto 0);
-    signal reg_addr1, reg_addr2, reg_waddr : std_logic_vector(4 downto 0);
+    signal reg_raddr1, reg_raddr2, reg_waddr : std_logic_vector(4 downto 0);
 
-    signal inst, reg_rd1, reg_rd2, reg_wd, imm, ldata : std_logic_vector(31 downto 0);
+    signal inst, reg_rdata1, reg_rdata2, reg_wdata, imm, ram_rdata, ram_wdata : std_logic_vector(31 downto 0);
+    signal ram_we : std_logic;
 
     signal opcode : std_logic_vector(6 downto 0);
     signal funct3 : std_logic_vector(2 downto 0);
@@ -104,22 +105,23 @@ begin
 
 
 
-    ldata <= ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4);
+    ram_rdata <= ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4);
 
     process(clk)
     begin
     if rising_edge(clk) then
-        if ( opcode = work.rv32i_pkg.STORE_c ) then
-            report "    ram[" & integer'image(to_integer(unsigned(ram_addr))) & "] <= " & integer'image(to_integer(unsigned(reg_rd2)));
-            ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4) <= reg_rd2;
+        if ( ram_we = '1' ) then
+            ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4) <= ram_wdata;
         end if;
     end if;
     end process;
 
+    ram_wdata <= reg_rdata2;
+    ram_we <= '1' when ( opcode = work.rv32i_pkg.STORE_c ) else '0';
 
 
-    reg_rd1 <= regs(to_integer(unsigned(reg_addr1))) when ( reg_addr1 /= "00000" ) else (others => '0');
-    reg_rd2 <= regs(to_integer(unsigned(reg_addr2))) when ( reg_addr2 /= "00000" ) else (others => '0');
+    reg_rdata1 <= regs(to_integer(unsigned(reg_raddr1))) when ( reg_raddr1 /= "00000" ) else (others => '0');
+    reg_rdata2 <= regs(to_integer(unsigned(reg_raddr2))) when ( reg_raddr2 /= "00000" ) else (others => '0');
 
     process(clk)
     begin
@@ -128,8 +130,7 @@ begin
         --
     elsif rising_edge(clk) then
         if ( reg_waddr /= "00000" ) then
-            report "    reg[" & work.rv32i_pkg.reg_name(reg_waddr) & "] <= " & integer'image(to_integer(unsigned(reg_wd)));
-            regs(to_integer(unsigned(reg_waddr))) <= reg_wd;
+            regs(to_integer(unsigned(reg_waddr))) <= reg_wdata;
         end if;
     end if;
     end process;
@@ -143,8 +144,8 @@ begin
         funct3 => funct3,
         funct7 => open,
 
-        rs1 => reg_addr1,
-        rs2 => reg_addr2,
+        rs1 => reg_raddr1,
+        rs2 => reg_raddr2,
         rd => reg_waddr,
 
         imm => imm,
@@ -164,11 +165,11 @@ begin
     alu_s1 <=
         pc when ( opcode = work.rv32i_pkg.AUIPC_c ) else
         pc when ( opcode = work.rv32i_pkg.JAL_c ) else
-        reg_rd1;
+        reg_rdata1;
 
     alu_s2 <=
-        reg_rd2 when ( opcode = work.rv32i_pkg.BRANCH_c ) else
-        reg_rd2 when ( opcode = work.rv32i_pkg.OP_c ) else
+        reg_rdata2 when ( opcode = work.rv32i_pkg.BRANCH_c ) else
+        reg_rdata2 when ( opcode = work.rv32i_pkg.OP_c ) else
         imm;
 
     alu_op <=
@@ -177,10 +178,10 @@ begin
         '0' & funct3 when ( opcode = work.rv32i_pkg.OP_IMM_c ) else
         "0000";
 
-    reg_wd <=
+    reg_wdata <=
         imm when ( opcode = work.rv32i_pkg.LUI_c ) else
         std_logic_vector(unsigned(pc) + 4) when ( opcode = work.rv32i_pkg.JAL_c or opcode = work.rv32i_pkg.JALR_c ) else
-        ldata when ( opcode = work.rv32i_pkg.LOAD_c ) else
+        ram_rdata when ( opcode = work.rv32i_pkg.LOAD_c ) else
         alu_d;
 
     ram_addr <= alu_d when ( opcode = work.rv32i_pkg.LOAD_c or opcode = work.rv32i_pkg.STORE_c ) else (others => '0');
@@ -194,8 +195,8 @@ begin
         report "[" & integer'image(to_integer(unsigned(pc))) & "]";
         report "    " & work.rv32i_pkg.inst_name(inst);
         report "    imm = " & integer'image(to_integer(signed(imm)));
-        report "    s1: reg[" & work.rv32i_pkg.reg_name(reg_addr1) & "] = " & integer'image(to_integer(unsigned(reg_rd1)));
-        report "    s2: reg[" & work.rv32i_pkg.reg_name(reg_addr2) & "] = " & integer'image(to_integer(unsigned(reg_rd2)));
+        report "    s1: reg[" & work.rv32i_pkg.reg_name(reg_raddr1) & "] = " & integer'image(to_integer(unsigned(reg_rdata1)));
+        report "    s2: reg[" & work.rv32i_pkg.reg_name(reg_raddr2) & "] = " & integer'image(to_integer(unsigned(reg_rdata2)));
 
         if ( opcode = work.rv32i_pkg.JAL_c or opcode = work.rv32i_pkg.JALR_c ) then
             pc <= alu_d;
@@ -216,6 +217,14 @@ begin
             pc <= std_logic_vector(unsigned(pc) + 4);
             report "    pc <= " & integer'image(to_integer(unsigned(pc) + 4));
         end if;
+
+        if ( ram_we = '1' ) then
+            report "    ram[" & integer'image(to_integer(unsigned(ram_addr))) & "] <= " & integer'image(to_integer(unsigned(reg_rdata2)));
+        end if;
+        if ( reg_waddr /= "00000" ) then
+            report "    reg[" & work.rv32i_pkg.reg_name(reg_waddr) & "] <= " & integer'image(to_integer(unsigned(reg_wdata)));
+        end if;
+
     end if;
     end process;
 
