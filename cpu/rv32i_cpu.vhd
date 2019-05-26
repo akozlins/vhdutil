@@ -20,6 +20,11 @@ use ieee.numeric_std.all;
 
 architecture arch of rv32i_cpu_v1 is
 
+    function to_string ( v : std_logic_vector ) return string is
+    begin
+        return integer'image(to_integer(signed((v))));
+    end function;
+
     type ram_t is array (natural range <>) of std_logic_vector(31 downto 0);
 
     signal ram : ram_t(0 to 255) := (
@@ -86,7 +91,7 @@ architecture arch of rv32i_cpu_v1 is
         others => (others => '-')
     );
 
-    signal pc, ram_addr : std_logic_vector(31 downto 0);
+    signal pc, pc_next, ram_addr : std_logic_vector(31 downto 0);
     signal reg_raddr1, reg_raddr2, reg_waddr : std_logic_vector(4 downto 0);
 
     signal inst, reg_rdata1, reg_rdata2, reg_wdata, imm, ram_rdata, ram_wdata : std_logic_vector(31 downto 0);
@@ -186,45 +191,39 @@ begin
 
     ram_addr <= alu_d when ( opcode = work.rv32i_pkg.LOAD_c or opcode = work.rv32i_pkg.STORE_c ) else (others => '0');
 
+    pc_next <=
+        alu_d when ( opcode = work.rv32i_pkg.JAL_c or opcode = work.rv32i_pkg.JALR_c ) else
+        std_logic_vector(unsigned(pc) + unsigned(imm)) when ( opcode = work.rv32i_pkg.BRANCH_c and (
+            ( funct3 = "000" and alu_eq = '1' ) or
+            ( funct3 = "001" and alu_eq = '0' ) or
+            ( funct3 = "100" and alu_lt = '1' ) or
+            ( funct3 = "101" and alu_lt = '0' ) or
+            ( funct3 = "110" and alu_ltu = '1' ) or
+            ( funct3 = "111" and alu_ltu = '0' ) )
+        ) else
+        std_logic_vector(unsigned(pc) + 4);
+
     process(clk)
     begin
     if ( rst_n = '0' ) then
         pc <= (others => '0');
         --
     elsif rising_edge(clk) then
-        report "[" & integer'image(to_integer(unsigned(pc))) & "]";
-        report "    " & work.rv32i_pkg.inst_name(inst);
-        report "    imm = " & integer'image(to_integer(signed(imm)));
-        report "    s1: reg[" & work.rv32i_pkg.reg_name(reg_raddr1) & "] = " & integer'image(to_integer(unsigned(reg_rdata1)));
-        report "    s2: reg[" & work.rv32i_pkg.reg_name(reg_raddr2) & "] = " & integer'image(to_integer(unsigned(reg_rdata2)));
+        pc <= pc_next;
 
-        if ( opcode = work.rv32i_pkg.JAL_c or opcode = work.rv32i_pkg.JALR_c ) then
-            pc <= alu_d;
-            report "    pc <= " & integer'image(to_integer(unsigned(alu_d)));
-            --
-        elsif ( opcode = work.rv32i_pkg.BRANCH_c and (
-            ( funct3 = "000" and alu_eq = '1' ) or
-            ( funct3 = "001" and alu_eq = '0' ) or
-            ( funct3 = "100" and alu_lt = '1' ) or
-            ( funct3 = "101" and alu_lt = '0' ) or
-            ( funct3 = "110" and alu_ltu = '1' ) or
-            ( funct3 = "111" and alu_ltu = '0' )
-        ) ) then
-            pc <= std_logic_vector(unsigned(pc) + unsigned(imm));
-            report "    pc <= " & integer'image(to_integer(unsigned(pc) + unsigned(imm)));
-            --
-        else
-            pc <= std_logic_vector(unsigned(pc) + 4);
-            report "    pc <= " & integer'image(to_integer(unsigned(pc) + 4));
-        end if;
+        report "[" & to_string(pc) & "]" & " " & work.rv32i_pkg.inst_name(inst);
+        report "    imm = " & to_string(imm);
+        report "    s1: reg[" & work.rv32i_pkg.reg_name(reg_raddr1) & "] = " & to_string(reg_rdata1);
+        report "    s2: reg[" & work.rv32i_pkg.reg_name(reg_raddr2) & "] = " & to_string(reg_rdata2);
 
         if ( ram_we = '1' ) then
-            report "    ram[" & integer'image(to_integer(unsigned(ram_addr))) & "] <= " & integer'image(to_integer(unsigned(reg_rdata2)));
+            report "    ram[" & to_string(ram_addr) & "] <= " & to_string(reg_rdata2);
         end if;
         if ( reg_waddr /= "00000" ) then
-            report "    reg[" & work.rv32i_pkg.reg_name(reg_waddr) & "] <= " & integer'image(to_integer(unsigned(reg_wdata)));
+            report "    reg[" & work.rv32i_pkg.reg_name(reg_waddr) & "] <= " & to_string(reg_wdata);
         end if;
 
+        report "    pc <= " & to_string(pc_next);
     end if;
     end process;
 
