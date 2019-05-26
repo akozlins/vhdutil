@@ -10,12 +10,13 @@ architecture arch of tb_ram is
     constant CLK_MHZ : positive := 100;
     signal clk, rst_n : std_logic := '0';
 
-    constant W : integer := 16;
+    constant W : integer := 4;
     constant N : integer := 4;
 
+    signal i : unsigned(N downto 0);
+
     signal addr : std_logic_vector(N-1 downto 0);
-    signal dout : std_logic_vector(W-1 downto 0);
-    signal din : std_logic_vector(W-1 downto 0);
+    signal rd, wd : std_logic_vector(W-1 downto 0);
     signal we : std_logic;
 
 begin
@@ -31,33 +32,32 @@ begin
     )
     port map (
         addr => addr,
-        rd => dout,
-        wd => din,
+        rd => rd,
+        wd => wd,
         we => we,
         clk => clk--,
     );
 
-    process
+    process(clk, rst_n)
     begin
-        addr <= (others => '0');
-        din <= (others => '0');
+    if ( rst_n = '0' ) then
+        i <= (others => '0');
         we <= '0';
-        wait until rising_edge(rst_n);
+        --
+    elsif rising_edge(clk) then
+        addr <= std_logic_vector(i(addr'range));
 
-        for i in 0 to 2**N-1 loop
-            wait until rising_edge(clk);
-            addr <= std_logic_vector(to_unsigned(i, N));
-            din <= std_logic_vector(to_unsigned(i, W));
+        if ( i(N) = '0' ) then
+            wd <= std_logic_vector(i(wd'range));
             we <= '1';
-        end loop;
-
-        for i in 0 to 2**N-1 loop
-            wait until rising_edge(clk);
-            addr <= std_logic_vector(to_unsigned(i, N));
+        else
             we <= '0';
-        end loop;
+            assert ( rd = addr(rd'range) ) severity error;
+        end if;
 
-        wait;
+        i <= i + 1;
+        --
+    end if;
     end process;
 
 end architecture;
