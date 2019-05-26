@@ -1,11 +1,6 @@
-.cache
-.Xil
-
 *.bit
 *.msk
 
 *.jou
 *.log
 *.str
-
-project/*

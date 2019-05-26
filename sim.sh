@@ -4,9 +4,10 @@ set -eux
 TB=$1
 STOPTIME=50us
 
-mkdir -p work
 unset CDPATH
-cd work || exit 1
+cd .cache || exit 1
+[ -e cpu ] || ln -s ../cpu
+[ -e tb ] || ln -s ../tb
 
 DIR=..
 SRC="$DIR/util_pkg.vhd $DIR/util/*.vhd $DIR/cpu/*.vhd $DIR/tb/$TB.vhd"
