@@ -25,72 +25,6 @@ architecture arch of rv32i_cpu_v1 is
         return integer'image(to_integer(signed((v))));
     end function;
 
-    type ram_t is array (natural range <>) of std_logic_vector(31 downto 0);
-
-    signal ram : ram_t(0 to 255) := (
-        -- reset vector
-        work.rv32i_pkg.jal('0' & X"00004", "00000"),
-        -- set sp
-        X"400" & "00000" & "000" & "00010" & work.rv32i_pkg.OP_IMM_c,
-        -- set ra
-        work.rv32i_pkg.jal('0' & X"00008", "00001"),
-        -- hlt
-        work.rv32i_pkg.jal('0' & X"00000", "00000"),
-        --
-        X"ff010113",
-        X"00112623",
-        X"00812423",
-        X"01010413",
-        X"04c000ef",
-        X"00050793",
-        X"00078513",
-        X"00c12083",
-        X"00812403",
-        X"01010113",
-        X"00008067",
-        X"fe010113",
-        X"00812e23",
-        X"02010413",
-        X"fea42623",
-        X"feb42423",
-        X"fec42703",
-        X"fe842783",
-        X"00f707b3",
-        X"00078513",
-        X"01c12403",
-        X"02010113",
-        X"00008067",
-        X"fe010113",
-        X"00112e23",
-        X"00812c23",
-        X"02010413",
-        X"fe042623",
-        X"fe042423",
-        X"0200006f",
-        X"02a00593",
-        X"fec42503",
-        X"fadff0ef",
-        X"fea42623",
-        X"fe842783",
-        X"00178793",
-        X"fef42423",
-        X"fe842703",
-        X"00f00793",
-        X"fce7dee3",
-        X"fec42783",
-        X"00078513",
-        X"01c12083",
-        X"01812403",
-        X"02010113",
-        X"00008067",
-        --
-        others => (others => 'U')
-    );
-
-    signal regs : ram_t(0 to 31) := (
-        others => (others => '-')
-    );
-
     signal pc, pc_next, ram_addr : std_logic_vector(31 downto 0);
     signal reg_raddr1, reg_raddr2, reg_waddr : std_logic_vector(4 downto 0);
 
@@ -106,41 +40,37 @@ architecture arch of rv32i_cpu_v1 is
 
 begin
 
-    inst <= ram(to_integer(unsigned(pc(9 downto 0))) / 4);
-
-
-
-    ram_rdata <= ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4);
-
-    process(clk)
-    begin
-    if rising_edge(clk) then
-        if ( ram_we = '1' ) then
-            ram(to_integer(unsigned(ram_addr(9 downto 0))) / 4) <= ram_wdata;
-        end if;
-    end if;
-    end process;
+    i_ram : entity work.ram_dp
+    generic map (
+        W => 32,
+        N => 8,
+        INIT_FILE_HEX => "cpu/rv32i_cpu.hex"--,
+    )
+    port map (
+        a_addr  => pc(9 downto 2),
+        a_rd    => inst,
+        b_addr  => ram_addr(9 downto 2),
+        b_rd    => ram_rdata,
+        b_wd    => ram_wdata,
+        b_we    => ram_we,
+        clk     => clk--,
+    );
 
     ram_wdata <= reg_rdata2;
     ram_we <= '1' when ( opcode = work.rv32i_pkg.STORE_c ) else '0';
 
-
-    reg_rdata1 <= regs(to_integer(unsigned(reg_raddr1))) when ( reg_raddr1 /= "00000" ) else (others => '0');
-    reg_rdata2 <= regs(to_integer(unsigned(reg_raddr2))) when ( reg_raddr2 /= "00000" ) else (others => '0');
-
-    process(clk)
-    begin
-    if ( rst_n = '0' ) then
-        regs <= (others => (others => '0'));
-        --
-    elsif rising_edge(clk) then
-        if ( reg_waddr /= "00000" ) then
-            regs(to_integer(unsigned(reg_waddr))) <= reg_wdata;
-        end if;
-    end if;
-    end process;
-
-
+    i_reg_file : entity work.rv32i_reg_file
+    port map (
+        raddr1  => reg_raddr1,
+        rdata1  => reg_rdata1,
+        raddr2  => reg_raddr2,
+        rdata2  => reg_rdata2,
+        waddr   => reg_waddr,
+        wdata   => reg_wdata,
+        we      => '1',
+        rst_n   => rst_n,
+        clk     => clk--,
+    );
 
     i_inst : entity work.rv32i_inst
     port map (
@@ -203,7 +133,7 @@ begin
         ) else
         std_logic_vector(unsigned(pc) + 4);
 
-    process(clk)
+    process(clk, rst_n)
     begin
     if ( rst_n = '0' ) then
         pc <= (others => '0');
