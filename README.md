@@ -3,16 +3,18 @@
 
 ## Code style
 
- - `i_` / `_id` - entity/component instance
+Prefixes/sufixes:
+
+ - `e_` / `_id` - entity/component instance
  - `g_` - generate statement
- - `_r` - register
+ - `_q`, `_r` - register
+ - `_s`, `_w` - signal/wire
  - `_v` - variable
  - `_t` - type
  - `_g` or UPPERCASE - generic
  - `_c` or UPPERCASE - constant
- - `_in/out` - ports
+ - `i/o_` - input/output ports
  - `_n` - active low
- - `_i` - internal signal
 
  - ports : `std_logic` and `std_logic_vector`
  - use `downto`
