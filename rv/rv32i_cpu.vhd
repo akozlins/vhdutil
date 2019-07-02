@@ -44,7 +44,7 @@ begin
     generic map (
         W => 32,
         N => 8,
-        INIT_FILE_HEX => "cpu/rv32i_cpu.hex"--,
+        INIT_FILE_HEX => "rv/rv32i_cpu.hex"--,
     )
     port map (
         a_addr  => pc(9 downto 2),

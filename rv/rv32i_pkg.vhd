@@ -18,6 +18,8 @@ package rv32i_pkg is
     constant STORE_c    : std_logic_vector(6 downto 0) := "0100011";
     constant OP_IMM_c   : std_logic_vector(6 downto 0) := "0010011";
     constant OP_c       : std_logic_vector(6 downto 0) := "0110011";
+    constant MISC_MEM_c : std_logic_vector(6 downto 0) := "0001111";
+    constant SYSTEM_c   : std_logic_vector(6 downto 0) := "1110011";
 
     function reg_name (
         reg : std_logic_vector(4 downto 0)--;
@@ -40,17 +42,19 @@ package body rv32i_pkg is
         reg : std_logic_vector(4 downto 0)--;
     ) return string is
     begin
+        -- https://github.com/riscv/riscv-elf-psabi-doc/blob/master/riscv-elf.md
+
         if ( reg = "00000" ) then return "zero"; end if;
-        if ( reg = "00001" ) then return "ra"; end if;
-        if ( reg = "00010" ) then return "sp"; end if;
-        if ( reg = "00011" ) then return "gp"; end if;
-        if ( reg = "00100" ) then return "tp"; end if;
-        if ( reg = "00101" ) then return "t0"; end if;
+        if ( reg = "00001" ) then return "ra"; end if; -- return address
+        if ( reg = "00010" ) then return "sp"; end if; -- stack pointer
+        if ( reg = "00011" ) then return "gp"; end if; -- global pointer
+        if ( reg = "00100" ) then return "tp"; end if; -- thread pointer
+        if ( reg = "00101" ) then return "t0"; end if; -- temporary registers
         if ( reg = "00110" ) then return "t1"; end if;
         if ( reg = "00111" ) then return "t2"; end if;
-        if ( reg = "01000" ) then return "s0"; end if;
+        if ( reg = "01000" ) then return "s0"; end if; -- callee-saved registers
         if ( reg = "01001" ) then return "s1"; end if;
-        if ( reg = "01010" ) then return "a0"; end if;
+        if ( reg = "01010" ) then return "a0"; end if; -- argument registers
         if ( reg = "01011" ) then return "a1"; end if;
         if ( reg = "01100" ) then return "a2"; end if;
         if ( reg = "01101" ) then return "a3"; end if;
@@ -110,6 +114,9 @@ package body rv32i_pkg is
         if ( inst(6 downto 0) = OP_c      and inst(14 downto 12) = "101" and inst(31 downto 25) = "0100000" ) then return "sra"; end if;
         if ( inst(6 downto 0) = OP_c      and inst(14 downto 12) = "110" and inst(31 downto 25) = "0000000" ) then return "or"; end if;
         if ( inst(6 downto 0) = OP_c      and inst(14 downto 12) = "111" and inst(31 downto 25) = "0000000" ) then return "and"; end if;
+        if ( inst(6 downto 0) = MISC_MEM_c ) then return "fence"; end if;
+        if ( inst(6 downto 0) = SYSTEM_c ) then return "ecall"; end if;
+        if ( inst(6 downto 0) = SYSTEM_c ) then return "ebreak"; end if;
         return "invalid";
     end function;
 

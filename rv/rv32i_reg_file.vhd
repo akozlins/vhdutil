@@ -41,7 +41,13 @@ begin
     end if; -- rising_edge
     end process;
 
-    rdata1 <= ram(to_integer(unsigned(raddr1))) when ( raddr1 /= (raddr1'range => '0') ) else (others => '0');
-    rdata2 <= ram(to_integer(unsigned(raddr2))) when ( raddr2 /= (raddr2'range => '0') ) else (others => '0');
+    rdata1 <=
+        (others => 'X') when is_x(raddr1) else
+        (others => '0') when ( raddr1 = (raddr1'range => '0') ) else
+        ram(to_integer(unsigned(raddr1)));
+    rdata2 <=
+        (others => 'X') when is_x(raddr2) else
+        (others => '0') when ( raddr2 = (raddr2'range => '0') ) else
+        ram(to_integer(unsigned(raddr2)));
 
 end architecture;
