@@ -1,0 +1,1 @@
+include/a10/hal_bsp.tcl
