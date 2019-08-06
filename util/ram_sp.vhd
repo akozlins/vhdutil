@@ -1,5 +1,5 @@
 --
--- Author: Alexandr Kozlinskiy
+-- author : Alexandr Kozlinskiy
 --
 
 library ieee;
@@ -31,7 +31,7 @@ begin
         INIT_FILE_HEX => INIT_FILE_HEX--,
     )
     port map (
-        a_addr  => (others => '-'),
+        a_addr  => addr,
         a_rd    => open,
         b_addr  => addr,
         b_rd    => rd,

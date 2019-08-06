@@ -1,5 +1,5 @@
 --
--- Author: Alexandr Kozlinskiy
+-- author : Alexandr Kozlinskiy
 --
 
 library ieee;
@@ -45,6 +45,8 @@ architecture arch of ram_dp is
 
 begin
 
+    a_rd <= (others => 'X') when is_x(a_addr) else ram(to_integer(unsigned(a_addr)));
+
     process(clk)
     begin
     if rising_edge(clk) then
@@ -54,7 +56,6 @@ begin
     end if; -- rising_edge
     end process;
 
-    a_rd <= ram(to_integer(unsigned(a_addr)));
-    b_rd <= ram(to_integer(unsigned(b_addr)));
+    b_rd <= (others => 'X') when is_x(b_addr) else ram(to_integer(unsigned(b_addr)));
 
 end architecture;
