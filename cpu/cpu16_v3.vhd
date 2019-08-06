@@ -6,12 +6,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity cpu16_v3 is
-    port (
-        dbg_out :   out std_logic_vector(15 downto 0);
-        dbg_in  :   in  std_logic_vector(15 downto 0);
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+port (
+    dbg_out :   out std_logic_vector(15 downto 0);
+    dbg_in  :   in  std_logic_vector(15 downto 0);
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 library ieee;
@@ -56,7 +56,7 @@ architecture arch of cpu16_v3 is
 
 begin
 
-    i_ram : entity work.ram_sp
+    e_ram : entity work.ram_sp
     generic map (
         W => word_t'length,
         N => ram_addr_t'length,
@@ -70,7 +70,7 @@ begin
         clk     => clk--,
     );
 
-    i_reg_file : entity work.reg_file_dp
+    e_reg_file : entity work.reg_file_dp
     generic map (
         W => word_t'length,
         N => reg_addr_t'length--,
@@ -85,7 +85,7 @@ begin
         clk     => clk--,
     );
 
-    i_alu : entity work.alu_v2
+    e_alu : entity work.alu_v2
     generic map (
         W => word_t'length--,
     )

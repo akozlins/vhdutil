@@ -14,7 +14,7 @@ begin
     clk <= not clk after (500 ns / CLK_MHZ);
     reset_n <= '0', '1' after 100 ns;
 
-    i_clkdiv : entity work.clkdiv
+    e_clkdiv : entity work.clkdiv
     generic map ( P => 5 )
     port map (
         clkout => open,

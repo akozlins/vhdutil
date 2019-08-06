@@ -19,7 +19,7 @@ begin
 
     tst_clk <= not tst_clk after (500 ns / TST_MHZ);
 
-    i_clkmon : entity work.clkmon
+    e_clkmon : entity work.clkmon
     generic map ( CLK_MHZ => CLK_MHZ, TST_MHZ => TST_MHZ )
     port map (
         tst_clk => tst_clk,

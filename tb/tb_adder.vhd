@@ -20,7 +20,7 @@ begin
     clk <= not clk after (500 ns / CLK_MHZ);
     reset_n <= '0', '1' after 100 ns;
 
-    i_adder : entity work.ripple_adder
+    e_adder : entity work.ripple_adder
     generic map ( W => s'length )
     port map (
         a   => a,

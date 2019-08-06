@@ -1,22 +1,22 @@
 --
--- Author: Alexandr Kozlinskiy
+-- author : Alexandr Kozlinskiy
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity mm is
-    port (
-        address     :   in  std_logic_vector(7 downto 0);
-        read        :   in  std_logic;
-        readdata    :   out std_logic_vector(15 downto 0);
-        write       :   in  std_logic;
-        writedata   :   in  std_logic_vector(15 downto 0);
-        waitrequest :   out std_logic;
+port (
+    address     :   in  std_logic_vector(7 downto 0);
+    read        :   in  std_logic;
+    readdata    :   out std_logic_vector(15 downto 0);
+    write       :   in  std_logic;
+    writedata   :   in  std_logic_vector(15 downto 0);
+    waitrequest :   out std_logic;
 
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 architecture arch of mm is

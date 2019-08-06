@@ -1,5 +1,5 @@
 --
--- Author: Alexandr Kozlinskiy
+-- author : Alexandr Kozlinskiy
 --
 
 library ieee;
@@ -8,16 +8,16 @@ use ieee.std_logic_1164.all;
 -- clock monitor
 -- ...
 entity clkmon is
-    generic (
-        TST_MHZ : positive := 100;
-        CLK_MHZ : positive := 100--;
-    );
-    port (
-        tst_clk :   in  std_logic;
-        tst_ok  :   out std_logic;
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    TST_MHZ : positive := 100;
+    CLK_MHZ : positive := 100--;
+);
+port (
+    tst_clk     :   in  std_logic;
+    tst_ok      :   out std_logic;
+    i_reset_n   :   in  std_logic;
+    i_clk       :   in  std_logic--;
+);
 end entity;
 
 library ieee;
@@ -38,18 +38,18 @@ architecture arch of clkmon is
 begin
 
     -- sync tst_clk_slow to clk domain
-    i_ff_sync : entity work.ff_sync
+    e_ff_sync : entity work.ff_sync
     generic map ( W => 1 )
-    port map ( d(0) => tst_clk_slow, q(0) => ff0, rst_n => rst_n, clk => clk );
+    port map ( i_d(0) => tst_clk_slow, o_q(0) => ff0, i_reset_n => i_reset_n, i_clk => i_clk );
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( i_reset_n = '0' ) then
         cnt <= (others => '0');
         ff1 <= '0';
         tst_ok <= '0';
         --
-    elsif rising_edge(clk) then
+    elsif rising_edge(i_clk) then
         -- sync tst_clk_slow to clk domain
         ff1 <= ff0;
 
@@ -66,17 +66,17 @@ begin
     end process;
 
     -- sync rst_n to tst_clk domain
-    i_tst_rst : entity work.reset_sync
-    port map ( o_reset_n => tst_rst_n, i_reset_n => rst_n, i_clk => tst_clk );
+    e_tst_rst : entity work.reset_sync
+    port map ( o_reset_n => tst_rst_n, i_reset_n => i_reset_n, i_clk => tst_clk );
 
-    i_tst_clk_slow : entity work.clkdiv
+    e_tst_clk_slow : entity work.clkdiv
     generic map (
         P => 2**W * 63 / 64 * TST_MHZ / CLK_MHZ * 2--,
     )
     port map (
-        clkout => tst_clk_slow,
-        rst_n => tst_rst_n,
-        clk => tst_clk--,
+        o_clk => tst_clk_slow,
+        i_reset_n => tst_rst_n,
+        i_clk => tst_clk--,
     );
 
 end architecture;

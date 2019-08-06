@@ -6,28 +6,28 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity alu_v2 is
-    generic (
-        W   : positive := 8--;
-    );
-    port (
-        -- operands
-        a   :   in  std_logic_vector(W-1 downto 0);
-        b   :   in  std_logic_vector(W-1 downto 0);
-        -- carry in
-        ci  :   in  std_logic;
-        -- operation
-        op  :   in  std_logic_vector(2 downto 0);
-        -- output
-        y   :   out std_logic_vector(W-1 downto 0);
-        -- zero
-        z   :   out std_logic;
-        -- sign
-        s   :   out std_logic;
-        -- overflow
-        v   :   out std_logic;
-        -- carry out
-        co  :   out std_logic--;
-    );
+generic (
+    W   : positive := 8--;
+);
+port (
+    -- operands
+    a   :   in  std_logic_vector(W-1 downto 0);
+    b   :   in  std_logic_vector(W-1 downto 0);
+    -- carry in
+    ci  :   in  std_logic;
+    -- operation
+    op  :   in  std_logic_vector(2 downto 0);
+    -- output
+    y   :   out std_logic_vector(W-1 downto 0);
+    -- zero
+    z   :   out std_logic;
+    -- sign
+    s   :   out std_logic;
+    -- overflow
+    v   :   out std_logic;
+    -- carry out
+    co  :   out std_logic--;
+);
 end entity;
 
 architecture arch of alu_v2 is
@@ -38,7 +38,7 @@ architecture arch of alu_v2 is
 
 begin
 
-    i_adder : entity work.adder
+    e_adder : entity work.adder
     generic map (
         W => W--,
     )

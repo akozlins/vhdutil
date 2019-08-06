@@ -15,12 +15,12 @@ use ieee.std_logic_1164.all;
 --  - ADD
 --
 entity cpu16_v1 is
-    port (
-        dbg_out :   out std_logic_vector(15 downto 0);
-        dbg_in  :   in  std_logic_vector(15 downto 0);
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+port (
+    dbg_out :   out std_logic_vector(15 downto 0);
+    dbg_in  :   in  std_logic_vector(15 downto 0);
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 library ieee;

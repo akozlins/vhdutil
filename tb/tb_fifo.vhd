@@ -20,7 +20,7 @@ begin
 
     re <= not rempty;
 
-    i_fifo : entity work.fifo_dc
+    e_fifo : entity work.fifo_dc
     generic map (
         W => wd'length,
         N => 4--,

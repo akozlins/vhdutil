@@ -1,28 +1,28 @@
 --
 -- single clock fifo
 --
--- Author: Alexandr Kozlinskiy
--- Date: 2018-04-29
+-- author : Alexandr Kozlinskiy
+-- date : 2018-04-29
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity fifo_v1 is
-    generic (
-        W   : positive := 8;
-        N   : positive := 8--;
-    );
-    port (
-        we      :   in  std_logic;
-        wd      :   in  std_logic_vector(W-1 downto 0);
-        full    :   out std_logic;
-        re      :   in  std_logic;
-        rd      :   out std_logic_vector(W-1 downto 0);
-        empty   :   out std_logic;
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    W   : positive := 8;
+    N   : positive := 8--;
+);
+port (
+    we      :   in  std_logic;
+    wd      :   in  std_logic_vector(W-1 downto 0);
+    full    :   out std_logic;
+    re      :   in  std_logic;
+    rd      :   out std_logic_vector(W-1 downto 0);
+    empty   :   out std_logic;
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 library ieee;
@@ -41,7 +41,7 @@ architecture arch of fifo_v1 is
 
 begin
 
-    i_ram : entity work.ram_dp
+    e_ram : entity work.ram_dp
     generic map (
         W => W,
         N => N--,

@@ -7,20 +7,20 @@ use ieee.std_logic_1164.all;
 
 -- dual port ram
 entity ram_dp is
-    generic (
-        W   : positive := 8;
-        N   : positive := 8;
-        INIT_FILE_HEX : string := ""--;
-    );
-    port (
-        a_addr  :   in  std_logic_vector(N-1 downto 0);
-        a_rd    :   out std_logic_vector(W-1 downto 0);
-        b_addr  :   in  std_logic_vector(N-1 downto 0);
-        b_rd    :   out std_logic_vector(W-1 downto 0);
-        b_wd    :   in  std_logic_vector(W-1 downto 0);
-        b_we    :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    W   : positive := 8;
+    N   : positive := 8;
+    INIT_FILE_HEX : string := ""--;
+);
+port (
+    a_addr  :   in  std_logic_vector(N-1 downto 0);
+    a_rd    :   out std_logic_vector(W-1 downto 0);
+    b_addr  :   in  std_logic_vector(N-1 downto 0);
+    b_rd    :   out std_logic_vector(W-1 downto 0);
+    b_wd    :   in  std_logic_vector(W-1 downto 0);
+    b_we    :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 library ieee;

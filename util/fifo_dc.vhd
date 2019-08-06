@@ -1,30 +1,30 @@
 --
--- dual clock fifo
+-- double clock fifo
 --
--- Author: Alexandr Kozlinskiy
--- Date: 2018-05-02
+-- author : Alexandr Kozlinskiy
+-- date : 2018-05-02
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity fifo_dc is
-    generic (
-        W   : positive := 8;
-        N   : positive := 8--;
-    );
-    port (
-        we      :   in  std_logic;
-        wd      :   in  std_logic_vector(W-1 downto 0);
-        wfull   :   out std_logic;
-        wrst_n  :   in  std_logic;
-        wclk    :   in  std_logic;
-        re      :   in  std_logic;
-        rd      :   out std_logic_vector(W-1 downto 0);
-        rempty  :   out std_logic;
-        rrst_n  :   in  std_logic;
-        rclk    :   in  std_logic--;
-    );
+generic (
+    W   : positive := 8;
+    N   : positive := 8--;
+);
+port (
+    we          :   in  std_logic;
+    wd          :   in  std_logic_vector(W-1 downto 0);
+    wfull       :   out std_logic;
+    wreset_n    :   in  std_logic;
+    wclk        :   in  std_logic;
+    re          :   in  std_logic;
+    rd          :   out std_logic_vector(W-1 downto 0);
+    rempty      :   out std_logic;
+    rreset_n    :   in  std_logic;
+    rclk        :   in  std_logic--;
+);
 end entity;
 
 library ieee;
@@ -47,7 +47,7 @@ architecture arch of fifo_dc is
 
 begin
 
-    i_ram : entity work.ram_dp
+    e_ram : entity work.ram_dp
     generic map (
         W => W,
         N => N--,
@@ -67,19 +67,19 @@ begin
     re_i <= ( re and not rempty_i );
     we_i <= ( we and not wfull_i );
 
-    i_rwgray : entity work.ff_sync
+    e_rwgray : entity work.ff_sync
     generic map ( W => rwgray'length )
     port map (
-        d => wgray,
-        q => rwgray,
-        rst_n => rrst_n,
-        clk => rclk--,
+        i_d => wgray,
+        o_q => rwgray,
+        i_reset_n => rreset_n,
+        i_clk => rclk--,
     );
 
-    process(rclk, rrst_n)
+    process(rclk, rreset_n)
         variable rptr_v, rgray_v : ptr_t;
     begin
-    if ( rrst_n = '0' ) then
+    if ( rreset_n = '0' ) then
         rempty_i <= '1';
         rptr <= (others => '0');
         rgray <= (others => '0');
@@ -95,19 +95,19 @@ begin
     end if; -- rising_edge
     end process;
 
-    i_wrgray : entity work.ff_sync
+    e_wrgray : entity work.ff_sync
     generic map ( W => wrgray'length )
     port map (
-        d => rgray,
-        q => wrgray,
-        rst_n => wrst_n,
-        clk => wclk--,
+        i_d => rgray,
+        o_q => wrgray,
+        i_reset_n => wreset_n,
+        i_clk => wclk--,
     );
 
-    process(wclk, wrst_n)
+    process(wclk, wreset_n)
         variable wptr_v, wgray_v : ptr_t;
     begin
-    if ( wrst_n = '0' ) then
+    if ( wreset_n = '0' ) then
         wfull_i <= '1';
         wptr <= (others => '0');
         wgray <= (others => '0');

@@ -8,21 +8,21 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity rv32i_reg_file is
-    generic (
-        W   : positive := 32; -- word width in bits
-        N   : positive := 5--; -- addr bits (2**N words)
-    );
-    port (
-        raddr1  :   in  std_logic_vector(N-1 downto 0);
-        rdata1  :   out std_logic_vector(W-1 downto 0);
-        raddr2  :   in  std_logic_vector(N-1 downto 0);
-        rdata2  :   out std_logic_vector(W-1 downto 0);
-        waddr   :   in  std_logic_vector(N-1 downto 0);
-        wdata   :   in  std_logic_vector(W-1 downto 0);
-        we      :   in  std_logic;
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    W   : positive := 32; -- word width in bits
+    N   : positive := 5--; -- addr bits (2**N words)
+);
+port (
+    raddr1  :   in  std_logic_vector(N-1 downto 0);
+    rdata1  :   out std_logic_vector(W-1 downto 0);
+    raddr2  :   in  std_logic_vector(N-1 downto 0);
+    rdata2  :   out std_logic_vector(W-1 downto 0);
+    waddr   :   in  std_logic_vector(N-1 downto 0);
+    wdata   :   in  std_logic_vector(W-1 downto 0);
+    we      :   in  std_logic;
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 architecture arch of rv32i_reg_file is

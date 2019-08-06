@@ -2,26 +2,26 @@
 -- 8b10b encoder
 -- https://en.wikipedia.org/wiki/8b/10b_encoding
 --
--- Author: Alexandr Kozlinskiy
--- Date: 2018-06-29
+-- author : Alexandr Kozlinskiy
+-- date : 2018-06-29
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity enc_8b10b is
-    port (
-        -- input data (K bit & 8-bit data)
-        datain  :   in  std_logic_vector(8 downto 0);
-        -- input disparity
-        dispin  :   in  std_logic;
-        -- output 10-bit data (8b10b encoded)
-        dataout :   out std_logic_vector(9 downto 0);
-        -- output disparity
-        dispout :   out std_logic;
-        -- error if invalid control symbol
-        err     :   out std_logic--;
-    );
+port (
+    -- input data (K bit & 8-bit data)
+    datain  :   in  std_logic_vector(8 downto 0);
+    -- input disparity
+    dispin  :   in  std_logic;
+    -- output 10-bit data (8b10b encoded)
+    dataout :   out std_logic_vector(9 downto 0);
+    -- output disparity
+    dispout :   out std_logic;
+    -- error if invalid control symbol
+    err     :   out std_logic--;
+);
 end entity;
 
 library ieee;

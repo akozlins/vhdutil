@@ -13,12 +13,12 @@ use ieee.std_logic_1164.all;
 -- * mm - memory access
 -- * wb - register writeback
 entity cpu16_v4 is
-    port (
-        dbg_out :   out std_logic_vector(15 downto 0);
-        dbg_in  :   in  std_logic_vector(15 downto 0);
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+port (
+    dbg_out :   out std_logic_vector(15 downto 0);
+    dbg_in  :   in  std_logic_vector(15 downto 0);
+    rst_n   :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 library ieee;
@@ -92,7 +92,7 @@ architecture arch of cpu16_v4 is
 
 begin
 
-    i_ram : entity work.ram_dp
+    e_ram : entity work.ram_dp
     generic map (
         W => word_t'length,
         N => ram_addr_t'length,
@@ -108,7 +108,7 @@ begin
         clk     => clk--,
     );
 
-    i_reg_file : entity work.ram_dp
+    e_reg_file : entity work.ram_dp
     generic map (
         W => word_t'length,
         N => reg_addr_t'length--,
@@ -123,7 +123,7 @@ begin
         clk     => clk--,
     );
 
-    i_alu : entity work.alu_v2
+    e_alu : entity work.alu_v2
     generic map (
         W => word_t'length--,
     )
@@ -184,7 +184,7 @@ begin
     block
         signal a, b, s : std_logic_vector(ram_addr_t'range);
     begin
-        i_adder : entity work.adder
+        e_adder : entity work.adder
         generic map (
             W => ram_addr_t'length--,
         )

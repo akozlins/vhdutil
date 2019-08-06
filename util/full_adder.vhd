@@ -1,18 +1,18 @@
 --
--- Author: Alexandr Kozlinskiy
+-- author : Alexandr Kozlinskiy
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity full_adder is
-    port (
-        a   :   in  std_logic;
-        b   :   in  std_logic;
-        ci  :   in  std_logic;
-        s   :   out std_logic;
-        co  :   out std_logic--;
-    );
+port (
+    a   :   in  std_logic;
+    b   :   in  std_logic;
+    ci  :   in  std_logic := '0';
+    s   :   out std_logic;
+    co  :   out std_logic--;
+);
 end entity;
 
 architecture arch of full_adder is
@@ -23,7 +23,7 @@ architecture arch of full_adder is
 
 begin
 
-    i_half_adder_1 : entity work.half_adder
+    e_half_adder_1 : entity work.half_adder
     port map (
         a => a,
         b => b,
@@ -31,7 +31,7 @@ begin
         c => c_1
     );
 
-    i_half_adder_2 : entity work.half_adder
+    e_half_adder_2 : entity work.half_adder
     port map (
         a => s_1,
         b => ci,

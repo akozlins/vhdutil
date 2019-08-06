@@ -53,7 +53,7 @@ begin
     port map ( clkout => LED(0), rst_n => CPU_RESET_n, clk => nios_clk );
 
     -- generate reset sequence for flash and nios
-    i_debouncer : entity work.debouncer
+    e_debouncer : entity work.debouncer
     generic map (
         W => 2,
         N => 50 * 10**5 -- 100ms
@@ -74,7 +74,7 @@ begin
 
 
 
-    i_nios : entity work.nios
+    e_nios : entity work.nios
     port map (
         flash_tcm_address_out(27 downto 2) => FLASH_A,
         flash_tcm_data_out => FLASH_D,

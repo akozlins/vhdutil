@@ -24,7 +24,7 @@ begin
     clk <= not clk after (500 ns / CLK_MHZ);
     reset_n <= '0', '1' after 100 ns;
 
-    i_ram : entity work.ram_sp
+    e_ram : entity work.ram_sp
     generic map (
         W => W,
         N => N,

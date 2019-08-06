@@ -9,19 +9,19 @@ use ieee.numeric_std.all;
 -- dual port register file
 -- reg(0) = 0
 entity reg_file_dp is
-    generic (
-        W   : positive := 8; -- word width in bits
-        N   : positive := 2--; -- addr bits (2**N words)
-    );
-    port (
-        a_addr  :   in  std_logic_vector(N-1 downto 0);
-        a_rd    :   out std_logic_vector(W-1 downto 0);
-        b_addr  :   in  std_logic_vector(N-1 downto 0);
-        b_rd    :   out std_logic_vector(W-1 downto 0);
-        b_wd    :   in  std_logic_vector(W-1 downto 0);
-        b_we    :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    W   : positive := 8; -- word width in bits
+    N   : positive := 2--; -- addr bits (2**N words)
+);
+port (
+    a_addr  :   in  std_logic_vector(N-1 downto 0);
+    a_rd    :   out std_logic_vector(W-1 downto 0);
+    b_addr  :   in  std_logic_vector(N-1 downto 0);
+    b_rd    :   out std_logic_vector(W-1 downto 0);
+    b_wd    :   in  std_logic_vector(W-1 downto 0);
+    b_we    :   in  std_logic;
+    clk     :   in  std_logic--;
+);
 end entity;
 
 architecture arch of reg_file_dp is

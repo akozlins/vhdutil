@@ -35,7 +35,7 @@ begin
     clk <= not clk after (500 ns / CLK_MHZ);
     reset_n <= '0', '1' after 100 ns;
 
-    i_enc : entity work.enc_8b10b
+    e_enc : entity work.enc_8b10b
     port map (
         datain => e8b,
         dispin => edin,
@@ -44,7 +44,7 @@ begin
         err => eerr--,
     );
 
-    i_dec : entity work.dec_8b10b
+    e_dec : entity work.dec_8b10b
     port map (
         datain => d10b,
         dispin => ddin,

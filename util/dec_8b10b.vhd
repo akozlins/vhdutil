@@ -2,28 +2,28 @@
 -- 8b10b decoder
 -- https://en.wikipedia.org/wiki/8b/10b_encoding
 --
--- Author: Alexandr Kozlinskiy
--- Date: 2018-07-01
+-- author : Alexandr Kozlinskiy
+-- date : 2018-07-01
 --
 
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity dec_8b10b is
-    port (
-        -- input 10-bit data (8b10b encoded)
-        datain  :   in  std_logic_vector(9 downto 0);
-        -- input disparity
-        dispin  :   in  std_logic;
-        -- output data (K bit & 8-bit data)
-        dataout :   out std_logic_vector(8 downto 0);
-        -- output disparity
-        dispout :   out std_logic;
-        -- disparity error
-        disperr :   out std_logic;
-        -- error if invalid code
-        err     :   out std_logic--;
-    );
+port (
+    -- input 10-bit data (8b10b encoded)
+    datain  :   in  std_logic_vector(9 downto 0);
+    -- input disparity
+    dispin  :   in  std_logic;
+    -- output data (K bit & 8-bit data)
+    dataout :   out std_logic_vector(8 downto 0);
+    -- output disparity
+    dispout :   out std_logic;
+    -- disparity error
+    disperr :   out std_logic;
+    -- error if invalid code
+    err     :   out std_logic--;
+);
 end entity;
 
 architecture arch of dec_8b10b is
