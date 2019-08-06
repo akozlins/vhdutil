@@ -8,7 +8,7 @@ end entity;
 architecture arch of tb_grayinc is
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
     signal i : unsigned(7 downto 0);
     signal g1, g2 : std_logic_vector(7 downto 0);
@@ -16,13 +16,13 @@ architecture arch of tb_grayinc is
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     g1 <= work.util.bin2gray(std_logic_vector(i));
 
-    process(clk, rst_n)
+    process(clk, reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( reset_n = '0' ) then
         i <= (others => '0');
         g2 <= (others => '0');
         --

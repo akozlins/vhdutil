@@ -7,7 +7,7 @@ end entity;
 architecture arch of tb_clkmon is
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
     constant TST_MHZ : positive := 30;
     signal tst_clk, tst_ok : std_logic := '0';
@@ -15,7 +15,7 @@ architecture arch of tb_clkmon is
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     tst_clk <= not tst_clk after (500 ns / TST_MHZ);
 
@@ -24,7 +24,7 @@ begin
     port map (
         tst_clk => tst_clk,
         tst_ok => tst_ok,
-        rst_n => rst_n,
+        reset_n => reset_n,
         clk => clk--,
     );
 

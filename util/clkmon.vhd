@@ -67,7 +67,7 @@ begin
 
     -- sync rst_n to tst_clk domain
     i_tst_rst : entity work.reset_sync
-    port map ( rstout_n => tst_rst_n, arst_n => rst_n, clk => tst_clk );
+    port map ( o_reset_n => tst_rst_n, i_reset_n => rst_n, i_clk => tst_clk );
 
     i_tst_clk_slow : entity work.clkdiv
     generic map (

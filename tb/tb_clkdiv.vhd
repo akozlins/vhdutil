@@ -7,18 +7,18 @@ end entity;
 architecture arch of tb_clkdiv is
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     i_clkdiv : entity work.clkdiv
     generic map ( P => 5 )
     port map (
         clkout => open,
-        rst_n => rst_n,
+        reset_n => reset_n,
         clk => clk--,
     );
 

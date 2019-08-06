@@ -8,7 +8,7 @@ end entity;
 architecture arch of tb_ram is
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
     constant W : integer := 4;
     constant N : integer := 4;
@@ -22,7 +22,7 @@ architecture arch of tb_ram is
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     i_ram : entity work.ram_sp
     generic map (
@@ -38,9 +38,9 @@ begin
         clk => clk--,
     );
 
-    process(clk, rst_n)
+    process(clk, reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( reset_n = '0' ) then
         i <= (others => '0');
         we <= '0';
         --

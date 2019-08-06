@@ -3,7 +3,7 @@
 module tb_mm();
 
 parameter CLK_MHZ = 100;
-reg clk, rst_n;
+reg clk, reset_n;
 
 initial
 begin
@@ -14,9 +14,9 @@ end
 
 initial
 begin
-    rst_n <= 0;
+    reset_n <= 0;
     repeat(10) @(posedge clk);
-    rst_n <= 1;
+    reset_n <= 1;
 end
 
 reg read, write;
@@ -32,7 +32,7 @@ mm i_mm (
     .write(write),
     .writedata(writedata),
     .waitrequest(waitrequest),
-    .rst_n(rst_n),
+    .reset_n(reset_n),
     .clk(clk)
 );
 
@@ -42,7 +42,7 @@ begin
     read <= 0;
     write <= 0;
     writedata <= 0;
-    @(posedge rst_n);
+    @(posedge reset_n);
 
     while(waitrequest) @(posedge clk);
     address <= 1;

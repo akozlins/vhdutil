@@ -7,14 +7,14 @@ end entity;
 architecture arch of tb_top is
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
     signal btn : std_logic_vector(4 downto 0);
 
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     i_top : entity work.top
     port map (

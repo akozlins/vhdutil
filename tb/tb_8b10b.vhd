@@ -21,7 +21,7 @@ architecture arch of tb_8b10b is
     );
 
     constant CLK_MHZ : positive := 100;
-    signal clk, rst_n : std_logic := '0';
+    signal clk, reset_n : std_logic := '0';
 
     signal e8b : std_logic_vector(8 downto 0);
     signal e10b : std_logic_vector(9 downto 0);
@@ -33,7 +33,7 @@ architecture arch of tb_8b10b is
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     i_enc : entity work.enc_8b10b
     port map (
@@ -56,7 +56,7 @@ begin
 
     process
     begin
-        wait until rising_edge(rst_n);
+        wait until rising_edge(reset_n);
 
         for i in data_enc'range loop
             edin <= data_enc(i)(0);

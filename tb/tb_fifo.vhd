@@ -7,7 +7,7 @@ end entity;
 
 architecture arch of tb_fifo is
 
-    signal wclk, rclk, rst_n : std_logic := '0';
+    signal wclk, rclk, reset_n : std_logic := '0';
 
     signal wd, rd : std_logic_vector(15 downto 0) := (others => '0');
     signal wfull, rempty, we, re : std_logic := '0';
@@ -16,7 +16,7 @@ begin
 
     wclk <= not wclk after 5.1 ns;
     rclk <= not rclk after 9.1 ns;
-    rst_n <= '0', '1' after 100 ns;
+    reset_n <= '0', '1' after 100 ns;
 
     re <= not rempty;
 
@@ -29,12 +29,12 @@ begin
         we => we,
         wd => wd,
         wfull => wfull,
-        wrst_n => rst_n,
+        wreset_n => reset_n,
         wclk => wclk,
         re => re,
         rd => rd,
         rempty => rempty,
-        rrst_n => rst_n,
+        rreset_n => reset_n,
         rclk => rclk--,
     );
 

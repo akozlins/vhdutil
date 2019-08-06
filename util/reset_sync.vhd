@@ -12,9 +12,9 @@ entity reset_sync is
         N : positive := 1--;
     );
     port (
-        rstout_n    :   out std_logic;
-        arst_n      :   in  std_logic;
-        clk         :   in  std_logic--;
+        o_reset_n   : out   std_logic;
+        i_reset_n   : in    std_logic;
+        i_clk       : in    std_logic--;
     );
 end entity;
 
@@ -23,6 +23,6 @@ begin
 
     i_ff_sync : entity work.ff_sync
     generic map ( W => 1, N => N )
-    port map ( d(0) => '1', q(0) => rstout_n, rst_n => arst_n, clk => clk );
+    port map ( d(0) => '1', q(0) => o_reset_n, rst_n => i_reset_n, clk => i_clk );
 
 end architecture;
