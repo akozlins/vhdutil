@@ -13,7 +13,7 @@ use std.textio.all;
 package util is
 
     function max (
-        l, r: integer
+        l, r: integer--;
     ) return integer;
 
     function vector_width (
@@ -214,12 +214,16 @@ package body util is
     function xor_reduce (
         v : std_logic_vector--;
     ) return std_logic is
-        variable r : std_logic := '0';
+        alias a : std_logic_vector(v'length-1 downto 0) is v;
     begin
-        for i in v'range loop
-            r := r xor v(i);
-        end loop;
-        return r;
+        if ( v'length = 0 ) then
+            report "(xor_reduce) v'length = 0" severity failure;
+            return 'X';
+        end if;
+        if ( a'length = 1 ) then
+            return a(0);
+        end if;
+        return xor_reduce(a(a'length-1 downto a'length/2)) xor xor_reduce(a(a'length/2-1 downto 0));
     end function;
 
     function to_std_logic (
@@ -272,8 +276,9 @@ package body util is
         when 'f' | 'F' => v := X"F";
 
         when others =>
-           assert false report "ERROR (char_to_hex) invalid hex character '" & c & "'";
+           report "(char_to_hex) invalid hex character '" & c & "'" severity failure;
            good := false;
+           v := "XXXX";
         end case;
     end procedure;
 
@@ -283,15 +288,14 @@ package body util is
         good : out boolean--;
     ) is
         variable ok : boolean;
+        variable good_i : boolean;
     begin
-        good := false;
+        good_i := true;
         for i in 0 to s'length-1 loop
             char_to_hex(s(s'right-i), v(3+4*i+v'right downto 4*i+v'right), ok);
-            if not ok then
-                return;
-            end if;
+            good_i := good_i and ok;
         end loop;
-        good := true;
+        good := good_i;
     end procedure;
 
     procedure read_hex (
@@ -307,7 +311,7 @@ package body util is
         good := false;
 
         if value'length mod 4 /= 0 then
-            assert false report "ERROR (read_hex) value'length mod 4 /= 0";
+            report "(read_hex) value'length mod 4 /= 0" severity failure;
             return;
         end if;
 
@@ -356,9 +360,11 @@ package body util is
         if fname = "" then
             return data;
         end if;
+
         file_open(fs, f, fname, READ_MODE);
         assert ( fs = open_ok ) report "(read_hex) file_open_status = '" & FILE_OPEN_STATUS'image(fs) & "'" severity failure;
-        while ( endfile(f) /= true ) loop
+
+        while ( not endfile(f) ) loop
             readline(f, l);
             read(l, c, ok);
             next when ( not ok or c = '#' );
@@ -370,6 +376,7 @@ package body util is
             data(W-1+i*W downto i*W) := data_i;
             i := i + 1;
         end loop;
+
         file_close(f);
         return data;
     end function;
@@ -412,8 +419,8 @@ package body util is
     begin
         u := resize(unsigned(v), u'length);
         for i in r'range loop
-            next when ( is_x(u(4*i-1)) or is_x(u(4*i-2)) or is_x(u(4*i-3)) or is_x(u(4*i-4)) );
-            r(r'length-i+1) := lut(1 + to_integer(unsigned(u(4*i-1 downto 4*i-4))));
+            next when ( is_x(std_logic_vector(u(4*i-1 downto 4*i-4))) );
+            r(r'length-i+1) := lut(1 + to_integer(u(4*i-1 downto 4*i-4)));
         end loop;
         return r;
     end function;
