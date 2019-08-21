@@ -12,17 +12,17 @@ use ieee.std_logic_1164.all;
 entity dec_8b10b is
 port (
     -- input 10-bit data (8b10b encoded)
-    datain  :   in  std_logic_vector(9 downto 0);
+    i_data      : in    std_logic_vector(9 downto 0);
     -- input disparity
-    dispin  :   in  std_logic;
+    i_disp      : in    std_logic;
     -- output data (K bit & 8-bit data)
-    dataout :   out std_logic_vector(8 downto 0);
+    o_data      : out   std_logic_vector(8 downto 0);
     -- output disparity
-    dispout :   out std_logic;
+    o_disp      : out   std_logic;
     -- disparity error
-    disperr :   out std_logic;
+    o_disperr   : out   std_logic;
     -- error if invalid code
-    err     :   out std_logic--;
+    o_err       : out   std_logic--;
 );
 end entity;
 
@@ -43,7 +43,7 @@ architecture arch of dec_8b10b is
 
 begin
 
-    Kx7 <= work.util.to_std_logic( ( datain(9 downto 6) = "0001" or datain(9 downto 6) = "1110" ) and (
+    Kx7 <= work.util.to_std_logic( ( i_data(9 downto 6) = "0001" or i_data(9 downto 6) = "1110" ) and (
         G5(4 downto 0) = "10111" or -- D.23
         G5(4 downto 0) = "11011" or -- D.27
         G5(4 downto 0) = "11101" or -- D.29
@@ -51,7 +51,7 @@ begin
     );
 
     -- disp & 6 bits in
-    G6sel <= dispin & datain(5 downto 0);
+    G6sel <= i_disp & i_data(5 downto 0);
     -- err & disperr & disp & 5 bits out
     process(G6sel)
     begin
@@ -196,7 +196,7 @@ begin
     end process;
 
     -- disp & 4 bits in
-    G4sel <= G5(5) & datain(9 downto 6);
+    G4sel <= G5(5) & i_data(9 downto 6);
     -- err & disperr & disp & 3 bits out
     process(G4sel, A7, K28, Kx7)
     begin
@@ -252,10 +252,10 @@ begin
         end case;
     end process;
 
-    dataout(7 downto 0) <= G3(2 downto 0) & G5(4 downto 0);
-    dataout(8) <= K28 or Kx7; -- TODO : not err
-    dispout <= G3(3);
-    disperr <= G5(6) or G3(4);
-    err <= G5(7) or G3(5) or G3(4);
+    o_data(7 downto 0) <= G3(2 downto 0) & G5(4 downto 0);
+    o_data(8) <= K28 or Kx7; -- TODO : not err
+    o_disp <= G3(3);
+    o_disperr <= G5(6) or G3(4);
+    o_err <= G5(7) or G3(5) or G3(4);
 
 end architecture;

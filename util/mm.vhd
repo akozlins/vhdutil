@@ -7,15 +7,15 @@ use ieee.std_logic_1164.all;
 
 entity mm is
 port (
-    address     :   in  std_logic_vector(7 downto 0);
-    read        :   in  std_logic;
-    readdata    :   out std_logic_vector(15 downto 0);
-    write       :   in  std_logic;
-    writedata   :   in  std_logic_vector(15 downto 0);
-    waitrequest :   out std_logic;
+    address     : in    std_logic_vector(7 downto 0);
+    read        : in    std_logic;
+    readdata    : out   std_logic_vector(15 downto 0);
+    write       : in    std_logic;
+    writedata   : in    std_logic_vector(15 downto 0);
+    waitrequest : out   std_logic;
 
-    rst_n   :   in  std_logic;
-    clk     :   in  std_logic--;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
@@ -28,14 +28,14 @@ begin
 
     waitrequest <= read and work.util.to_std_logic(readdatavalid_i = '0' or rdv_addr /= address);
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( i_reset_n = '0' ) then
         rdv_addr <= (others => '0');
         readdatavalid_i <= '0';
         readdata <= X"CCCC";
         --
-    elsif rising_edge(clk) then
+    elsif rising_edge(i_clk) then
         readdatavalid_i <= read;
         rdv_addr <= address;
         readdata <= X"CCCC";

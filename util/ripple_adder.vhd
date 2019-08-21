@@ -10,11 +10,11 @@ generic (
     W   : positive := 8--;
 );
 port (
-    a   :   in  std_logic_vector(W-1 downto 0);
-    b   :   in  std_logic_vector(W-1 downto 0);
-    ci  :   in  std_logic := '0';
-    s   :   out std_logic_vector(W-1 downto 0);
-    co  :   out std_logic--;
+    a   : in    std_logic_vector(W-1 downto 0);
+    b   : in    std_logic_vector(W-1 downto 0);
+    ci  : in    std_logic := '0';
+    s   : out   std_logic_vector(W-1 downto 0);
+    co  : out   std_logic--;
 );
 end entity;
 

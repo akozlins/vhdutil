@@ -63,11 +63,11 @@ begin
         INIT_FILE_HEX => "cpu/cpu_v3.hex"--,
     )
     port map (
-        addr    => std_logic_vector(ram_addr),
-        rd      => ram_rd,
-        wd      => ram_wd,
-        we      => ram_we,
-        clk     => clk--,
+        i_addr  => std_logic_vector(ram_addr),
+        o_rdata => ram_rd,
+        i_we    => ram_we,
+        i_wdata => ram_wd,
+        i_clk   => clk--,
     );
 
     e_reg_file : entity work.reg_file_dp

@@ -14,14 +14,14 @@ generic (
     N   : positive := 8--;
 );
 port (
-    we      :   in  std_logic;
-    wd      :   in  std_logic_vector(W-1 downto 0);
-    full    :   out std_logic;
-    re      :   in  std_logic;
-    rd      :   out std_logic_vector(W-1 downto 0);
-    empty   :   out std_logic;
-    rst_n   :   in  std_logic;
-    clk     :   in  std_logic--;
+    i_we        : in    std_logic;
+    i_wdata     : in    std_logic_vector(W-1 downto 0);
+    o_wfull     : out   std_logic;
+    i_re        : in    std_logic;
+    o_rdata     : out   std_logic_vector(W-1 downto 0);
+    o_rempty    : out   std_logic;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
@@ -35,8 +35,8 @@ architecture arch of fifo_v1 is
 
     constant XOR_FULL : ptr_t := "10" & ( N-2 downto 0 => '0' );
 
-    signal re_i, we_i : std_logic;
-    signal empty_i, full_i : std_logic;
+    signal re, we : std_logic;
+    signal empty, full : std_logic;
     signal rptr, wptr : ptr_t;
 
 begin
@@ -48,36 +48,36 @@ begin
     )
     port map (
         a_addr  => rptr(addr_t'range),
-        a_rd    => rd,
+        a_rd    => o_rdata,
         b_addr  => wptr(addr_t'range),
         b_rd    => open,
-        b_wd    => wd,
-        b_we    => we_i,
-        clk     => clk--,
+        b_wd    => i_wdata,
+        b_we    => we,
+        clk     => i_clk--,
     );
 
-    empty <= empty_i;
-    full <= full_i;
-    re_i <= ( re and not empty_i );
-    we_i <= ( we and not full_i );
+    o_rempty <= empty;
+    o_wfull <= full;
+    re <= ( i_re and not empty );
+    we <= ( i_we and not full );
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
         variable rptr_v, wptr_v : ptr_t;
     begin
-    if ( rst_n = '0' ) then
-        empty_i <= '1';
-        full_i <= '1';
+    if ( i_reset_n = '0' ) then
+        empty <= '1';
+        full <= '1';
         rptr <= (others => '0');
         wptr <= (others => '0');
         --
-    elsif rising_edge(clk) then
-        rptr_v := std_logic_vector(unsigned(rptr) + ("" & re_i));
-        wptr_v := std_logic_vector(unsigned(wptr) + ("" & we_i));
+    elsif rising_edge(i_clk) then
+        rptr_v := std_logic_vector(unsigned(rptr) + ("" & re));
+        wptr_v := std_logic_vector(unsigned(wptr) + ("" & we));
         rptr <= rptr_v;
         wptr <= wptr_v;
 
-        empty_i <= work.util.to_std_logic( rptr_v = wptr_v );
-        full_i <= work.util.to_std_logic( (rptr_v xor wptr_v) = XOR_FULL );
+        empty <= work.util.to_std_logic( rptr_v = wptr_v );
+        full <= work.util.to_std_logic( (rptr_v xor wptr_v) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;

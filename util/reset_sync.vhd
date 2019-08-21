@@ -22,7 +22,15 @@ architecture arch of reset_sync is
 begin
 
     e_ff_sync : entity work.ff_sync
-    generic map ( W => 1, N => N )
-    port map ( i_d(0) => '1', o_q(0) => o_reset_n, i_reset_n => i_reset_n, i_clk => i_clk );
+    generic map (
+        W => 1,
+        N => N--,
+    )
+    port map (
+        i_d(0) => '1',
+        o_q(0) => o_reset_n,
+        i_reset_n => i_reset_n,
+        i_clk => i_clk--,
+    );
 
 end architecture;

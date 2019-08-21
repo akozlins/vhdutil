@@ -7,11 +7,11 @@ use ieee.std_logic_1164.all;
 
 entity full_adder is
 port (
-    a   :   in  std_logic;
-    b   :   in  std_logic;
-    ci  :   in  std_logic := '0';
-    s   :   out std_logic;
-    co  :   out std_logic--;
+    a   : in    std_logic;
+    b   : in    std_logic;
+    ci  : in    std_logic := '0';
+    s   : out   std_logic;
+    co  : out   std_logic--;
 );
 end entity;
 

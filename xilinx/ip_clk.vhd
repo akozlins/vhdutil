@@ -6,17 +6,17 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ip_clk is
-    generic (
-        M : positive := 8;
-        D : positive := 4;
-        CLK_PERIOD : real := 0.0--;
-    );
-    port (
-        clkout  :   out std_logic;
-        locked  :   out std_logic;
-        rst_n   :   in  std_logic;
-        clk     :   in  std_logic--;
-    );
+generic (
+    M : positive := 8;
+    D : positive := 4;
+    CLK_PERIOD : real := 0.0--;
+);
+port (
+    o_clk       : out   std_logic;
+    o_locked    : out   std_logic;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
+);
 end entity;
 
 library unisim;
@@ -24,20 +24,20 @@ use unisim.vcomponents.all;
 
 architecture arch of ip_clk is
 
-    signal pwrdwn : std_logic;
-    signal clkfbin, clkfbout : std_logic;
-    signal clkout0, clkout1, clkout2, clkout3, clkout4, clkout5 : std_logic;
-    signal clkin1 : std_logic;
-    signal rst : std_logic;
+    signal PWRDWN : std_logic;
+    signal CLKFBIN, CLKFBOUT : std_logic;
+    signal CLKOUT0, CLKOUT1, CLKOUT2, CLKOUT3, CLKOUT4, CLKOUT5 : std_logic;
+    signal CLKIN1 : std_logic;
+    signal RST : std_logic;
 
 begin
 
-    pwrdwn <= '0';
-    clkfbin <= clkfbout;
+    PWRDWN <= '0';
+    CLKFBIN <= CLKFBOUT;
 
-    clkout <= clkout0;
-    clkin1 <= clk;
-    rst <= not rst_n;
+    o_clk <= CLKOUT0;
+    CLKIN1 <= i_clk;
+    RST <= not i_reset_n;
 
    -- PLLE2_BASE: Base Phase Locked Loop (PLL)
    --             Artix-7

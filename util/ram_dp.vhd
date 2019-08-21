@@ -13,13 +13,13 @@ generic (
     INIT_FILE_HEX : string := ""--;
 );
 port (
-    a_addr  :   in  std_logic_vector(N-1 downto 0);
-    a_rd    :   out std_logic_vector(W-1 downto 0);
-    b_addr  :   in  std_logic_vector(N-1 downto 0);
-    b_rd    :   out std_logic_vector(W-1 downto 0);
-    b_wd    :   in  std_logic_vector(W-1 downto 0);
-    b_we    :   in  std_logic;
-    clk     :   in  std_logic--;
+    a_addr  : in    std_logic_vector(N-1 downto 0);
+    a_rd    : out   std_logic_vector(W-1 downto 0);
+    b_addr  : in    std_logic_vector(N-1 downto 0);
+    b_rd    : out   std_logic_vector(W-1 downto 0);
+    b_wd    : in    std_logic_vector(W-1 downto 0);
+    b_we    : in    std_logic;
+    clk     : in    std_logic--;
 );
 end entity;
 

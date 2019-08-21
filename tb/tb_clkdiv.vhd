@@ -17,9 +17,9 @@ begin
     e_clkdiv : entity work.clkdiv
     generic map ( P => 5 )
     port map (
-        clkout => open,
-        reset_n => reset_n,
-        clk => clk--,
+        o_clk => open,
+        i_reset_n => reset_n,
+        i_clk => clk--,
     );
 
 end architecture;

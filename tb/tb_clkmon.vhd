@@ -22,10 +22,10 @@ begin
     e_clkmon : entity work.clkmon
     generic map ( CLK_MHZ => CLK_MHZ, TST_MHZ => TST_MHZ )
     port map (
-        tst_clk => tst_clk,
-        tst_ok => tst_ok,
-        reset_n => reset_n,
-        clk => clk--,
+        i_tst_clk => tst_clk,
+        o_tst_ok => tst_ok,
+        i_reset_n => reset_n,
+        i_clk => clk--,
     );
 
 end architecture;

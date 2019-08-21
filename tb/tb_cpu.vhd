@@ -18,8 +18,8 @@ begin
     port map (
         dbg_out => open,
         dbg_in => (others => '0'),
-        reset_n => reset_n,
-        clk => clk--,
+        i_reset_n => reset_n,
+        i_clk => clk--,
     );
 
 end architecture;

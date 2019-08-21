@@ -6,22 +6,23 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity ip_fifo is
-    generic (
-        W   : positive := 8;
-        N   : positive := 8--;
-    );
-    port (
-        we      :   in  std_logic;
-        wd      :   in  std_logic_vector(W-1 downto 0);
-        wfull   :   out std_logic;
-        wrst_n  :   in  std_logic;
-        wclk    :   in  std_logic;
-        re      :   in  std_logic;
-        rd      :   out std_logic_vector(W-1 downto 0);
-        rempty  :   out std_logic;
-        rrst_n  :   in  std_logic;
-        rclk    :   in  std_logic--;
-    );
+generic (
+    W   : positive := 8;
+    N   : positive := 8--;
+);
+port (
+    i_re        : in    std_logic;
+    o_rdata     : out   std_logic_vector(W-1 downto 0);
+    o_rempty    : out   std_logic;
+    i_rreset_n  : in    std_logic;
+    i_rclk      : in    std_logic;
+
+    i_we        : in    std_logic;
+    i_wdata     : in    std_logic_vector(W-1 downto 0);
+    o_wfull     : out   std_logic;
+    i_wreset_n  : in    std_logic;
+    i_wclk      : in    std_logic--;
+);
 end entity;
 
 library unimacro;
@@ -29,20 +30,20 @@ use unimacro.vcomponents.all;
 
 architecture arch of ip_fifo is
 
-    signal rst : std_logic;
+    signal RST : std_logic;
 
-    signal full, empty : std_logic;
-    signal wren, rden : std_logic;
+    signal FULL, EMPTY : std_logic;
+    signal WREN, RDEN : std_logic;
     signal wrerr, rderr : std_logic;
 
 begin
 
-    rst <= not (wrst_n and rrst_n);
+    RST <= not (i_wreset_n and i_rreset_n);
 
-    wfull <= full;
-    rempty <= empty;
-    wren <= we and not full;
-    rden <= re and not empty;
+    o_wfull <= FULL;
+    o_rempty <= EMPTY;
+    WREN <= i_we and not FULL;
+    RDEN <= i_re and not EMPTY;
 
    -- FIFO_DUALCLOCK_MACRO: Dual-Clock First-In, First-Out (FIFO) RAM Buffer
    --                       Artix-7
@@ -84,10 +85,10 @@ begin
       WRCOUNT => open,              -- Output write count, width determined by FIFO depth
       WRERR => WRERR,               -- 1-bit output write error
       DI => wd,                     -- Input data, width defined by DATA_WIDTH parameter
-      RDCLK => rclk,                -- 1-bit input read clock
+      RDCLK => i_rclk,              -- 1-bit input read clock
       RDEN => RDEN,                 -- 1-bit input read enable
       RST => RST,                   -- 1-bit input reset
-      WRCLK => wclk,                -- 1-bit input write clock
+      WRCLK => i_wclk,              -- 1-bit input write clock
       WREN => WREN                  -- 1-bit input write enable
    );
 

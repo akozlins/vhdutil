@@ -13,9 +13,9 @@ generic (
     P : positive := 1--;
 );
 port (
-    o_clk       :   out std_logic;
-    i_reset_n   :   in  std_logic;
-    i_clk       :   in  std_logic--;
+    o_clk       : out   std_logic;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 

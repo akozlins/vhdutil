@@ -13,10 +13,11 @@ generic (
     CLK_MHZ : positive := 100--;
 );
 port (
-    tst_clk     :   in  std_logic;
-    tst_ok      :   out std_logic;
-    i_reset_n   :   in  std_logic;
-    i_clk       :   in  std_logic--;
+    i_tst_clk   : in    std_logic;
+    o_tst_ok    : out   std_logic;
+
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
@@ -47,7 +48,7 @@ begin
     if ( i_reset_n = '0' ) then
         cnt <= (others => '0');
         ff1 <= '0';
-        tst_ok <= '0';
+        o_tst_ok <= '0';
         --
     elsif rising_edge(i_clk) then
         -- sync tst_clk_slow to clk domain
@@ -55,9 +56,9 @@ begin
 
         if ( ff0 /= ff1 ) then
             cnt <= (others => '0');
-            tst_ok <= work.util.to_std_logic(cnt(W-1 downto W-4) = X"F");
+            o_tst_ok <= work.util.to_std_logic(cnt(W-1 downto W-4) = X"F");
         elsif ( cnt = 2**W-1 ) then
-            tst_ok <= '0';
+            o_tst_ok <= '0';
         else
             cnt <= cnt + 1;
         end if;
@@ -67,7 +68,7 @@ begin
 
     -- sync rst_n to tst_clk domain
     e_tst_rst : entity work.reset_sync
-    port map ( o_reset_n => tst_rst_n, i_reset_n => i_reset_n, i_clk => tst_clk );
+    port map ( o_reset_n => tst_rst_n, i_reset_n => i_reset_n, i_clk => i_tst_clk );
 
     e_tst_clk_slow : entity work.clkdiv
     generic map (
@@ -76,7 +77,7 @@ begin
     port map (
         o_clk => tst_clk_slow,
         i_reset_n => tst_rst_n,
-        i_clk => tst_clk--,
+        i_clk => i_tst_clk--,
     );
 
 end architecture;

@@ -13,10 +13,10 @@ generic (
     N   : positive := 16#FFFF#--;
 );
 port (
-    i_d         :   in  std_logic_vector(W-1 downto 0);
-    o_q         :   out std_logic_vector(W-1 downto 0);
-    i_reset_n   :   in  std_logic;
-    i_clk       :   in  std_logic--;
+    i_d         : in    std_logic_vector(W-1 downto 0);
+    o_q         : out   std_logic_vector(W-1 downto 0);
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
@@ -24,8 +24,8 @@ architecture arch of debouncer is
 
     signal ff0, ff1 : std_logic_vector(i_d'range);
 
-    type cnt_array_t is array(natural range <>) of integer range 0 to N;
-    signal cnt : cnt_array_t(i_d'range);
+    type cnt_array_t is array(i_d'range) of integer range 0 to N;
+    signal cnt : cnt_array_t;
 
 begin
 
@@ -52,6 +52,8 @@ begin
                 cnt(i) <= cnt(i) + 1;
             end if;
         end loop;
+
+        --
     end if; -- rising_edge
     end process;
 

@@ -14,17 +14,17 @@ generic (
     N : positive := 1--;
 );
 port (
-    i_d         :   in  std_logic_vector(W-1 downto 0);
-    o_q         :   out std_logic_vector(W-1 downto 0);
-    i_reset_n   :   in  std_logic;
-    i_clk       :   in  std_logic--;
+    i_d         : in    std_logic_vector(W-1 downto 0);
+    o_q         : out   std_logic_vector(W-1 downto 0);
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
 architecture arch of ff_sync is
 
-    type ff_array_t is array (natural range <>) of std_logic_vector(W-1 downto 0);
-    signal ff : ff_array_t(N downto 0);
+    type ff_array_t is array (N downto 0) of std_logic_vector(W-1 downto 0);
+    signal ff : ff_array_t;
 
     -- xilinx
     attribute KEEP : string;
@@ -46,8 +46,10 @@ begin
     begin
     if ( i_reset_n = '0' ) then
         ff <= (others => (others => '0'));
+        --
     elsif rising_edge(i_clk) then
         ff <= ff(N-1 downto 0) & i_d;
+        --
     end if;
     end process;
 

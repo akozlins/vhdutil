@@ -14,16 +14,16 @@ generic (
     N   : positive := 8--;
 );
 port (
-    we          :   in  std_logic;
-    wd          :   in  std_logic_vector(W-1 downto 0);
-    wfull       :   out std_logic;
-    wreset_n    :   in  std_logic;
-    wclk        :   in  std_logic;
-    re          :   in  std_logic;
-    rd          :   out std_logic_vector(W-1 downto 0);
-    rempty      :   out std_logic;
-    rreset_n    :   in  std_logic;
-    rclk        :   in  std_logic--;
+    i_we        : in    std_logic;
+    i_wdata     : in    std_logic_vector(W-1 downto 0);
+    o_wfull     : out   std_logic;
+    i_wreset_n  : in    std_logic;
+    i_wclk      : in    std_logic;
+    i_re        : in    std_logic;
+    o_rdata     : out   std_logic_vector(W-1 downto 0);
+    o_rempty    : out   std_logic;
+    i_rreset_n  : in    std_logic;
+    i_rclk      : in    std_logic--;
 );
 end entity;
 
@@ -37,8 +37,8 @@ architecture arch of fifo_dc is
 
     constant XOR_FULL : ptr_t := "11" & ( N-2 downto 0 => '0' );
 
-    signal re_i, we_i : std_logic;
-    signal rempty_i, wfull_i : std_logic;
+    signal re, we : std_logic;
+    signal rempty, wfull : std_logic;
     signal rptr, rgray, rwgray, wptr, wgray, wrgray : ptr_t;
 
     attribute KEEP : string;
@@ -54,43 +54,43 @@ begin
     )
     port map (
         a_addr  => rptr(addr_t'range),
-        a_rd    => rd,
+        a_rd    => o_rdata,
         b_addr  => wptr(addr_t'range),
         b_rd    => open,
-        b_wd    => wd,
-        b_we    => we_i,
-        clk     => wclk--,
+        b_wd    => i_wdata,
+        b_we    => we,
+        clk     => i_wclk--,
     );
 
-    rempty <= rempty_i;
-    wfull <= wfull_i;
-    re_i <= ( re and not rempty_i );
-    we_i <= ( we and not wfull_i );
+    o_rempty <= rempty;
+    o_wfull <= wfull;
+    re <= ( i_re and not rempty );
+    we <= ( i_we and not wfull );
 
     e_rwgray : entity work.ff_sync
     generic map ( W => rwgray'length )
     port map (
         i_d => wgray,
         o_q => rwgray,
-        i_reset_n => rreset_n,
-        i_clk => rclk--,
+        i_reset_n => i_rreset_n,
+        i_clk => i_rclk--,
     );
 
-    process(rclk, rreset_n)
+    process(i_rclk, i_rreset_n)
         variable rptr_v, rgray_v : ptr_t;
     begin
-    if ( rreset_n = '0' ) then
-        rempty_i <= '1';
+    if ( i_rreset_n = '0' ) then
+        rempty <= '1';
         rptr <= (others => '0');
         rgray <= (others => '0');
         --
-    elsif rising_edge(rclk) then
-        rptr_v := std_logic_vector(unsigned(rptr) + ("" & re_i));
+    elsif rising_edge(i_rclk) then
+        rptr_v := std_logic_vector(unsigned(rptr) + ("" & re));
         rgray_v := work.util.bin2gray(rptr_v);
         rptr <= rptr_v;
         rgray <= rgray_v;
 
-        rempty_i <= work.util.to_std_logic( rgray_v = rwgray );
+        rempty <= work.util.to_std_logic( rgray_v = rwgray );
         --
     end if; -- rising_edge
     end process;
@@ -100,25 +100,25 @@ begin
     port map (
         i_d => rgray,
         o_q => wrgray,
-        i_reset_n => wreset_n,
-        i_clk => wclk--,
+        i_reset_n => i_wreset_n,
+        i_clk => i_wclk--,
     );
 
-    process(wclk, wreset_n)
+    process(i_wclk, i_wreset_n)
         variable wptr_v, wgray_v : ptr_t;
     begin
-    if ( wreset_n = '0' ) then
-        wfull_i <= '1';
+    if ( i_wreset_n = '0' ) then
+        wfull <= '1';
         wptr <= (others => '0');
         wgray <= (others => '0');
         --
-    elsif rising_edge(wclk) then
-        wptr_v := std_logic_vector(unsigned(wptr) + ("" & we_i));
+    elsif rising_edge(i_wclk) then
+        wptr_v := std_logic_vector(unsigned(wptr) + ("" & we));
         wgray_v := work.util.bin2gray(wptr_v);
         wptr <= wptr_v;
         wgray <= wgray_v;
 
-        wfull_i <= work.util.to_std_logic( (wgray_v xor wrgray) = XOR_FULL );
+        wfull <= work.util.to_std_logic( (wgray_v xor wrgray) = XOR_FULL );
         --
     end if; -- rising_edge
     end process;
