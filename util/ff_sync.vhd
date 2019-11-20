@@ -11,7 +11,7 @@ generic (
     -- bus width
     W : positive := 1;
     -- number of stages
-    N : positive := 1--;
+    N : positive := 2--;
 );
 port (
     i_d         : in    std_logic_vector(W-1 downto 0);
@@ -23,7 +23,7 @@ end entity;
 
 architecture arch of ff_sync is
 
-    type ff_array_t is array (N downto 0) of std_logic_vector(W-1 downto 0);
+    type ff_array_t is array (N-1 downto 0) of std_logic_vector(W-1 downto 0);
     signal ff : ff_array_t;
 
     -- xilinx
@@ -31,16 +31,20 @@ architecture arch of ff_sync is
     attribute KEEP of ff : signal is "true";
     attribute ASYNC_REG : string;
     attribute ASYNC_REG of ff : signal is "TRUE";
+--    attribute SHREG_EXTRACT : string;
+--    attribute SHREG_EXTRACT of ff : signal is "FALSE";
+--    attribute RLOC : string;
+--    attribute RLOC of ff : signal is "X0Y0";
 
     -- altera
     attribute PRESERVE : boolean;
     attribute PRESERVE of ff : signal is true;
     attribute ALTERA_ATTRIBUTE : string;
-    attribute ALTERA_ATTRIBUTE of ff : signal is "-name SYNCHRONIZER_IDENTIFICATION ""FORCED IF ASYNCHRONOUS""";
+    attribute ALTERA_ATTRIBUTE of ff : signal is "-name SYNCHRONIZER_IDENTIFICATION FORCED";
 
 begin
 
-    o_q <= ff(N);
+    o_q <= ff(N-1);
 
     process(i_clk, i_reset_n)
     begin
@@ -48,7 +52,7 @@ begin
         ff <= (others => (others => '0'));
         --
     elsif rising_edge(i_clk) then
-        ff <= ff(N-1 downto 0) & i_d;
+        ff <= ff(N-2 downto 0) & i_d;
         --
     end if;
     end process;
