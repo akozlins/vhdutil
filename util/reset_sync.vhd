@@ -9,7 +9,7 @@ use ieee.std_logic_1164.all;
 entity reset_sync is
 generic (
     -- number of stages
-    N : positive := 1--;
+    N : positive := 2--;
 );
 port (
     o_reset_n   : out   std_logic;
@@ -19,6 +19,11 @@ port (
 end entity;
 
 architecture arch of reset_sync is
+
+    -- no 'preserve' attr on final output reg
+    -- (see altera_reset_synchronizer)
+    signal q : std_logic;
+
 begin
 
     e_ff_sync : entity work.ff_sync
@@ -28,9 +33,18 @@ begin
     )
     port map (
         i_d(0) => '1',
-        o_q(0) => o_reset_n,
+        o_q(0) => q,
         i_reset_n => i_reset_n,
         i_clk => i_clk--,
     );
+
+    process(i_clk, i_reset_n)
+    begin
+    if ( i_reset_n = '0' ) then
+        o_reset_n <= '0';
+    elsif rising_edge(i_clk) then
+        o_reset_n <= q;
+    end if;
+    end process;
 
 end architecture;
