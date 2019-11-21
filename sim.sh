@@ -10,7 +10,7 @@ cd .cache || exit 1
 [ -e tb ] || ln -s ../tb
 
 DIR=..
-SRC="$DIR/util_pkg.vhd $DIR/util/*.vhd $DIR/cpu/*.vhd $DIR/tb/$TB.vhd"
+SRC="$DIR/util/*.vhd $DIR/cpu/*.vhd $DIR/rv/*.vhd $DIR/tb/$TB.vhd"
 
 ghdl -i $SRC
 ghdl -s $SRC

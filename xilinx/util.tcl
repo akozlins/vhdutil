@@ -1,8 +1,4 @@
-#!/bin/sh
-# \
-unset CDPATH ; \
-cd "$(dirname -- "$(readlink -e -- "$0")")" || exit 1 ; \
-exec vivado -mode tcl -source "$0" -tclargs "$@"
+#
 
 proc sim { tb } {
     set_property top_lib xil_defaultlib [ get_filesets sim_1 ]
@@ -27,18 +23,3 @@ proc read_xdc_glob { pattern  } {
         read_xdc -unmanaged $file
     }
 }
-
-set part "xc7z020clg484-1"
-
-create_project -in_memory -part $part
-read_xdc -unmanaged "top.xdc"
-
-read_vhdl "util_pkg.vhd"
-add_files_glob "util/*.vhd"
-read_xdc_glob "util/*.xdc"
-
-add_files_glob "cpu/*.vhd"
-add_files_glob "tb/*.vhd" sim_1
-
-read_vhdl "top.vhd"
-set_property top top [ current_fileset ]
