@@ -37,21 +37,21 @@ begin
 
     e_enc : entity work.enc_8b10b
     port map (
-        datain => e8b,
-        dispin => edin,
-        dataout => e10b,
-        dispout => edout,
-        err => eerr--,
+        i_data => e8b,
+        i_disp => edin,
+        o_data => e10b,
+        o_disp => edout,
+        o_err => eerr--,
     );
 
     e_dec : entity work.dec_8b10b
     port map (
-        datain => d10b,
-        dispin => ddin,
-        dataout => d8b,
-        dispout => ddout,
-        disperr => dderr,
-        err => derr--,
+        i_data => d10b,
+        i_disp => ddin,
+        o_data => d8b,
+        o_disp => ddout,
+        o_disperr => dderr,
+        o_err => derr--,
     );
 
     process
