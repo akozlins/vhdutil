@@ -12,6 +12,11 @@ use std.textio.all;
 
 package util is
 
+    -- Greatest Common Divisor
+    function gcd (
+        p, q : positive--;
+    ) return positive;
+
     function max (
         l, r : integer--;
     ) return integer;
@@ -85,6 +90,18 @@ package util is
         good : out boolean--;
     );
 
+    function count_bits_4 (
+        data : std_logic_vector(3 downto 0)--;
+    ) return natural;
+
+    function count_bits_32 (
+        data : std_logic_vector(31 downto 0)--;
+    ) return natural;
+
+    function count_bits (
+        data : std_logic_vector--;
+    ) return natural;
+
     impure
     function read_hex (
         fname : in string;
@@ -115,6 +132,22 @@ package util is
 end package;
 
 package body util is
+
+    function gcd (
+        p, q : positive--;
+    ) return positive is
+        variable p_v : positive := p;
+        variable q_v : positive := q;
+    begin
+        while ( p_v /= q_v ) loop
+            if ( p_v > q_v ) then
+                p_v := p_v - q_v;
+            else
+                q_v := q_v - p_v;
+            end if;
+        end loop;
+        return p_v;
+    end function;
 
     function max (
         l, r : integer
@@ -379,6 +412,55 @@ package body util is
 
         file_close(f);
         return data;
+    end function;
+
+    function count_bits_4(
+        data : std_logic_vector(3 downto 0)--;
+    ) return natural is
+    begin
+        case data is
+        when "0000" => return 0;
+        when "0001" | "0010" | "0100" | "1000" => return 1;
+        when "0111" | "1011" | "1101" | "1110" => return 3;
+        when "1111" => return 4;
+        when others => return 2;
+        end case;
+    end function;
+
+    function count_bits_32(
+        data : std_logic_vector(31 downto 0)--;
+    ) return natural is
+    begin
+        return (
+            (
+                count_bits_4(data(31 downto 28)) +
+                count_bits_4(data(27 downto 24))
+            ) + (
+                count_bits_4(data(23 downto 20)) +
+                count_bits_4(data(19 downto 16))
+            )
+        ) + (
+            (
+                count_bits_4(data(15 downto 12)) +
+                count_bits_4(data(11 downto  8))
+            ) + (
+                count_bits_4(data( 7 downto  4)) +
+                count_bits_4(data( 3 downto  0))
+            )
+        );
+    end function;
+
+    function count_bits (
+        data : std_logic_vector--;
+    ) return natural is
+        variable data_v : std_logic_vector(data'length-1 downto 0);
+    begin
+        data_v := data;
+        if ( data_v'length > 1 ) then
+            return count_bits(data_v(data_v'length-1 downto data_v'length/2)) + count_bits(data_v(data_v'length/2-1 downto 0));
+        else
+            return to_integer(unsigned(data_v));
+        end if;
     end function;
 
     function to_string (
