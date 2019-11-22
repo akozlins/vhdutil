@@ -41,33 +41,30 @@ struct i2c_t {
         }
     }
 
-    alt_u8 r8(alt_u8 addr) {
+    alt_u8 r8(alt_u8 slave) {
         alt_u8 r = 0;
-        read(dev, addr, &r, 1);
+        read(dev, slave, &r, 1);
         return r;
     }
 
-    void w8(alt_u8 addr, alt_u8 w) {
-        write(dev, addr, &w, 1);
+    void w8(alt_u8 slave, alt_u8 w) {
+        write(dev, slave, &w, 1);
     }
 
-    alt_u16 r16(alt_u8 addr) {
+    alt_u16 r16(alt_u8 slave) {
         alt_u8 r[2] {};
-        read(dev, addr, r, 2);
+        read(dev, slave, r, 2);
         return (r[0] << 8) | r[1];
     }
 
-    alt_u8 get(alt_u8 addr, alt_u8 w) {
-        w8(addr, w);
-        return r8(addr);
+    alt_u8 get(alt_u8 slave, alt_u8 addr) {
+        w8(slave, addr);
+        return r8(slave);
     }
 
-    void set(alt_u8 addr, alt_u8 w0, alt_u8 w1) {
-        alt_u8 w[2] = { w0, w1 };
-        write(dev, addr, w, 2);
-    }
-
-    void print() {
+    void set(alt_u8 slave, alt_u8 addr, alt_u8 data) {
+        alt_u8 w[2] = { addr, data };
+        write(dev, slave, w, 2);
     }
 };
 

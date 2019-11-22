@@ -3,17 +3,21 @@
  * date : 2019
  */
 
+#include "../i2c.h"
+
 /**
- * Arria10 dev board (DE5a_NET) FAN controller.
+ * Arria 10 board (DE5a_NET) FAN controller.
  */
 struct fan_t {
+    i2c_t i2c;
+
     const alt_u32 fclk = 254000;
 
 //    uint8_t mode = 0x2; // closed loop
     alt_u8 scale = 4;
     alt_u8 rps = 50;
 
-    alt_u8 get_rps() const {
+    alt_u8 get_rps() {
         return scale * fclk / ( 128 * 2 * (i2c.get(0x48, 0x00) + 1));
     }
 
@@ -30,14 +34,47 @@ struct fan_t {
         set_rps(rps);
     }
 
-    void print() const {
-        printf(
-            "FAN: conf = 0x%02X, gpio = 0x%02X, tach = 0x%02X\n"
-            "     alarm = 0x%02X => 0x%02X\n"
-            "     rps = 0x%02X (%u) => %u\n",
-            i2c.get(0x48, 0x02), i2c.get(0x48, 0x04), i2c.get(0x48, 0x16),
-            i2c.get(0x48, 0x08), i2c.get(0x48, 0x0A),
-            i2c.get(0x48, 0x00), rps, i2c.get(0x48, 0x0C) / 2
-        );
+    void menu() {
+        while (1) {
+            printf("\n");
+            printf("[fan] -------- menu --------\n");
+
+            printf("\n");
+            printf(
+                "  conf = 0x%02X, gpio = 0x%02X, tach = 0x%02X\n"
+                "  alarm = 0x%02X => 0x%02X\n"
+                "  rps = 0x%02X (%u) => %u\n",
+                i2c.get(0x48, 0x02), i2c.get(0x48, 0x04), i2c.get(0x48, 0x16),
+                i2c.get(0x48, 0x08), i2c.get(0x48, 0x0A),
+                i2c.get(0x48, 0x00), rps, i2c.get(0x48, 0x0C) / 2
+            );
+
+            printf("\n");
+            printf("  [i] => init\n");
+            printf("  [[] => rps++\n");
+            printf("  []] => rps--\n");
+            printf("  [q] => exit\n");
+
+            printf("Select entry ...\n");
+            char cmd = wait_key();
+            switch(cmd) {
+            case 'i': // fan i2c
+                init();
+                break;
+            case ']':
+                set_rps(++rps);
+                break;
+            case '[':
+                set_rps(--rps);
+                break;
+            case '?':
+                wait_key();
+                break;
+            case 'q':
+                return;
+            default:
+                printf("invalid command: '%c'\n", cmd);
+            }
+        }
     }
 };
