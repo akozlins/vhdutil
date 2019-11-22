@@ -1,6 +1,6 @@
 --
--- Author: Alexandr Kozlinskiy
--- Date: 2018-03-30
+-- author : Alexandr Kozlinskiy
+-- date : 2018-03-30
 --
 
 library ieee;
@@ -13,7 +13,7 @@ use std.textio.all;
 package util is
 
     function max (
-        l, r: integer--;
+        l, r : integer--;
     ) return integer;
 
     function vector_width (
@@ -117,7 +117,7 @@ end package;
 package body util is
 
     function max (
-        l, r: integer
+        l, r : integer
     ) return integer is
     begin
         if l > r then

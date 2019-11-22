@@ -16,10 +16,15 @@ set_module_property DESCRIPTION {}
 set_module_property AUTHOR {akozlins}
 
 add_parameter clockFrequency INTEGER 50000000
+set_parameter_property clockFrequency UNITS HERTZ
 add_parameter address_width INTEGER 28
+set_parameter_property address_width UNITS BITS
 add_parameter rw_wait INTEGER 144
+set_parameter_property rw_wait UNITS NANOSECONDS
 add_parameter setup_wait INTEGER 33
+set_parameter_property setup_wait UNITS NANOSECONDS
 add_parameter data_hold INTEGER 33
+set_parameter_property data_hold UNITS NANOSECONDS
 
 set_module_property COMPOSITION_CALLBACK compose
 proc compose {} {
@@ -35,13 +40,15 @@ proc compose {} {
     set_instance_parameter_value flash {TCM_BYTEENABLE_W} {4}
     set_instance_parameter_value flash {TCM_SYMBOLS_PER_WORD} {4}
 
+    # timing units [ns] for read/write/setup_wait and data_hold
+    set_instance_parameter_value flash {TCM_TIMING_UNITS} {0}
     set_instance_parameter_value flash {TCM_READ_WAIT} [ get_parameter_value rw_wait ]
     set_instance_parameter_value flash {TCM_WRITE_WAIT} [ get_parameter_value rw_wait ]
     set_instance_parameter_value flash {TCM_SETUP_WAIT} [ get_parameter_value setup_wait ]
     set_instance_parameter_value flash {TCM_DATA_HOLD} [ get_parameter_value data_hold ]
+
     set_instance_parameter_value flash {TCM_MAX_PENDING_READ_TRANSACTIONS} {3}
     set_instance_parameter_value flash {TCM_TURNAROUND_TIME} {4}
-    set_instance_parameter_value flash {TCM_TIMING_UNITS} {0}
     set_instance_parameter_value flash {TCM_READLATENCY} {2}
 
     set_instance_parameter_value flash {USE_BEGINTRANSFER} {0}

@@ -2,6 +2,7 @@
 
 ```
 # compile project
+make
 make flow
 # upload firmware
 make pgm

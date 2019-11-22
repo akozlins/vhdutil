@@ -19,19 +19,14 @@ ip_%.qip : ip_%.v
 
 .PRECIOUS : %.qsys
 %.qsys : %.tcl
-	qsys-script --script=$*.tcl
-
-.PRECIOUS : ip/%.qsys
-ip/%.qsys : %.tcl
-	qsys-script --script=$*.tcl
+	qsys-script --cmd='source "$<"'
 
 .PRECIOUS : %.sopcinfo
 %.sopcinfo : %.qsys
-	qsys-generate --synthesis=VHDL $*.qsys
-#--search-path=$$,.
+	qsys-generate --synthesis=VHDL --output-directory='$(dir $<)' '$<'
 
 .PHONY : flow
-flow : $(IPs) $(VHDs)
+flow : $(IPs)
 	quartus_sh -t util/flow.tcl top
 
 .PHONY : sof2flash
@@ -57,40 +52,32 @@ $(BSP_DIR) : $(BSP_DIR).tcl nios.sopcinfo
 bsp : $(BSP_DIR)
 
 .PRECIOUS : $(APP_DIR)/main.elf
+.PHONY : $(APP_DIR)/main.elf
 $(APP_DIR)/main.elf : $(APP_DIR)_src/* $(BSP_DIR)
 	nios2-app-generate-makefile \
-        --set ALT_CFLAGS "-pedantic -Wall -Wextra -Wformat=0 -std=c++11 -O0 -g" \
+        --set ALT_CFLAGS "-Wextra -Wformat=0 -pedantic -std=c++14" \
         --bsp-dir $(BSP_DIR) --app-dir $(APP_DIR) --src-dir $(APP_DIR)_src
 	$(MAKE) -C $(APP_DIR) clean
 	$(MAKE) -C $(APP_DIR)
+	nios2-elf-objcopy $(APP_DIR)/main.elf -O srec $(APP_DIR)/main.srec
+	# generate flash image (srec)
+	( cd $(APP_DIR) ; make mem_init_generate )
 
-.PHONY : app $(APP_DIR)/main.elf
+.PHONY : app
 app : $(APP_DIR)/main.elf
-	# generate srec
-	elf2flash --base=0x0 --end=0x0FFFFFFF \
-        --boot=$(SOPC_KIT_NIOS2)/components/altera_nios2/boot_loader_cfi.srec \
-        --input=$(APP_DIR)/main.elf \
-        --output=$(APP_DIR)/main.flash --reset=0x05E40000
-	# convert to binary
-	objcopy -Isrec -Obinary $(APP_DIR)/main.flash $(APP_DIR)/main.bin
 
 .PHONY : app_flash
 app_flash :
 	nios2-flash-programmer -c $(CABLE) --base=0x0 $(APP_DIR)/main.flash
 
 .PHONY : flash
-flash :
+flash : app_flash
 	nios2-flash-programmer -c $(CABLE) --base=0x0 $(SOF).flash
-	nios2-flash-programmer -c $(CABLE) --base=0x0 $(APP_DIR)/main.flash
 
 .PHONY : app_upload
 app_upload : app
-	nios2-elf-objcopy $(APP_DIR)/main.elf -O srec $(APP_DIR)/main.srec
 	nios2-gdb-server -c $(CABLE) -r -w 1 -g $(APP_DIR)/main.srec
-#	rm -v $(APP_DIR)/main.srec
 
 .PHONY : terminal
 terminal :
 	nios2-terminal -c $(CABLE)
-
-

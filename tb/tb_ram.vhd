@@ -31,11 +31,11 @@ begin
         INIT_FILE_HEX => "tb/tb_ram.hex"--,
     )
     port map (
-        addr => addr,
-        rd => rd,
-        wd => wd,
-        we => we,
-        clk => clk--,
+        i_addr => addr,
+        o_rdata => rd,
+        i_wdata => wd,
+        i_we => we,
+        i_clk => clk--,
     );
 
     process(clk, reset_n)

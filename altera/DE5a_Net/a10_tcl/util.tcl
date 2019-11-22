@@ -4,7 +4,7 @@
 # date : 2017-11-24
 #
 
-source [ file join [ file dirname [ info script ] ] "coroutine.tcl"]
+source [ file join [ file dirname [ info script ] ] "coroutine.tcl" ]
 
 namespace eval ::util {}
 

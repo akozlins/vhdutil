@@ -3,7 +3,7 @@
 # date : 2017-11-24
 #
 
-source [ file join [ file dirname [ info script ] ] "program.tcl"]
+source [ file join [ file dirname [ info script ] ] "program.tcl" ]
 
 set ::stop 0
 set ::progress 0

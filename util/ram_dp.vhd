@@ -14,10 +14,10 @@ generic (
 );
 port (
     a_addr  : in    std_logic_vector(N-1 downto 0);
-    a_rd    : out   std_logic_vector(W-1 downto 0);
+    a_rdata : out   std_logic_vector(W-1 downto 0);
     b_addr  : in    std_logic_vector(N-1 downto 0);
-    b_rd    : out   std_logic_vector(W-1 downto 0);
-    b_wd    : in    std_logic_vector(W-1 downto 0);
+    b_rdata : out   std_logic_vector(W-1 downto 0);
+    b_wdata : in    std_logic_vector(W-1 downto 0);
     b_we    : in    std_logic;
     clk     : in    std_logic--;
 );
@@ -45,17 +45,17 @@ architecture arch of ram_dp is
 
 begin
 
-    a_rd <= (others => 'X') when is_x(a_addr) else ram(to_integer(unsigned(a_addr)));
+    a_rdata <= (others => 'X') when is_x(a_addr) else ram(to_integer(unsigned(a_addr)));
 
     process(clk)
     begin
     if rising_edge(clk) then
         if ( b_we = '1' ) then
-            ram(to_integer(unsigned(b_addr))) <= b_wd;
+            ram(to_integer(unsigned(b_addr))) <= b_wdata;
         end if;
     end if; -- rising_edge
     end process;
 
-    b_rd <= (others => 'X') when is_x(b_addr) else ram(to_integer(unsigned(b_addr)));
+    b_rdata <= (others => 'X') when is_x(b_addr) else ram(to_integer(unsigned(b_addr)));
 
 end architecture;

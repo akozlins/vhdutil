@@ -50,7 +50,7 @@ begin
     -- 50 MHz
     e_nios_clk_hz : entity work.clkdiv
     generic map ( P => 50000000 )
-    port map ( clkout => LED(0), rst_n => CPU_RESET_n, clk => nios_clk );
+    port map ( o_clk => LED(0), i_reset_n => CPU_RESET_n, i_clk => nios_clk );
 
     -- generate reset sequence for flash and nios
     e_debouncer : entity work.debouncer
@@ -59,14 +59,14 @@ begin
         N => 50 * 10**5 -- 100ms
     )
     port map (
-        d(0) => '1',
-        q(0) => flash_rst_n,
+        i_d(0) => '1',
+        o_q(0) => flash_rst_n,
 
-        d(1) => flash_rst_n,
-        q(1) => nios_rst_n,
+        i_d(1) => flash_rst_n,
+        o_q(1) => nios_rst_n,
 
-        rst_n => CPU_RESET_n,
-        clk => nios_clk--,
+        i_reset_n => CPU_RESET_n,
+        i_clk => nios_clk--,
     );
 
     LED(1) <= not flash_rst_n;

@@ -32,10 +32,10 @@ begin
     )
     port map (
         a_addr  => i_addr,
-        a_rd    => open,
+        a_rdata => open,
         b_addr  => i_addr,
-        b_rd    => o_rdata,
-        b_wd    => i_wdata,
+        b_rdata => o_rdata,
+        b_wdata => i_wdata,
         b_we    => i_we,
         clk     => i_clk--,
     );

@@ -54,10 +54,10 @@ begin
     )
     port map (
         a_addr  => rptr(addr_t'range),
-        a_rd    => o_rdata,
+        a_rdata => o_rdata,
         b_addr  => wptr(addr_t'range),
-        b_rd    => open,
-        b_wd    => i_wdata,
+        b_rdata => open,
+        b_wdata => i_wdata,
         b_we    => we,
         clk     => i_wclk--,
     );
