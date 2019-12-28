@@ -12,6 +12,18 @@ set_location_assignment PIN_W36 -to CLK_50_B2J
 set_instance_assignment -name IO_STANDARD "1.8 V" -to CLK_50_B2J
 
 #============================================================
+# LED
+#============================================================
+set_location_assignment PIN_T11 -to LED[0]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to LED[0]
+set_location_assignment PIN_R11 -to LED[1]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to LED[1]
+set_location_assignment PIN_N15 -to LED[2]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to LED[2]
+set_location_assignment PIN_M15 -to LED[3]
+set_instance_assignment -name IO_STANDARD "1.8 V" -to LED[3]
+
+#============================================================
 # FAN
 #============================================================
 set_location_assignment PIN_AL32 -to FAN_ALERT_n

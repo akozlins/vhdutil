@@ -95,6 +95,27 @@ begin
         i2c_sda_in  => i2c_sda_in,
         i2c_sda_oe  => i2c_sda_oe,
 
+        pcie_hip_serial_rx_in0 => PCIE_RX_p(0),
+        pcie_hip_serial_rx_in1 => PCIE_RX_p(1),
+        pcie_hip_serial_rx_in2 => PCIE_RX_p(2),
+        pcie_hip_serial_rx_in3 => PCIE_RX_p(3),
+        pcie_hip_serial_rx_in4 => PCIE_RX_p(4),
+        pcie_hip_serial_rx_in5 => PCIE_RX_p(5),
+        pcie_hip_serial_rx_in6 => PCIE_RX_p(6),
+        pcie_hip_serial_rx_in7 => PCIE_RX_p(7),
+        pcie_hip_serial_tx_out0 => PCIE_TX_p(0),
+        pcie_hip_serial_tx_out1 => PCIE_TX_p(1),
+        pcie_hip_serial_tx_out2 => PCIE_TX_p(2),
+        pcie_hip_serial_tx_out3 => PCIE_TX_p(3),
+        pcie_hip_serial_tx_out4 => PCIE_TX_p(4),
+        pcie_hip_serial_tx_out5 => PCIE_TX_p(5),
+        pcie_hip_serial_tx_out6 => PCIE_TX_p(6),
+        pcie_hip_serial_tx_out7 => PCIE_TX_p(7),
+
+        pcie_npor_npor => PCIE_PERST_n,
+        pcie_npor_pin_perst => PCIE_PERST_n,
+        pcie_refclk_clk => PCIE_REFCLK_p,
+
         rst_reset_n => nios_reset_n,
         clk_clk     => nios_clk--,
     );
@@ -116,32 +137,5 @@ begin
     i2c_sda_in <= FAN_I2C_SDA and
                   '1';
     FAN_I2C_SDA <= ZERO when i2c_sda_oe = '1' else 'Z';
-
-
-
-
-    e_pcie : component work.components.pcie
-    port map (
-        rx_in0 => PCIE_RX_p(0),
-        rx_in1 => PCIE_RX_p(1),
-        rx_in2 => PCIE_RX_p(2),
-        rx_in3 => PCIE_RX_p(3),
-        rx_in4 => PCIE_RX_p(4),
-        rx_in5 => PCIE_RX_p(5),
-        rx_in6 => PCIE_RX_p(6),
-        rx_in7 => PCIE_RX_p(7),
-        tx_out0 => PCIE_TX_p(0),
-        tx_out1 => PCIE_TX_p(1),
-        tx_out2 => PCIE_TX_p(2),
-        tx_out3 => PCIE_TX_p(3),
-        tx_out4 => PCIE_TX_p(4),
-        tx_out5 => PCIE_TX_p(5),
-        tx_out6 => PCIE_TX_p(6),
-        tx_out7 => PCIE_TX_p(7),
-
-        npor => PCIE_PERST_n,
-        pin_perst => PCIE_PERST_n,
-        refclk => PCIE_REFCLK_p--,
-    );
 
 end architecture;
