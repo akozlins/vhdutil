@@ -6,6 +6,8 @@ struct bar_t {
 };
 static struct bar_t bars[6];
 
+#include "chrdev.h"
+
 static
 int probe(struct pci_dev *dev, const struct pci_device_id *id) {
     int err = 0;
@@ -28,6 +30,8 @@ int probe(struct pci_dev *dev, const struct pci_device_id *id) {
     bars[0].base = pci_iomap(pci_dev, 0, pci_resource_len(pci_dev, 0));
     pr_info("[%s] bars[%d].base = %p\n", DEVICE_NAME, 0, bars[0].base);
 
+    chrdev_init();
+
     return 0;
 
 fail:
@@ -37,6 +41,8 @@ fail:
 static
 void remove(struct pci_dev *dev) {
     pr_info("[%s] remove\n", DEVICE_NAME);
+
+    chrdev_fini();
 
     if(bars[0].base) pci_iounmap(pci_dev, bars[0].base);
     pci_release_region(pci_dev, 0);

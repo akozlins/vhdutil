@@ -1,9 +1,11 @@
 
+KERNEL = /lib/modules/`uname -r`/build
+
 obj-m += a10_pcie.o
 a10_pcie-objs := a10_pcie/module.o
 
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	make -C $(KERNEL) M=$(PWD) modules
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	make -C $(KERNEL) M=$(PWD) clean
