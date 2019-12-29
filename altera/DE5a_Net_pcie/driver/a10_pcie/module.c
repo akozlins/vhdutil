@@ -22,8 +22,8 @@ static
 struct pci_driver pci_driver = {
     .name = DEVICE_NAME,
     .id_table = id_table,
-    .probe = probe,
-    .remove = remove,
+    .probe = pcidev_probe,
+    .remove = pcidev_remove,
 };
 
 static
