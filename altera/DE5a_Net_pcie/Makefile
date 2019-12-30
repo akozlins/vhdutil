@@ -21,3 +21,6 @@ top.qsf : top.qip
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:util/pre_flow.tcl"
 	EOF
+
+clean :
+	git clean -Xdf -- .

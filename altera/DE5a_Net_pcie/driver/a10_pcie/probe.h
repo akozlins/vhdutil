@@ -19,11 +19,11 @@ void pcidev_fini(void) {
     for(int i = 0; i < 6; i++) {
         if(bars[i].base == NULL) continue;
         pci_iounmap(pci_dev, bars[i].base);
-        pci_release_region(pci_dev, i);
 
         device_destroy(chrdev.class, MKDEV(chrdev.major, i));
         if(bars[i].cdev.dev) cdev_del(&bars[i].cdev);
     }
+    pci_release_regions(pci_dev);
 
     chrdev_fini();
 
@@ -44,26 +44,34 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         goto fail;
     }
 
-    chrdev_init();
+    err = chrdev_init();
+    if(err) {
+        goto fail;
+    }
+
+    err = pci_request_regions(pci_dev, DEVICE_NAME);
+    if(err) {
+        dev_err(&(pci_dev->dev), "pci_request_regions\n");
+        goto fail;
+    }
 
     for(int i = 0; i < 6; i++) {
-        struct device* device;
+        struct device *device;
 
-        char name[16];
-        sprintf(name, "bar%d", i);
-        err = pci_request_region(pci_dev, i, name);
-        if(err) {
-            dev_err(&(pci_dev->dev), "pci_request_region\n");
-            continue;
-        }
+        // check bar is memory resource
+        if(!(pci_resource_flags(pci_dev, i) & IORESOURCE_MEM)) continue;
 
+        // iomap bars
         bars[i].base = pci_iomap(pci_dev, i, pci_resource_len(pci_dev, i));
         bars[i].len = pci_resource_len(pci_dev, i);
         pr_info("[%s] bars[%d].base = %p\n", DEVICE_NAME, i, bars[i].base);
+        pr_info("[%s] bars[%d].len = %ld\n", DEVICE_NAME, i, bars[i].len);
 
+        // create char device for this bar
         cdev_init(&bars[i].cdev, &fops);
         bars[i].cdev.owner = THIS_MODULE;
 
+        // minor number mapping: 0 -> bar0, 1 -> bar1, etc.
         err = cdev_add(&bars[i].cdev, MKDEV(chrdev.major, i), 1);
         if(err) {
             pr_warn("[%s] cdev_add() failed\n", DEVICE_NAME);

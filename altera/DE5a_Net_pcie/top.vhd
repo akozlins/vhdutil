@@ -95,6 +95,8 @@ begin
         i2c_sda_in  => i2c_sda_in,
         i2c_sda_oe  => i2c_sda_oe,
 
+        pcie_hip_ctrl_test_in => X"00000188", -- see 'UG-01145_avmm / 5.8.4. Test Signals'
+        pcie_hip_ctrl_simu_mode_pipe => '0',
         pcie_hip_serial_rx_in0 => PCIE_RX_p(0),
         pcie_hip_serial_rx_in1 => PCIE_RX_p(1),
         pcie_hip_serial_rx_in2 => PCIE_RX_p(2),
@@ -111,7 +113,6 @@ begin
         pcie_hip_serial_tx_out5 => PCIE_TX_p(5),
         pcie_hip_serial_tx_out6 => PCIE_TX_p(6),
         pcie_hip_serial_tx_out7 => PCIE_TX_p(7),
-
         pcie_npor_npor => PCIE_PERST_n,
         pcie_npor_pin_perst => PCIE_PERST_n,
         pcie_refclk_clk => PCIE_REFCLK_p,
@@ -134,8 +135,9 @@ begin
     FAN_I2C_SCL <= ZERO when i2c_scl_oe = '1' else 'Z';
 
     -- I2C data
-    i2c_sda_in <= FAN_I2C_SDA and
-                  '1';
+    i2c_sda_in <=
+        FAN_I2C_SDA and
+        '1';
     FAN_I2C_SDA <= ZERO when i2c_sda_oe = '1' else 'Z';
 
 end architecture;
