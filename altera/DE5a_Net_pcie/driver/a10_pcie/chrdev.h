@@ -23,11 +23,11 @@ ssize_t chrdev_read(struct file* file, char __user* user_buffer, size_t size, lo
 
     while(n < size && *offset < bar->len) {
         u32 buffer = ioread32(bar->base + *offset);
-        if(copy_to_user(user_buffer + *offset, (void*)&buffer, 4)) {
+        if(copy_to_user(user_buffer + n, (void*)&buffer, 4)) {
             return -EFAULT;
         }
-        n += 4;
         *offset += 4;
+        n += 4;
     }
 
     return n;
