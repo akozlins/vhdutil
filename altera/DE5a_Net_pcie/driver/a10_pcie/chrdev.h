@@ -10,8 +10,10 @@ static struct chrdev_t chrdev;
 
 static
 int chrdev_open(struct inode *inode, struct file *file) {
-    file->private_data = &bars[iminor(inode)];
     pr_info("[%s] chrdev_open(iminor = %d)\n", pci_name(pci_dev), iminor(inode));
+
+    file->private_data = &bars[iminor(inode)];
+
     return 0;
 }
 
@@ -23,7 +25,7 @@ ssize_t chrdev_read(struct file *file, char __user *user_buffer, size_t size, lo
     pr_info("[%s] chrdev_read(size = %ld, offset = %lld)\n", pci_name(pci_dev), size, *offset);
 
     while(n < size && *offset < bar->len) {
-        u32 buffer = ioread32(bar->base + *offset);
+        u32 buffer = ioread32(bar->ptr + *offset);
         if(copy_to_user(user_buffer + n, (void*)&buffer, 4)) {
             return -EFAULT;
         }
@@ -43,8 +45,8 @@ struct file_operations fops = {
 
 static
 void chrdev_fini(void) {
-    if(chrdev.class) class_destroy(chrdev.class);
-    if(chrdev.dev) unregister_chrdev_region(MKDEV(chrdev.major, 0), 1);
+    class_destroy(chrdev.class);
+    if(chrdev.major) unregister_chrdev_region(MKDEV(chrdev.major, 0), 6);
 }
 
 static
@@ -52,17 +54,16 @@ int chrdev_init(void) {
     int err = 0;
 
     err = alloc_chrdev_region(&chrdev.dev, 0, 6, DEVICE_NAME);
-    if(err < 0) {
+    if(err) {
         pr_warn("[%s] alloc_chrdev_region() failed\n", DEVICE_NAME);
-        chrdev.dev = 0;
         goto fail;
     }
     chrdev.major = MAJOR(chrdev.dev);
 
     chrdev.class = class_create(THIS_MODULE, DEVICE_NAME);
     if(IS_ERR(chrdev.class)) {
+        pr_warn("[%s] class_create() failed\n", DEVICE_NAME);
         err = PTR_ERR(chrdev.class);
-        chrdev.class = 0;
         goto fail;
     }
 

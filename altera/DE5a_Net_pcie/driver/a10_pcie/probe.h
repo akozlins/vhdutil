@@ -5,7 +5,7 @@ static struct pci_dev *pci_dev = NULL;
 
 struct bar_t {
     // bar address (iomap)
-    void __iomem *base;
+    void __iomem *ptr;
     size_t len;
     // char device
     struct cdev cdev;
@@ -17,12 +17,13 @@ static struct bar_t bars[6];
 static
 void pcidev_fini(void) {
     for(int i = 0; i < 6; i++) {
-        if(bars[i].base == NULL) continue;
-        pci_iounmap(pci_dev, bars[i].base);
+        if(bars[i].ptr == NULL) continue;
+        pci_iounmap(pci_dev, bars[i].ptr);
 
         device_destroy(chrdev.class, MKDEV(chrdev.major, i));
         if(bars[i].cdev.dev) cdev_del(&bars[i].cdev);
     }
+
     pci_release_regions(pci_dev);
 
     chrdev_fini();
@@ -40,7 +41,7 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
 
     err = pci_enable_device(pci_dev);
     if(err) {
-        dev_err(&(pci_dev->dev), "pci_enable_device\n");
+        dev_err(&pci_dev->dev, "pci_enable_device\n");
         goto fail;
     }
 
@@ -51,7 +52,7 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
 
     err = pci_request_regions(pci_dev, DEVICE_NAME);
     if(err) {
-        dev_err(&(pci_dev->dev), "pci_request_regions\n");
+        dev_err(&pci_dev->dev, "pci_request_regions\n");
         goto fail;
     }
 
@@ -62,9 +63,9 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         if(!(pci_resource_flags(pci_dev, i) & IORESOURCE_MEM)) continue;
 
         // iomap bars
-        bars[i].base = pci_iomap(pci_dev, i, pci_resource_len(pci_dev, i));
+        bars[i].ptr = pci_iomap(pci_dev, i, pci_resource_len(pci_dev, i));
         bars[i].len = pci_resource_len(pci_dev, i);
-        pr_info("[%s] bars[%d].base = %p\n", DEVICE_NAME, i, bars[i].base);
+        pr_info("[%s] bars[%d].ptr = %p\n", DEVICE_NAME, i, bars[i].ptr);
         pr_info("[%s] bars[%d].len = %ld\n", DEVICE_NAME, i, bars[i].len);
 
         // create char device for this bar
@@ -88,7 +89,6 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
     }
 
     return 0;
-
 fail:
     pcidev_fini();
     return err;
