@@ -3,7 +3,7 @@
 source "util/altera_ip.tcl"
 
 add_instance pcie_bridge altera_avalon_mm_clock_crossing_bridge
-add_pcie_a10_hip -name pcie -mode 12 -mm 32
+add_pcie_a10_hip -name pcie -mode 7 -mm 32
 add_instance pcie_ram altera_avalon_onchip_memory2
 add_instance pcie_dma altera_avalon_dma
 

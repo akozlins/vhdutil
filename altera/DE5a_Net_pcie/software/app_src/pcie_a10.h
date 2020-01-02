@@ -21,7 +21,10 @@ struct pcie_a10_t {
 
             printf("\n");
             printf("cfg_busdev = 0x%08X\n", cra[0x3C60/4]);
+            printf("ltssm_reg = 0x%02X\n", cra[0x3C64/4]);
             printf("current_speed_reg = 0x%08X\n", cra[0x3C68/4]);
+            printf("ATT[0] = %08X\n", cra[0x1000/4]);
+            printf("ATT[1] = %08X\n", cra[0x1008/4]);
 
             printf("\n");
             printf("  [p] => print\n");

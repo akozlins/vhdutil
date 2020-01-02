@@ -65,7 +65,7 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         // iomap bars
         bars[i].ptr = pci_iomap(pci_dev, i, pci_resource_len(pci_dev, i));
         bars[i].len = pci_resource_len(pci_dev, i);
-        pr_info("[%s] bars[%d].ptr = %p\n", DEVICE_NAME, i, bars[i].ptr);
+        pr_info("[%s] bars[%d].ptr = %px\n", DEVICE_NAME, i, bars[i].ptr);
         pr_info("[%s] bars[%d].len = %ld\n", DEVICE_NAME, i, bars[i].len);
 
         // create char device for this bar
