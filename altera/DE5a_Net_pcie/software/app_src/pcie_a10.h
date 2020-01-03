@@ -20,6 +20,7 @@ struct pcie_a10_t {
             printf("[%s] -------- menu --------\n", NAME);
 
             printf("\n");
+            printf("Interrupt Status Register = 0x%08X\n", cra[0x3060/4]);
             printf("cfg_busdev = 0x%08X\n", cra[0x3C60/4]);
             printf("ltssm_reg = 0x%02X\n", cra[0x3C64/4]);
             printf("current_speed_reg = 0x%08X\n", cra[0x3C68/4]);
@@ -34,6 +35,8 @@ struct pcie_a10_t {
             switch(cmd) {
             case 'p':
                 break;
+            case 'q':
+                return;
             default:
                 printf("invalid command: '%c'\n", cmd);
             }

@@ -51,7 +51,7 @@ void chrdev_fini(void) {
 
 static
 int chrdev_init(void) {
-    int err = 0;
+    int err;
 
     err = alloc_chrdev_region(&chrdev.dev, 0, 6, DEVICE_NAME);
     if(err) {

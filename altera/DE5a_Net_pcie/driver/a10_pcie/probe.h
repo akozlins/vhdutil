@@ -57,6 +57,7 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
         goto fail;
     }
 
+    // enables bus-mastering
     pci_set_master(pci_dev);
 
     err = chrdev_init();
@@ -118,6 +119,21 @@ int pcidev_probe(struct pci_dev *dev, const struct pci_device_id *id) {
     pr_info("[%s] dma_handle = %px\n", DEVICE_NAME, (void*)dma_addr.dma_handle);
     // set entry 0 of PCIe 'Address Translation Table'
     iowrite32(dma_addr.dma_handle, bars[2].ptr + 0x00010000 + 0x1000);
+
+    // write to DMA registers
+    iowrite32(0x00000000, bars[2].ptr + 0x00020000 + 0x04); // readaddress = RAM
+    iowrite32(0x01000000, bars[2].ptr + 0x00020000 + 0x08); // writeaddress = TXS
+    iowrite32(dma_addr.size, bars[2].ptr + 0x00020000 + 0x0C); // length
+    for(int i = 0; i < 16; i++) {
+        u32 status = ioread32(bars[2].ptr + 0x00020000 + 0x00);
+        pr_info("[%s] DMA.status = %08X\n", DEVICE_NAME, status); // status
+        if((status & 0x02) == 0) break;
+    }
+    dma_sync_single_for_cpu(&pci_dev->dev, dma_addr.dma_handle, dma_addr.size, DMA_FROM_DEVICE);
+    for(int i = 0; i < dma_addr.size; i += 4) {
+        u32 x = *(u32*)(dma_addr.cpu_addr + i);
+        pr_info("[%s] *(cpu_addr + 0x%08X) = 0x%08X\n", DEVICE_NAME, i, x);
+    }
 
     return 0;
 fail:

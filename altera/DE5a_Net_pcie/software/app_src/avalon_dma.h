@@ -26,14 +26,15 @@ struct avalon_dma_t {
     void init(int irq = -1) {
         printf("[%s] init\n", NAME);
 
+        // LEEN | GO | WORD
+//        regs->control = (1 << 7) | (1 << 3) | (1 << 2);
+        regs->control = (1 << 7) | (1 << 3) | (1 << 11);
+
         if(irq >= 0) {
             if(int err = alt_ic_isr_register(0, irq, callback, this, nullptr)) {
                 printf("[%s] ERROR: alt_ic_isr_register => %d\n", NAME, err);
             }
-            // LEEN | I_EN | GO | WORD
-//            regs->control = (1 << 7) | (1 << 4) | (1 << 3) | (1 << 2);
         }
-
     }
 
     void callback() {
@@ -56,16 +57,35 @@ struct avalon_dma_t {
 
             uint32_t status = regs->status;
             printf("\n");
-            printf("status: LEN = %d, WEOP = %d, REOP = %d, BUSY = %d, DONE = %d\n",
+            printf("status = %02X\n", status);
+            printf("  LEN = %d, WEOP = %d, REOP = %d, BUSY = %d, DONE = %d\n",
                 (status >> 4) & 1,
                 (status >> 3) & 1,
                 (status >> 2) & 1,
                 (status >> 1) & 1,
                 (status >> 0) & 1
             );
-            printf("control: %04X\n",
-                regs->control
+            uint32_t control = regs->control;
+            printf("control = %04X\n", control);
+            printf("  wcon = %d, rcon = %d, leen = %d, ween = %d, reen = %d, i_en = %d, go = %d\n",
+                (control >> 9) & 1,
+                (control >> 8) & 1,
+                (control >> 7) & 1,
+                (control >> 6) & 1,
+                (control >> 5) & 1,
+                (control >> 4) & 1,
+                (control >> 3) & 1
             );
+            printf("  QW = %d, DW = %d, W = %d, HW = %d, B = %d\n",
+                (control >> 11) & 1,
+                (control >> 10) & 1,
+                (control >> 2) & 1,
+                (control >> 1) & 1,
+                (control >> 0) & 1
+            );
+            printf("readaddress = %08X\n", regs->readaddress);
+            printf("writeaddress = %08X\n", regs->writeaddress);
+            printf("length = %08X\n", regs->length);
 
             printf("\n");
             printf("  [w] => write\n");
@@ -90,6 +110,8 @@ struct avalon_dma_t {
                 regs->writeaddress = PCIE_RAM_SPAN/2;
                 regs->length = PCIE_RAM_SPAN/2;
                 break;
+            case 'q':
+                return;
             default:
                 printf("invalid command: '%c'\n", cmd);
             }

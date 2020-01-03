@@ -21,11 +21,11 @@ add_connection pcie.app_nreset_status pcie_ram.reset1
 
 # ----------------------------------------------------------------
 # DMA
-set_instance_parameter_value pcie_dma {allowByteTransactions} {0}
-set_instance_parameter_value pcie_dma {allowHalfWordTransactions} {0}
+set_instance_parameter_value pcie_dma {allowQuadWordTransactions} {1}
+set_instance_parameter_value pcie_dma {allowDoubleWordTransactions} {1}
 set_instance_parameter_value pcie_dma {allowWordTransactions} {1}
-set_instance_parameter_value pcie_dma {allowDoubleWordTransactions} {0}
-set_instance_parameter_value pcie_dma {allowQuadWordTransactions} {0}
+set_instance_parameter_value pcie_dma {allowHalfWordTransactions} {0}
+set_instance_parameter_value pcie_dma {allowByteTransactions} {0}
 
 # clock and reset
 add_connection pcie.coreclkout_hip pcie_dma.clk
@@ -64,6 +64,14 @@ set_connection_parameter_value pcie.rxm_bar2/pcie.cra baseAddress {0x00010000}
 add_connection pcie.rxm_bar2 pcie.txs
 set_connection_parameter_value pcie.rxm_bar2/pcie.txs baseAddress {0x01000000}
 
+# bar2 -> dma
+add_connection pcie.rxm_bar2 pcie_dma.control_port_slave
+set_connection_parameter_value pcie.rxm_bar2/pcie_dma.control_port_slave baseAddress {0x00020000}
+
+# dma -> txs
+add_connection pcie_dma.read_master pcie.txs
+add_connection pcie_dma.write_master pcie.txs
+
 
 
 # ----------------------------------------------------------------
@@ -91,4 +99,3 @@ add_connection pcie_bridge.m0 pcie.txs
 
 # bridge -> dma
 add_connection pcie_bridge.m0 pcie_dma.control_port_slave
-set_connection_parameter_value pcie_bridge.m0/pcie_dma.control_port_slave baseAddress {0x00020000}

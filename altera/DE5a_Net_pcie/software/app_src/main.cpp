@@ -21,8 +21,8 @@ int main() {
     base_init();
 
     fan.init();
-
     flash.init();
+    dma.init();
 
     while (1) {
         printf("\n");
