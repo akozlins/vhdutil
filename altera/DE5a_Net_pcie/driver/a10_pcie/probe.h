@@ -26,6 +26,25 @@ static struct a10_pcie a10_pcie;
 #include "chrdev.h"
 
 static
+void irq_ack(void) {
+    iowrite32(0, a10_pcie.bars[2].ptr + 0x00020000 + 0x00); // dma.status = 0
+}
+
+static
+irqreturn_t irq_handler(int irq, void *dev_id) {
+    irq_ack();
+    pr_info("[%s] irq_handler\n", DEVICE_NAME);
+
+    dma_sync_single_for_cpu(&a10_pcie.pci_dev->dev, dma_addr.dma_handle, dma_addr.size, DMA_FROM_DEVICE);
+    for(int i = 0; i < dma_addr.size; i += 4) {
+        u32 x = *(u32*)(dma_addr.cpu_addr + i);
+        pr_info("[%s] *(cpu_addr + 0x%08X) = 0x%08X\n", DEVICE_NAME, i, x);
+    }
+
+    return IRQ_HANDLED;
+}
+
+static
 void pcidev_fini(void) {
     if(a10_pcie.irq >= 0) free_irq(a10_pcie.irq, &a10_pcie.pci_dev->dev);
     pci_free_irq_vectors(a10_pcie.pci_dev);
@@ -127,20 +146,36 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     // set entry 0 of PCIe 'Address Translation Table'
     iowrite32(dma_addr.dma_handle, a10_pcie.bars[2].ptr + 0x00010000 + 0x1000);
 
+
+
+    // setup MSI IRQ
+    err = pci_alloc_irq_vectors(a10_pcie.pci_dev, 1, 1, PCI_IRQ_MSI);
+    if(err < 0) {
+        pr_warn("[%s] pci_alloc_irq_vectors() failed\n", DEVICE_NAME);
+        goto fail;
+    }
+    a10_pcie.irq = pci_irq_vector(a10_pcie.pci_dev, 0);
+    if(a10_pcie.irq < 0) {
+        pr_warn("[%s] pci_irq_vector() failed\n", DEVICE_NAME);
+        goto fail;
+    }
+    err = request_irq(a10_pcie.irq, irq_handler, IRQF_SHARED, DEVICE_NAME "_irq0", &a10_pcie.pci_dev->dev);
+    if(err < 0) {
+        pr_warn("[%s] request_irq() failed\n", DEVICE_NAME);
+        a10_pcie.irq = IRQ_NOTCONNECTED;
+        goto fail;
+    }
+    // dma.control = QWORD | LEEN | I_EN | GO
+    iowrite32((1 << 11) | (1 << 7) | (1 << 4) | (1 << 3), a10_pcie.bars[2].ptr + 0x00020000 + 0x18);
+    // enable MSI interrupt 0
+    iowrite32(0x01, a10_pcie.bars[2].ptr + 0x00010000 + 0x50);
+
+
+
     // write to DMA registers
     iowrite32(0x00000000, a10_pcie.bars[2].ptr + 0x00020000 + 0x04); // readaddress = RAM
     iowrite32(0x01000000, a10_pcie.bars[2].ptr + 0x00020000 + 0x08); // writeaddress = TXS
     iowrite32(dma_addr.size, a10_pcie.bars[2].ptr + 0x00020000 + 0x0C); // length
-    for(int i = 0; i < 16; i++) {
-        u32 status = ioread32(a10_pcie.bars[2].ptr + 0x00020000 + 0x00);
-        pr_info("[%s] DMA.status = %08X\n", DEVICE_NAME, status); // status
-        if((status & 0x02) == 0) break;
-    }
-    dma_sync_single_for_cpu(&a10_pcie.pci_dev->dev, dma_addr.dma_handle, dma_addr.size, DMA_FROM_DEVICE);
-    for(int i = 0; i < dma_addr.size; i += 4) {
-        u32 x = *(u32*)(dma_addr.cpu_addr + i);
-        pr_info("[%s] *(cpu_addr + 0x%08X) = 0x%08X\n", DEVICE_NAME, i, x);
-    }
 
 
 

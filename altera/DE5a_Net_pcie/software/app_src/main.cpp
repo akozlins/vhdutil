@@ -22,7 +22,7 @@ int main() {
 
     fan.init();
     flash.init();
-    dma.init();
+//    dma.init();
 
     while (1) {
         printf("\n");

@@ -31,9 +31,9 @@ set_instance_parameter_value pcie_dma {allowByteTransactions} {0}
 add_connection pcie.coreclkout_hip pcie_dma.clk
 add_connection pcie.app_nreset_status pcie_dma.reset
 
-# irq
-add_connection cpu.irq pcie_dma.irq
-set_connection_parameter_value cpu.irq/pcie_dma.irq irqNumber 13
+# cpu.irq <- dma.irq
+#add_connection cpu.irq pcie_dma.irq
+#set_connection_parameter_value cpu.irq/pcie_dma.irq irqNumber 13
 
 # dma -> ram
 add_connection pcie_dma.read_master pcie_ram.s1
@@ -71,6 +71,10 @@ set_connection_parameter_value pcie.rxm_bar2/pcie_dma.control_port_slave baseAdd
 # dma -> txs
 add_connection pcie_dma.read_master pcie.txs
 add_connection pcie_dma.write_master pcie.txs
+
+# pcie.irq <- dma.irq
+add_connection pcie.rxm_irq pcie_dma.irq
+set_connection_parameter_value pcie.rxm_irq/pcie_dma.irq irqNumber 0
 
 
 
