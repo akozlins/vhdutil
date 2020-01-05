@@ -10,9 +10,9 @@ static struct chrdev_t chrdev;
 
 static
 int chrdev_open(struct inode *inode, struct file *file) {
-    pr_info("[%s] chrdev_open(iminor = %d)\n", pci_name(pci_dev), iminor(inode));
+    pr_info("[%s] chrdev_open(iminor = %d)\n", pci_name(a10_pcie.pci_dev), iminor(inode));
 
-    file->private_data = &bars[iminor(inode)];
+    file->private_data = &a10_pcie.bars[iminor(inode)];
 
     return 0;
 }
@@ -22,7 +22,7 @@ ssize_t chrdev_read(struct file *file, char __user *user_buffer, size_t size, lo
     ssize_t n = 0;
     struct bar_t *bar = file->private_data;
 
-    pr_info("[%s] chrdev_read(size = %ld, offset = %lld)\n", pci_name(pci_dev), size, *offset);
+    pr_info("[%s] chrdev_read(size = %ld, offset = %lld)\n", pci_name(a10_pcie.pci_dev), size, *offset);
 
     while(n < size && *offset < bar->len) {
         u32 buffer = ioread32(bar->ptr + *offset);
