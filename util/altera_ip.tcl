@@ -67,6 +67,10 @@ proc add_pcie_a10_hip { args } {
     set_instance_parameter_value ${name} {subsystem_vendor_id_hwtcl} ${vendor_id}
     set_instance_parameter_value ${name} {subsystem_device_id_hwtcl} ${device_id}
 
+    set_instance_parameter_value ${name} {maximum_payload_size_hwtcl} {128}
+    set_instance_parameter_value ${name} {completion_timeout_hwtcl} {ABCD}
+    set_instance_parameter_value ${name} {advance_error_reporting_hwtcl} {1}
+
     if { $auto_export } {
         set_instance_property ${name} AUTO_EXPORT {true}
     }

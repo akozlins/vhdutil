@@ -26,9 +26,10 @@ struct avalon_dma_t {
     void init(int irq = -1) {
         printf("[%s] init\n", NAME);
 
-        // LEEN | GO | WORD
-//        regs->control = (1 << 7) | (1 << 3) | (1 << 2);
-        regs->control = (1 << 7) | (1 << 3) | (1 << 11);
+        regs->control =
+//            (1 << 2) | // WORD
+            (1 << 11) | // QWORD
+            (1 << 7) | (1 << 3); // LEEN | GO
 
         if(irq >= 0) {
             if(int err = alt_ic_isr_register(0, irq, callback, this, nullptr)) {
@@ -39,7 +40,7 @@ struct avalon_dma_t {
 
     void callback() {
         printf("[%s] callback\n", NAME);
-        // acknowledge the IRQ
+        // acknowledge IRQ
         regs->status = 0;
     }
 
@@ -67,7 +68,7 @@ struct avalon_dma_t {
             );
             uint32_t control = regs->control;
             printf("control = %04X\n", control);
-            printf("  wcon = %d, rcon = %d, leen = %d, ween = %d, reen = %d, i_en = %d, go = %d\n",
+            printf("  WCON = %d, RCON = %d, LEEN = %d, WEEN = %d, REEN = %d, I_EN = %d, GO = %d\n",
                 (control >> 9) & 1,
                 (control >> 8) & 1,
                 (control >> 7) & 1,
@@ -88,6 +89,7 @@ struct avalon_dma_t {
             printf("length = %08X\n", regs->length);
 
             printf("\n");
+            printf("  [I] => init");
             printf("  [w] => write\n");
             printf("  [p] => print\n");
             printf("  [d] => dma\n");
@@ -95,6 +97,9 @@ struct avalon_dma_t {
             printf("Select entry ...\n");
             char cmd = wait_key();
             switch(cmd) {
+            case 'I':
+                init();
+                break;
             case 'w':
                 for(int i = 0; i < PCIE_RAM_SPAN/4; i++) ram_base[i] = i;
                 break;

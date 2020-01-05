@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity top is
 port (
-    LED             : out   std_logic_vector(3 downto 0);
+    o_led_n         : out   std_logic_vector(3 downto 0);
 
     FLASH_A         : out   std_logic_vector(26 downto 1);
     FLASH_D         : inout std_logic_vector(31 downto 0);
@@ -30,6 +30,8 @@ end entity;
 
 architecture arch of top is
 
+    signal led : std_logic_vector(o_led_n'range) := (others => '0');
+
     -- https://www.altera.com/support/support-resources/knowledge-base/solutions/rd01262015_264.html
     signal ZERO : std_logic := '0';
     attribute keep : boolean;
@@ -48,23 +50,25 @@ architecture arch of top is
 
 begin
 
+    o_led_n <= not led;
+
     nios_clk <= CLK_50_B2J;
 
     -- 50 MHz
     e_nios_clk_hz : entity work.clkdiv
     generic map ( P => 50000000 )
-    port map ( o_clk => LED(0), i_reset_n => CPU_RESET_n, i_clk => nios_clk );
+    port map ( o_clk => led(0), i_reset_n => CPU_RESET_n, i_clk => nios_clk );
 
     -- 100 MHz
     e_pcie_clk_hz : entity work.clkdiv
     generic map ( P => 100000000 )
-    port map ( o_clk => LED(3), i_reset_n => CPU_RESET_n, i_clk => PCIE_REFCLK_p );
+    port map ( o_clk => led(3), i_reset_n => CPU_RESET_n, i_clk => PCIE_REFCLK_p );
 
     -- generate reset sequence for flash and nios
     e_debouncer : entity work.debouncer
     generic map (
         W => 2,
-        N => 50 * 10**5 -- 100ms
+        N => integer(50e6 * 0.200) -- 200ms
     )
     port map (
         i_d(0) => '1',
@@ -73,12 +77,12 @@ begin
         i_d(1) => flash_rst_n,
         o_q(1) => nios_reset_n,
 
-        i_reset_n => CPU_RESET_n,
+        i_reset_n => CPU_RESET_n and PCIE_PERST_n,
         i_clk => nios_clk--,
     );
 
-    LED(1) <= not flash_rst_n;
-    LED(2) <= not nios_reset_n;
+    led(1) <= flash_rst_n;
+    led(2) <= nios_reset_n;
 
 
 

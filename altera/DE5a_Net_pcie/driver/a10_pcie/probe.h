@@ -1,6 +1,8 @@
 
 #include <linux/cdev.h>
 
+#include <linux/aer.h>
+
 struct bar_t {
     // bar address (iomap)
     void __iomem *ptr;
@@ -81,6 +83,13 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     if(err) {
         dev_err(&a10_pcie.pci_dev->dev, "pci_enable_device\n");
         goto fail;
+    }
+
+    // enable AER
+    err = pci_enable_pcie_error_reporting(a10_pcie.pci_dev);
+    if(err) {
+        dev_err(&a10_pcie.pci_dev->dev, "pci_enable_pcie_error_reporting\n");
+//        goto fail;
     }
 
     // enables bus-mastering
