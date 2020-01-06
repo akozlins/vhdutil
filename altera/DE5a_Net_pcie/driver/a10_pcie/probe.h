@@ -21,6 +21,8 @@ struct my_dma_addr_t dma_addr;
 struct a10_pcie {
     struct pci_dev *pci_dev;
     struct bar_t bars[6];
+    void __iomem *mm_cra;
+    void __iomem *mm_dma;
     int irq;
 };
 static struct a10_pcie a10_pcie;
@@ -29,7 +31,7 @@ static struct a10_pcie a10_pcie;
 
 static
 void irq_ack(void) {
-    iowrite32(0, a10_pcie.bars[2].ptr + 0x00020000 + 0x00); // dma.status = 0
+    iowrite32(0, a10_pcie.mm_dma + 0x00); // dma.status = 0
 }
 
 static
@@ -48,6 +50,8 @@ irqreturn_t irq_handler(int irq, void *dev_id) {
 
 static
 void pcidev_fini(void) {
+    // disable DMA controller
+    iowrite32(0, a10_pcie.mm_dma + 0x18);
     if(a10_pcie.irq >= 0) free_irq(a10_pcie.irq, &a10_pcie.pci_dev->dev);
     pci_free_irq_vectors(a10_pcie.pci_dev);
 
@@ -63,9 +67,9 @@ void pcidev_fini(void) {
         if(a10_pcie.bars[i].cdev.dev) cdev_del(&a10_pcie.bars[i].cdev);
     }
 
-    pci_release_regions(a10_pcie.pci_dev);
-
     chrdev_fini();
+
+    pci_release_regions(a10_pcie.pci_dev);
 
     pci_clear_master(a10_pcie.pci_dev);
     pci_disable_device(a10_pcie.pci_dev);
@@ -92,8 +96,14 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
 //        goto fail;
     }
 
-    // enables bus-mastering
+    // set bus master bit in PCI_COMMAND register
+    // (enable device to act as master on the address bus)
     pci_set_master(a10_pcie.pci_dev);
+    if(0) {
+        u16 cmd;
+        pci_read_config_word(a10_pcie.pci_dev, PCI_COMMAND, &cmd);
+        pr_info("[%s] PCI_COMMAND = %04X\n", DEVICE_NAME, cmd);
+    }
 
     err = chrdev_init();
     if(err) {
@@ -137,6 +147,8 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
             goto fail;
         }
     }
+    a10_pcie.mm_cra = a10_pcie.bars[2].ptr + 0x00010000;
+    a10_pcie.mm_dma = a10_pcie.bars[2].ptr + 0x00020000;
 
     err = dma_set_mask_and_coherent(&a10_pcie.pci_dev->dev, DMA_BIT_MASK(32));
     if(err) {
@@ -144,6 +156,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
         goto fail;
     }
 
+    // allocate DMA buffer
     dma_addr.size = 4096;
     dma_addr.cpu_addr = dma_alloc_coherent(&a10_pcie.pci_dev->dev, dma_addr.size, &dma_addr.dma_handle, 0);
     if(dma_addr.cpu_addr == NULL) {
@@ -153,7 +166,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     pr_info("[%s] cpu_addr = %px\n", DEVICE_NAME, dma_addr.cpu_addr);
     pr_info("[%s] dma_handle = %px\n", DEVICE_NAME, (void*)dma_addr.dma_handle);
     // set entry 0 of PCIe 'Address Translation Table'
-    iowrite32(dma_addr.dma_handle, a10_pcie.bars[2].ptr + 0x00010000 + 0x1000);
+    iowrite32(dma_addr.dma_handle, a10_pcie.mm_cra + 0x1000);
 
 
 
@@ -174,17 +187,18 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
         a10_pcie.irq = IRQ_NOTCONNECTED;
         goto fail;
     }
+    // TODO : check DMA status
     // dma.control = QWORD | LEEN | I_EN | GO
-    iowrite32((1 << 11) | (1 << 7) | (1 << 4) | (1 << 3), a10_pcie.bars[2].ptr + 0x00020000 + 0x18);
+    iowrite32((1 << 11) | (1 << 7) | (1 << 4) | (1 << 3), a10_pcie.mm_dma + 0x18);
     // enable MSI interrupt 0
-    iowrite32(0x01, a10_pcie.bars[2].ptr + 0x00010000 + 0x50);
+    iowrite32(0x01, a10_pcie.mm_cra + 0x50);
 
 
 
-    // write to DMA registers
-    iowrite32(0x00000000, a10_pcie.bars[2].ptr + 0x00020000 + 0x04); // readaddress = RAM
-    iowrite32(0x01000000, a10_pcie.bars[2].ptr + 0x00020000 + 0x08); // writeaddress = TXS
-    iowrite32(dma_addr.size, a10_pcie.bars[2].ptr + 0x00020000 + 0x0C); // length
+    // start DMA
+    iowrite32(0x00000000, a10_pcie.mm_dma + 0x04); // readaddress = RAM
+    iowrite32(0x01000000, a10_pcie.mm_dma + 0x08); // writeaddress = TXS
+    iowrite32(dma_addr.size, a10_pcie.mm_dma + 0x0C); // length
 
 
 

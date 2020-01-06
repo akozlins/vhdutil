@@ -53,6 +53,7 @@ static
 int chrdev_init(void) {
     int err;
 
+    // allocate char device (get major number and reserve range of minor numbers)
     err = alloc_chrdev_region(&chrdev.dev, 0, 6, DEVICE_NAME);
     if(err) {
         pr_warn("[%s] alloc_chrdev_region() failed\n", DEVICE_NAME);
@@ -60,6 +61,7 @@ int chrdev_init(void) {
     }
     chrdev.major = MAJOR(chrdev.dev);
 
+    // create struct class pointer that is used by device_create()
     chrdev.class = class_create(THIS_MODULE, DEVICE_NAME);
     if(IS_ERR(chrdev.class)) {
         pr_warn("[%s] class_create() failed\n", DEVICE_NAME);
