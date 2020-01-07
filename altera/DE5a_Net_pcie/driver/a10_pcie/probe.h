@@ -11,18 +11,18 @@ struct bar_t {
     struct cdev cdev;
 };
 
-struct my_dma_addr_t {
+struct dma_page {
     size_t size;
     void *cpu_addr;
-    dma_addr_t dma_handle;
+    dma_addr_t dma_addr;
 };
-struct my_dma_addr_t dma_addr;
 
 struct a10_pcie {
     struct pci_dev *pci_dev;
     struct bar_t bars[6];
     void __iomem *mm_cra;
     void __iomem *mm_dma;
+    struct dma_page dma_page;
     int irq;
 };
 static struct a10_pcie a10_pcie;
@@ -39,10 +39,14 @@ irqreturn_t irq_handler(int irq, void *dev_id) {
     irq_ack();
     pr_info("[%s] irq_handler\n", DEVICE_NAME);
 
-    dma_sync_single_for_cpu(&a10_pcie.pci_dev->dev, dma_addr.dma_handle, dma_addr.size, DMA_FROM_DEVICE);
-    for(int i = 0; i < dma_addr.size; i += 4) {
-        u32 x = *(u32*)(dma_addr.cpu_addr + i);
-        pr_info("[%s] *(cpu_addr + 0x%08X) = 0x%08X\n", DEVICE_NAME, i, x);
+    dma_sync_single_for_cpu(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.dma_addr, a10_pcie.dma_page.size, DMA_FROM_DEVICE);
+    for(int i = 0; i < a10_pcie.dma_page.size;) {
+        pr_info("[%s] %04X:", DEVICE_NAME, i);
+        for(int j = 0; j < 8 && i < a10_pcie.dma_page.size; j++, i += 4) {
+            u32 x = *(u32*)(a10_pcie.dma_page.cpu_addr + i);
+            pr_cont(" %08X", x);
+        }
+        pr_cont("\n");
     }
 
     return IRQ_HANDLED;
@@ -55,8 +59,8 @@ void pcidev_fini(void) {
     if(a10_pcie.irq >= 0) free_irq(a10_pcie.irq, &a10_pcie.pci_dev->dev);
     pci_free_irq_vectors(a10_pcie.pci_dev);
 
-    if(dma_addr.cpu_addr != NULL) {
-        dma_free_coherent(&a10_pcie.pci_dev->dev, dma_addr.size, dma_addr.cpu_addr, dma_addr.dma_handle);
+    if(a10_pcie.dma_page.cpu_addr != NULL) {
+        dma_free_coherent(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.size, a10_pcie.dma_page.cpu_addr, a10_pcie.dma_page.dma_addr);
     }
 
     for(int i = 0; i < 6; i++) {
@@ -157,16 +161,16 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     }
 
     // allocate DMA buffer
-    dma_addr.size = 4096;
-    dma_addr.cpu_addr = dma_alloc_coherent(&a10_pcie.pci_dev->dev, dma_addr.size, &dma_addr.dma_handle, 0);
-    if(dma_addr.cpu_addr == NULL) {
+    a10_pcie.dma_page.size = 4096;
+    a10_pcie.dma_page.cpu_addr = dma_alloc_coherent(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.size, &a10_pcie.dma_page.dma_addr, 0);
+    if(a10_pcie.dma_page.cpu_addr == NULL) {
         pr_warn("[%s] dma_alloc_coherent() failed\n", DEVICE_NAME);
         goto fail;
     }
-    pr_info("[%s] cpu_addr = %px\n", DEVICE_NAME, dma_addr.cpu_addr);
-    pr_info("[%s] dma_handle = %px\n", DEVICE_NAME, (void*)dma_addr.dma_handle);
+    pr_info("[%s] cpu_addr = %px\n", DEVICE_NAME, a10_pcie.dma_page.cpu_addr);
+    pr_info("[%s] dma_addr = %px\n", DEVICE_NAME, (void*)a10_pcie.dma_page.dma_addr);
     // set entry 0 of PCIe 'Address Translation Table'
-    iowrite32(dma_addr.dma_handle, a10_pcie.mm_cra + 0x1000);
+    iowrite32(a10_pcie.dma_page.dma_addr, a10_pcie.mm_cra + 0x1000);
 
 
 
@@ -198,7 +202,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     // start DMA
     iowrite32(0x00000000, a10_pcie.mm_dma + 0x04); // readaddress = RAM
     iowrite32(0x01000000, a10_pcie.mm_dma + 0x08); // writeaddress = TXS
-    iowrite32(dma_addr.size, a10_pcie.mm_dma + 0x0C); // length
+    iowrite32(a10_pcie.dma_page.size, a10_pcie.mm_dma + 0x0C); // length
 
 
 
