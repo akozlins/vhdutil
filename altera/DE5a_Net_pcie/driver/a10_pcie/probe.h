@@ -31,7 +31,8 @@ static struct a10_pcie a10_pcie;
 
 static
 void irq_ack(void) {
-    iowrite32(0, a10_pcie.mm_dma + 0x00); // dma.status = 0
+    iowrite32(0x00, a10_pcie.mm_dma + 0x00); // dma.status = 0
+    ioread32(a10_pcie.mm_dma + 0x00); // sync
 }
 
 static
@@ -54,11 +55,16 @@ irqreturn_t irq_handler(int irq, void *dev_id) {
 
 static
 void pcidev_fini(void) {
-    // disable DMA controller
-    iowrite32(0, a10_pcie.mm_dma + 0x18);
+    // disable MSI
+    iowrite32(0x00, a10_pcie.mm_cra + 0x50);
+    // disable DMA irq
+    iowrite32(0x00, a10_pcie.mm_dma + 0x18);
+    ioread32(a10_pcie.mm_dma + 0x18); // sync
+    // free irq
     if(a10_pcie.irq >= 0) free_irq(a10_pcie.irq, &a10_pcie.pci_dev->dev);
     pci_free_irq_vectors(a10_pcie.pci_dev);
 
+    // free DMA buffer
     if(a10_pcie.dma_page.cpu_addr != NULL) {
         dma_free_coherent(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.size, a10_pcie.dma_page.cpu_addr, a10_pcie.dma_page.dma_addr);
     }
@@ -160,7 +166,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
         goto fail;
     }
 
-    // allocate DMA buffer
+    // alloc DMA buffer
     a10_pcie.dma_page.size = 4096;
     a10_pcie.dma_page.cpu_addr = dma_alloc_coherent(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.size, &a10_pcie.dma_page.dma_addr, 0);
     if(a10_pcie.dma_page.cpu_addr == NULL) {
@@ -174,7 +180,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
 
 
 
-    // setup MSI IRQ
+    // alloc irq
     err = pci_alloc_irq_vectors(a10_pcie.pci_dev, 1, 1, PCI_IRQ_MSI);
     if(err < 0) {
         pr_warn("[%s] pci_alloc_irq_vectors() failed\n", DEVICE_NAME);
@@ -193,6 +199,9 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     }
     // TODO : check DMA status
     // dma.control = QWORD | LEEN | I_EN | GO
+    iowrite32((1 << 11) | (1 << 7) | (1 << 3), a10_pcie.mm_dma + 0x18);
+    irq_ack();
+    // enable DMA irq
     iowrite32((1 << 11) | (1 << 7) | (1 << 4) | (1 << 3), a10_pcie.mm_dma + 0x18);
     // enable MSI interrupt 0
     iowrite32(0x01, a10_pcie.mm_cra + 0x50);

@@ -59,7 +59,7 @@ struct avalon_dma_t {
 
             uint32_t status = regs->status;
             printf("\n");
-            printf("status = %02X\n", status);
+            printf("status = 0x%02X\n", status);
             printf("  LEN = %d, WEOP = %d, REOP = %d, BUSY = %d, DONE = %d\n",
                 (status >> 4) & 1,
                 (status >> 3) & 1,
@@ -68,7 +68,7 @@ struct avalon_dma_t {
                 (status >> 0) & 1
             );
             uint32_t control = regs->control;
-            printf("control = %04X\n", control);
+            printf("control = 0x%04X\n", control);
             printf("  WCON = %d, RCON = %d, LEEN = %d, WEEN = %d, REEN = %d, I_EN = %d, GO = %d\n",
                 (control >> 9) & 1,
                 (control >> 8) & 1,
@@ -90,7 +90,7 @@ struct avalon_dma_t {
             printf("length = %08X\n", regs->length);
 
             printf("\n");
-            printf("  [I] => init");
+            printf("  [I] => init\n");
             printf("  [w] => write\n");
             printf("  [p] => print\n");
             printf("  [d] => dma\n");
