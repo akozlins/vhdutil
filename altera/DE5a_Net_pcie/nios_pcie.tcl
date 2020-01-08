@@ -11,7 +11,8 @@ add_instance pcie_dma altera_avalon_dma
 
 # ----------------------------------------------------------------
 # RAM
-set_instance_parameter_value pcie_ram {memorySize} {0x00001000}
+set_instance_parameter_value pcie_ram {memorySize} {0x00002000}
+set_instance_parameter_value pcie_ram {dataWidth} {128}
 
 # clock and reset
 add_connection pcie.coreclkout_hip pcie_ram.clk1
@@ -21,6 +22,9 @@ add_connection pcie.app_nreset_status pcie_ram.reset1
 
 # ----------------------------------------------------------------
 # DMA
+set_instance_parameter_value pcie_dma {burstEnable} {1}
+set_instance_parameter_value pcie_dma {maxBurstSize} {256}
+
 set_instance_parameter_value pcie_dma {allowQuadWordTransactions} {1}
 set_instance_parameter_value pcie_dma {allowDoubleWordTransactions} {1}
 set_instance_parameter_value pcie_dma {allowWordTransactions} {1}
@@ -44,6 +48,8 @@ add_connection pcie_dma.write_master pcie_ram.s1
 # ----------------------------------------------------------------
 # PCIe
 set_instance_parameter_value pcie {bar2_type_hwtcl} {32-bit non-prefetchable memory}
+set_instance_parameter_value pcie {cg_a2p_addr_map_num_entries_hwtcl} {2}
+set_instance_parameter_value pcie {cg_a2p_addr_map_pass_thru_bits_hwtcl} {12}
 
 add_interface pcie_hip_ctrl conduit end
 set_interface_property pcie_hip_ctrl EXPORT_OF pcie.hip_ctrl
