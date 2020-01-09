@@ -1,6 +1,6 @@
 #
 
-set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "../DE5a_Net/assignments.tcl"
+set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "../base/assignments.tcl"
 set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "assignments.tcl"
 
 set_global_assignment -name VHDL_FILE top.vhd
