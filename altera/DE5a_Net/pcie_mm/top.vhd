@@ -44,8 +44,7 @@ architecture arch of top is
 
     signal nios_clk : std_logic;
     signal nios_reset_n : std_logic;
-    signal flash_rst_n : std_logic;
-
+    signal flash_reset_n_i : std_logic;
     signal flash_ce_n_i : std_logic;
 
 begin
@@ -59,10 +58,15 @@ begin
     generic map ( P => 50000000 )
     port map ( o_clk => led(0), i_reset_n => CPU_RESET_n, i_clk => nios_clk );
 
+    led(1) <= flash_reset_n_i;
+    led(2) <= nios_reset_n;
+
     -- 100 MHz
     e_pcie_clk_hz : entity work.clkdiv
     generic map ( P => 100000000 )
     port map ( o_clk => led(3), i_reset_n => CPU_RESET_n, i_clk => PCIE_REFCLK_p );
+
+
 
     -- generate reset sequence for flash and nios
     e_debouncer : entity work.debouncer
@@ -72,19 +76,14 @@ begin
     )
     port map (
         i_d(0) => '1',
-        o_q(0) => flash_rst_n,
+        o_q(0) => flash_reset_n_i,
 
-        i_d(1) => flash_rst_n,
+        i_d(1) => flash_reset_n_i,
         o_q(1) => nios_reset_n,
 
-        i_reset_n => CPU_RESET_n and PCIE_PERST_n,
+        i_reset_n => CPU_RESET_n,
         i_clk => nios_clk--,
     );
-
-    led(1) <= flash_rst_n;
-    led(2) <= nios_reset_n;
-
-
 
     e_nios : component work.components.nios
     port map (
@@ -125,14 +124,11 @@ begin
         clk_clk     => nios_clk--,
     );
 
-
-
+    -- flash
     FLASH_CE_n <= (flash_ce_n_i, flash_ce_n_i);
     FLASH_ADV_n <= '0';
     FLASH_CLK <= '0';
-    FLASH_RESET_n <= flash_rst_n;
-
-
+    FLASH_RESET_n <= flash_reset_n_i;
 
     -- I2C clock
     i2c_scl_in <= not i2c_scl_oe;
