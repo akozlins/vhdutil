@@ -47,6 +47,32 @@ architecture arch of top is
     signal flash_reset_n_i : std_logic;
     signal flash_ce_n_i : std_logic;
 
+    type avalon_t is record
+        address         :   std_logic_vector(31 downto 0);
+        read            :   std_logic;
+        readdata        :   std_logic_vector(31 downto 0);
+        write           :   std_logic;
+        writedata       :   std_logic_vector(31 downto 0);
+        waitrequest     :   std_logic;
+        readdatavalid   :   std_logic;
+    end record;
+    signal av_test : avalon_t;
+
+    type st_t is record
+        data            :   std_logic_vector(255 downto 0);
+        sop             :   std_logic;
+        eop             :   std_logic;
+        empty           :   std_logic_vector(1 downto 0);
+        ready           :   std_logic;
+        valid           :   std_logic;
+        err             :   std_logic;
+    end record;
+    signal rx, tx : st_t;
+    signal rx_bar : std_logic_vector(7 downto 0);
+    signal rx_data : std_logic_vector(255 downto 0);
+
+    signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
+
 begin
 
     o_led_n <= not led;
@@ -87,6 +113,15 @@ begin
 
     e_nios : component work.components.nios
     port map (
+        clk_pcie_reset_reset_n  => pld_clk_inuse,
+        clk_pcie_clock_clk      => coreclkout_hip,
+        avm_test_address        => av_test.address(7 downto 0),
+        avm_test_read           => av_test.read,
+        avm_test_readdata       => av_test.readdata,
+        avm_test_write          => av_test.write,
+        avm_test_writedata      => av_test.writedata,
+        avm_test_waitrequest    => av_test.waitrequest,
+
         flash_tcm_address_out(27 downto 2) => FLASH_A,
         flash_tcm_data_out => FLASH_D,
         flash_tcm_read_n_out(0) => FLASH_OE_n,
@@ -120,6 +155,72 @@ begin
 
     e_pcie : component work.components.pcie
     port map (
+        -- RX Port
+        rx_st_data          => rx.data,
+        rx_st_sop(0)        => rx.sop,
+        rx_st_eop(0)        => rx.eop,
+        rx_st_empty         => rx.empty,
+        rx_st_ready         => rx.ready,
+        rx_st_valid(0)      => rx.valid,
+        rx_st_err(0)        => rx.err,
+
+        rx_st_mask          => '0',
+        rx_st_bar           => rx_bar,
+
+        -- TX Port
+        tx_st_data          => tx.data,
+        tx_st_sop(0)        => tx.sop,
+        tx_st_eop(0)        => tx.eop,
+        tx_st_empty         => tx.empty,
+        tx_st_ready         => tx.ready,
+        tx_st_valid(0)      => tx.valid,
+        tx_st_err(0)        => tx.err,
+
+        -- TX credit
+--        tx_cred_fc_sel      =>
+--        tx_cred_hdr_fc      =>
+--        tx_cred_data_fc     =>
+--        tx_cred_fc_hip_cons =>
+--        tx_cred_fc_infinite =>
+        ko_cpl_spc_header   => open,
+        ko_cpl_spc_data     => open,
+
+        -- Completion Interface
+        cpl_err             => (others => '0'),
+        cpl_pending         => '0',
+
+        -- Transaction Layer Configuration
+        tl_cfg_add          => open,
+        tl_cfg_ctl          => open,
+        tl_cfg_sts          => open,
+        hpg_ctrler          => (others => '0'),
+
+        -- Interrupt for Endpoints
+        app_msi_req         => '0',
+        app_msi_ack         => open,
+        app_msi_tc          => (others => '0'),
+        app_msi_num         => (others => '0'),
+        app_int_sts         => '0',
+        app_int_ack         => open,
+
+        -- Power Management
+        pme_to_cr           => '0',
+        pme_to_sr           => open,
+        pm_event            => '0',
+        pm_data             => (others => '0'),
+        pm_auxpwr           => '0',
+
+        -- Data Link and Transaction Layers clock (output)
+        coreclkout_hip      => coreclkout_hip,
+        -- Application Layer clock (input)
+        pld_clk             => coreclkout_hip,
+        -- PLL that generates coreclkout_hip is locked (output)
+        serdes_pll_locked   => serdes_pll_locked,
+        -- pld_clk is stable (input)
+        pld_core_ready      => serdes_pll_locked,
+        -- Hard IP Transaction Layer is ready (output)
+        pld_clk_inuse       => pld_clk_inuse,
+
         test_in => X"00000188", -- see 'UG-01145_avmm / 5.8.4. Test Signals'
         simu_mode_pipe => '0',
         rx_in0 => PCIE_RX_p(0),
@@ -142,5 +243,30 @@ begin
         pin_perst => PCIE_PERST_n,
         refclk => PCIE_REFCLK_p--,
     );
+
+    process(coreclkout_hip, pld_clk_inuse)
+    begin
+    if ( pld_clk_inuse = '0' ) then
+        rx.ready <= '0';
+        av_test.waitrequest <= '1';
+        --
+    elsif rising_edge(coreclkout_hip) then
+        rx.ready <= '1';
+        if ( rx.sop = '1' ) then
+            rx_data <= rx.data;
+        end if;
+
+        av_test.waitrequest <= '0';
+        if ( av_test.read = '1' ) then
+            av_test.readdata <= rx_data(
+                32*to_integer(unsigned(av_test.address(2 downto 0)))
+                + 31 downto 0 +
+                32*to_integer(unsigned(av_test.address(2 downto 0)))
+            );
+        end if;
+
+        --
+    end if;
+    end process;
 
 end architecture;

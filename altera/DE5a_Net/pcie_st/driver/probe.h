@@ -147,6 +147,11 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
 
 
 
+    // test write
+    iowrite32(0xDEADBEEF, pcie_device.bars[0].ptr);
+
+
+
     return 0;
 fail:
     pcidev_fini();

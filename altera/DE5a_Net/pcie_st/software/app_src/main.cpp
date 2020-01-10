@@ -21,6 +21,7 @@ int main() {
         printf("\n");
         printf("  [0] => flash\n");
         printf("  [1] => fan\n");
+        printf("  [3] => pcie\n");
 
         printf("Select entry ...\n");
         char cmd = wait_key();
@@ -30,6 +31,11 @@ int main() {
             break;
         case '1':
             fan.menu();
+            break;
+        case '3':
+            for(int i = 0; i < 8; i++) {
+                printf("[pcie] rx_data[%d] = 0x%08X\n", i, ((uint32_t*)AVM_TEST_BASE)[i]);
+            }
             break;
         default:
             printf("invalid command: '%c'\n", cmd);
