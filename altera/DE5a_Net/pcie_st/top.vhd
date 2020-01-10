@@ -47,6 +47,13 @@ architecture arch of top is
     signal flash_reset_n_i : std_logic;
     signal flash_ce_n_i : std_logic;
 
+    subtype slv32_t is std_logic_vector(31 downto 0);
+    type slv32_array_t is array (natural range <>) of slv32_t;
+    signal tl_cfg_add : std_logic_vector(3 downto 0);
+    signal tl_cfg_add0_q : std_logic_vector(3 downto 0);
+    signal tl_cfg_ctl : slv32_t;
+    signal tl_cfg : slv32_array_t(0 to 2**tl_cfg_add'length-1);
+
     type avalon_t is record
         address         :   std_logic_vector(31 downto 0);
         read            :   std_logic;
@@ -69,9 +76,13 @@ architecture arch of top is
     end record;
     signal rx, tx : st_t;
     signal rx_bar : std_logic_vector(7 downto 0);
-    signal rx_data : std_logic_vector(255 downto 0);
+    signal tx_ready_q : std_logic;
 
     signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
+
+    signal rx_data : std_logic_vector(255 downto 0);
+    alias rx_header_length : std_logic_vector(9 downto 0) is rx_data(9 downto 0);
+    alias rx_header_address : std_logic_vector(31 downto 0) is rx_data(95 downto 64);
 
 begin
 
@@ -190,8 +201,8 @@ begin
         cpl_pending         => '0',
 
         -- Transaction Layer Configuration
-        tl_cfg_add          => open,
-        tl_cfg_ctl          => open,
+        tl_cfg_add          => tl_cfg_add,
+        tl_cfg_ctl          => tl_cfg_ctl,
         tl_cfg_sts          => open,
         hpg_ctrler          => (others => '0'),
 
@@ -247,18 +258,91 @@ begin
     process(coreclkout_hip, pld_clk_inuse)
     begin
     if ( pld_clk_inuse = '0' ) then
+        tl_cfg_add0_q <= (others => '0');
+        tl_cfg <= (others => (others => '0'));
+        rx_data <= (others => '0');
+        tx.data <= (others => '0');
         rx.ready <= '0';
         av_test.waitrequest <= '1';
         --
     elsif rising_edge(coreclkout_hip) then
+        tl_cfg_add0_q <= tl_cfg_add(0) & tl_cfg_add0_q(tl_cfg_add0_q'left downto 1);
+        if ( tl_cfg_add0_q(1) /= tl_cfg_add0_q(0) ) then
+            tl_cfg(to_integer(unsigned(tl_cfg_add))) <= tl_cfg_ctl;
+        end if;
+
         rx.ready <= '1';
         if ( rx.sop = '1' ) then
             rx_data <= rx.data;
         end if;
 
+
+
         av_test.waitrequest <= '0';
-        if ( av_test.read = '1' ) then
+        av_test.readdata <= X"CCCCCCCC";
+
+        -- read rx TLP
+        if ( av_test.read = '1' and av_test.address(7 downto 3) = X"1" & "0" ) then
             av_test.readdata <= rx_data(
+                32*to_integer(unsigned(av_test.address(2 downto 0)))
+                + 31 downto 0 +
+                32*to_integer(unsigned(av_test.address(2 downto 0)))
+            );
+        end if;
+
+        -- read Configuration Space Register
+        if ( av_test.read = '1' and av_test.address(7 downto 4) = X"0" ) then
+            av_test.readdata <= tl_cfg(to_integer(unsigned(av_test.address(3 downto 0))));
+        end if;
+
+
+
+--        tx.data <= (others => '0');
+        tx.sop <= '0';
+        tx.eop <= '0';
+        tx.empty <= "00";
+        tx_ready_q <= tx.ready;
+        tx.valid <= '0';
+
+        -- handle MRd
+        if ( rx_data(31 downto 24) = X"00" and rx_header_length /= (rx_header_length'range => '0') ) then
+            tx.data(31 downto 0) <=
+                "010" & -- fmt
+                "01010" & -- type
+                X"000" & -- tc, td, ep, attr
+                X"001"; -- length
+            tx.data(63 downto 32) <=
+                tl_cfg(15)(12 downto 0) & "000" & -- completer id & function
+                "000" & "0" & -- status & bcm
+                rx_header_length & "00"; -- byte count
+            tx.data(95 downto 64) <=
+                rx_data(63 downto 48) & -- requester id
+                rx_data(47 downto 40) & -- tag
+                '0' &
+                rx_header_address(6 downto 0); -- lower address
+
+            -- handle unaligned data
+            if ( rx_data(66) = '1' ) then
+                tx.data(127 downto 96) <= X"CAFEBABE"; -- data
+                tx.empty <= "10"; -- 128-bit
+            else
+                tx.data(159 downto 128) <= X"CAFEBABE"; -- data
+                tx.empty <= "01"; -- 192-bit
+            end if;
+
+            tx.sop <= '1';
+            tx.eop <= '1';
+            tx.valid <= tx_ready_q;
+
+            if ( tx_ready_q = '1' ) then
+                rx_header_length <= std_logic_vector(unsigned(rx_header_length) - 1);
+                rx_header_address <= std_logic_vector(unsigned(rx_header_address) + 4);
+            end if;
+        end if;
+
+        -- read tx TLP
+        if ( av_test.read = '1' and av_test.address(7 downto 3) = X"1" & "1" ) then
+            av_test.readdata <= tx.data(
                 32*to_integer(unsigned(av_test.address(2 downto 0)))
                 + 31 downto 0 +
                 32*to_integer(unsigned(av_test.address(2 downto 0)))

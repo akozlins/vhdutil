@@ -149,6 +149,8 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
 
     // test write
     iowrite32(0xDEADBEEF, pcie_device.bars[0].ptr);
+    pr_info("[%s] 0x%08X\n", DEVICE_NAME, ioread32(pcie_device.bars[0].ptr + 0));
+    pr_info("[%s] 0x%08X\n", DEVICE_NAME, ioread32(pcie_device.bars[0].ptr + 4));
 
 
 
