@@ -34,7 +34,7 @@ int main() {
             break;
         case '3':
             for(int i = 0; i < 32; i++) {
-                printf("[pcie] rx_data[%d] = 0x%08X\n", i, ((uint32_t*)AVM_TEST_BASE)[i]);
+                printf("[pcie] rx_data[0x%02X] = 0x%08X\n", i, ((uint32_t*)AVM_PCIE_BASE)[i]);
             }
             break;
         default:

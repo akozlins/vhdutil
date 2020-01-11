@@ -59,18 +59,18 @@ architecture arch of top is
         waitrequest     :   std_logic;
         readdatavalid   :   std_logic;
     end record;
-    signal av_test : avalon_t;
+    signal av_pcie : avalon_t;
 
 begin
 
     e_pcie_block : entity work.pcie_block
     port map (
-        i_avs_address       => av_test.address(7 downto 0),
-        i_avs_read          => av_test.read,
-        o_avs_readdata      => av_test.readdata,
-        i_avs_write         => av_test.write,
-        i_avs_writedata     => av_test.writedata,
-        o_avs_waitrequest   => av_test.waitrequest,
+        i_avs_address       => av_pcie.address(5 downto 0),
+        i_avs_read          => av_pcie.read,
+        o_avs_readdata      => av_pcie.readdata,
+        i_avs_write         => av_pcie.write,
+        i_avs_writedata     => av_pcie.writedata,
+        o_avs_waitrequest   => av_pcie.waitrequest,
 
         i_pcie_rx           => PCIE_RX_p,
         o_pcie_tx           => PCIE_TX_p,
@@ -121,14 +121,14 @@ begin
 
     e_nios : component work.components.nios
     port map (
-        clk_pcie_reset_reset_n  => pcie_reset_n,
-        clk_pcie_clock_clk      => pcie_clk,
-        avm_test_address        => av_test.address(7 downto 0),
-        avm_test_read           => av_test.read,
-        avm_test_readdata       => av_test.readdata,
-        avm_test_write          => av_test.write,
-        avm_test_writedata      => av_test.writedata,
-        avm_test_waitrequest    => av_test.waitrequest,
+        avm_pcie_reset_reset_n  => pcie_reset_n,
+        avm_pcie_clock_clk      => pcie_clk,
+        avm_pcie_address        => av_pcie.address(5 downto 0),
+        avm_pcie_read           => av_pcie.read,
+        avm_pcie_readdata       => av_pcie.readdata,
+        avm_pcie_write          => av_pcie.write,
+        avm_pcie_writedata      => av_pcie.writedata,
+        avm_pcie_waitrequest    => av_pcie.waitrequest,
 
         flash_tcm_address_out(27 downto 2) => FLASH_A,
         flash_tcm_data_out => FLASH_D,
