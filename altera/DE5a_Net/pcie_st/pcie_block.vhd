@@ -23,13 +23,6 @@ end entity;
 
 architecture arch of pcie_block is
 
-    subtype slv32_t is std_logic_vector(31 downto 0);
-    type slv32_array_t is array (natural range <>) of slv32_t;
-    signal tl_cfg_add : std_logic_vector(3 downto 0);
-    signal tl_cfg_add0_q : std_logic_vector(3 downto 0);
-    signal tl_cfg_ctl : slv32_t;
-    signal tl_cfg : slv32_array_t(0 to 2**tl_cfg_add'length-1);
-
     type st_t is record
         data            :   std_logic_vector(255 downto 0);
         sop             :   std_logic;
@@ -43,11 +36,20 @@ architecture arch of pcie_block is
     signal rx_bar : std_logic_vector(7 downto 0);
     signal tx_ready_q : std_logic;
 
-    signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
-
     signal rx_data : std_logic_vector(255 downto 0);
     alias rx_header_length : std_logic_vector(9 downto 0) is rx_data(9 downto 0);
     alias rx_header_address : std_logic_vector(31 downto 0) is rx_data(95 downto 64);
+
+
+
+    signal cfg_busdev : std_logic_vector(12 downto 0);
+    signal cfg_msi_addr : std_logic_vector(63 downto 0);
+    signal cfg_msi_data : std_logic_vector(15 downto 0);
+
+    signal tl_cfg_add : std_logic_vector(3 downto 0);
+    signal tl_cfg_ctl : std_logic_vector(31 downto 0);
+
+    signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
 
 begin
 
@@ -57,19 +59,12 @@ begin
     process(coreclkout_hip, pld_clk_inuse)
     begin
     if ( pld_clk_inuse = '0' ) then
-        tl_cfg_add0_q <= (others => '0');
-        tl_cfg <= (others => (others => '0'));
         rx_data <= (others => '0');
         tx.data <= (others => '0');
         rx.ready <= '0';
         o_avs_waitrequest <= '1';
         --
     elsif rising_edge(coreclkout_hip) then
-        tl_cfg_add0_q <= tl_cfg_add(0) & tl_cfg_add0_q(tl_cfg_add0_q'left downto 1);
-        if ( tl_cfg_add0_q(1) /= tl_cfg_add0_q(0) ) then
-            tl_cfg(to_integer(unsigned(tl_cfg_add))) <= tl_cfg_ctl;
-        end if;
-
         rx.ready <= '1';
         if ( rx.sop = '1' ) then
             rx_data <= rx.data;
@@ -91,7 +86,11 @@ begin
 
         -- read Configuration Space Register
         if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
-            o_avs_readdata <= tl_cfg(to_integer(unsigned(i_avs_address(3 downto 0))));
+            o_avs_readdata <= (others => '0');
+            case i_avs_address(3 downto 0) is
+            when X"0" => o_avs_readdata(cfg_busdev'range) <= cfg_busdev;
+            when others => null;
+            end case;
         end if;
 
 
@@ -111,7 +110,7 @@ begin
                 X"000" & -- tc, td, ep, attr
                 X"001"; -- length
             tx.data(63 downto 32) <=
-                tl_cfg(15)(12 downto 0) & "000" & -- completer id & function
+                cfg_busdev & "000" & -- completer id & function
                 "000" & "0" & -- status & bcm
                 rx_header_length & "00"; -- byte count
             tx.data(95 downto 64) <=
@@ -151,6 +150,36 @@ begin
         --
     end if;
     end process;
+
+
+
+    -- see "5.12. Transaction Layer Configuration Space Signals"
+    block_cfg : block
+        type tl_cfg_t is array (0 to 15) of std_logic_vector(31 downto 0);
+        signal tl_cfg : tl_cfg_t;
+        signal tl_cfg_add0_q : std_logic_vector(3 downto 0);
+    begin
+        cfg_busdev <= tl_cfg(15)(12 downto 0);
+        cfg_msi_addr <=
+            tl_cfg(11)(31 downto 12) & tl_cfg(6)(31 downto 20) &
+            tl_cfg(9)(31 downto 12) & tl_cfg(5)(31 downto 20);
+        cfg_msi_data <= tl_cfg(15)(31 downto 16);
+
+        process(coreclkout_hip, pld_clk_inuse)
+        begin
+        if ( pld_clk_inuse = '0' ) then
+            tl_cfg_add0_q <= (others => '0');
+            tl_cfg <= (others => (others => '0'));
+            --
+        elsif rising_edge(coreclkout_hip) then
+            tl_cfg_add0_q <= tl_cfg_add(0) & tl_cfg_add0_q(tl_cfg_add0_q'left downto 1);
+            if ( tl_cfg_add0_q(1) /= tl_cfg_add0_q(0) ) then
+                tl_cfg(to_integer(unsigned(tl_cfg_add))) <= tl_cfg_ctl;
+            end if;
+            --
+        end if;
+        end process;
+    end block;
 
 
 
