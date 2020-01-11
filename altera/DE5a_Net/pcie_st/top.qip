@@ -6,6 +6,8 @@ set_global_assignment -name SOURCE_TCL_SCRIPT_FILE [file join $::quartus(qip_pat
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "top.vhd"]
 set_global_assignment -name SDC_FILE [file join $::quartus(qip_path) "top.sdc"]
 
+set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "pcie_block.vhd"]
+
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "util/include.qip"]
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "ip/include.qip"]
 
