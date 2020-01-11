@@ -28,9 +28,9 @@ architecture arch of pcie_block is
         sop             :   std_logic;
         eop             :   std_logic;
         empty           :   std_logic_vector(1 downto 0);
-        ready           :   std_logic;
         valid           :   std_logic;
         err             :   std_logic;
+        ready           :   std_logic;
     end record;
     signal rx, tx : st_t;
     signal rx_bar : std_logic_vector(7 downto 0);
@@ -62,38 +62,12 @@ begin
         rx_data <= (others => '0');
         tx.data <= (others => '0');
         rx.ready <= '0';
-        o_avs_waitrequest <= '1';
         --
     elsif rising_edge(coreclkout_hip) then
         rx.ready <= '1';
         if ( rx.sop = '1' ) then
             rx_data <= rx.data;
         end if;
-
-
-
-        o_avs_waitrequest <= '0';
-        o_avs_readdata <= X"CCCCCCCC";
-
-        -- read rx TLP
-        if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "010" ) then
-            o_avs_readdata <= rx_data(
-                32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                + 31 downto 0 +
-                32*to_integer(unsigned(i_avs_address(2 downto 0)))
-            );
-        end if;
-
-        -- read Configuration Space Register
-        if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
-            o_avs_readdata <= (others => '0');
-            case i_avs_address(3 downto 0) is
-            when X"0" => o_avs_readdata(cfg_busdev'range) <= cfg_busdev;
-            when others => null;
-            end case;
-        end if;
-
-
 
 --        tx.data <= (others => '0');
         tx.sop <= '0';
@@ -138,18 +112,54 @@ begin
             end if;
         end if;
 
-        -- read tx TLP
-        if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "011" ) then
-            o_avs_readdata <= tx.data(
-                32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                + 31 downto 0 +
-                32*to_integer(unsigned(i_avs_address(2 downto 0)))
-            );
-        end if;
-
         --
     end if;
     end process;
+
+
+
+    block_avs : block
+    begin
+        process(coreclkout_hip, pld_clk_inuse)
+        begin
+        if ( pld_clk_inuse = '0' ) then
+            o_avs_waitrequest <= '1';
+            --
+        elsif rising_edge(coreclkout_hip) then
+            o_avs_waitrequest <= '0';
+            o_avs_readdata <= X"CCCCCCCC";
+
+            -- pcie config regs
+            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
+                o_avs_readdata <= (others => '0');
+                case i_avs_address(3 downto 0) is
+                when X"0" => o_avs_readdata(cfg_busdev'range) <= cfg_busdev;
+                when others => null;
+                end case;
+            end if;
+
+            -- read rx TLP
+            if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "010" ) then
+                o_avs_readdata <= rx_data(
+                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                    + 31 downto 0 +
+                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                );
+            end if;
+
+            -- read tx TLP
+            if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "011" ) then
+                o_avs_readdata <= tx.data(
+                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                    + 31 downto 0 +
+                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                );
+            end if;
+
+        --
+        end if;
+        end process;
+    end block;
 
 
 
@@ -190,9 +200,9 @@ begin
         rx_st_sop(0)        => rx.sop,
         rx_st_eop(0)        => rx.eop,
         rx_st_empty         => rx.empty,
-        rx_st_ready         => rx.ready,
         rx_st_valid(0)      => rx.valid,
         rx_st_err(0)        => rx.err,
+        rx_st_ready         => rx.ready,
 
         rx_st_mask          => '0',
         rx_st_bar           => rx_bar,
@@ -202,9 +212,9 @@ begin
         tx_st_sop(0)        => tx.sop,
         tx_st_eop(0)        => tx.eop,
         tx_st_empty         => tx.empty,
-        tx_st_ready         => tx.ready,
         tx_st_valid(0)      => tx.valid,
         tx_st_err(0)        => tx.err,
+        tx_st_ready         => tx.ready,
 
         -- TX credit
 --        tx_cred_fc_sel      =>
