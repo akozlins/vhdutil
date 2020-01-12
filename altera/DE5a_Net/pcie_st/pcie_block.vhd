@@ -193,7 +193,7 @@ begin
 
 
 
-    e_pcie : component work.components.pcie
+    e_ip_pcie : component work.components.ip_pcie
     port map (
         -- RX Port
         rx_st_data          => rx.data,
