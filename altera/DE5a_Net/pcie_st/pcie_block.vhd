@@ -32,8 +32,10 @@ architecture arch of pcie_block is
         err             :   std_logic;
         ready           :   std_logic;
     end record;
-    signal rx, tx : st_t;
+
+    signal rx : st_t;
     signal rx_bar : std_logic_vector(7 downto 0);
+    signal tx : st_t;
     signal tx_ready_q : std_logic;
 
     signal rx_data : std_logic_vector(255 downto 0);
@@ -41,6 +43,8 @@ architecture arch of pcie_block is
     alias rx_header_address : std_logic_vector(31 downto 0) is rx_data(95 downto 64);
 
 
+
+    signal app_msi_req : std_logic;
 
     signal cfg_busdev : std_logic_vector(12 downto 0);
     signal cfg_msi_addr : std_logic_vector(63 downto 0);
@@ -61,6 +65,7 @@ begin
         rx_data <= (others => '0');
         tx.data <= (others => '0');
         rx.ready <= '0';
+        app_msi_req <= '0';
         --
     elsif rising_edge(clk) then
         rx.ready <= '1';
@@ -75,8 +80,10 @@ begin
         tx_ready_q <= tx.ready;
         tx.valid <= '0';
 
-        -- handle MRd
+        -- handle MRd TLP
         if ( rx_data(31 downto 24) = X"00" and rx_header_length /= (rx_header_length'range => '0') ) then
+            tx.data <= (others => '0');
+
             tx.data(31 downto 0) <=
                 "010" & -- fmt
                 "01010" & -- type
@@ -129,15 +136,18 @@ begin
             o_avs_readdata <= X"CCCCCCCC";
 
             -- pcie config regs
-            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
+            if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "000" ) then
                 o_avs_readdata <= (others => '0');
-                case i_avs_address(3 downto 0) is
-                when X"0" => o_avs_readdata(cfg_busdev'range) <= cfg_busdev;
+                case i_avs_address(2 downto 0) is
+                when "000" => o_avs_readdata(cfg_busdev'range) <= cfg_busdev;
+                when "001" => o_avs_readdata <= cfg_msi_addr(63 downto 32);
+                when "010" => o_avs_readdata <= cfg_msi_addr(31 downto 0);
+                when "011" => o_avs_readdata(cfg_msi_data'range) <= cfg_msi_data;
                 when others => null;
                 end case;
             end if;
 
-            -- read rx TLP
+            -- rx TLP
             if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "010" ) then
                 o_avs_readdata <= rx_data(
                     32*to_integer(unsigned(i_avs_address(2 downto 0)))
@@ -146,7 +156,7 @@ begin
                 );
             end if;
 
-            -- read tx TLP
+            -- tx TLP
             if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "011" ) then
                 o_avs_readdata <= tx.data(
                     32*to_integer(unsigned(i_avs_address(2 downto 0)))
@@ -228,19 +238,19 @@ begin
         cpl_err             => (others => '0'),
         cpl_pending         => '0',
 
-        -- Transaction Layer Configuration
-        tl_cfg_add          => tl_cfg_add,
-        tl_cfg_ctl          => tl_cfg_ctl,
-        tl_cfg_sts          => open,
-        hpg_ctrler          => (others => '0'),
-
         -- Interrupt for Endpoints
-        app_msi_req         => '0',
+        app_msi_req         => app_msi_req,
         app_msi_ack         => open,
         app_msi_tc          => (others => '0'),
         app_msi_num         => (others => '0'),
         app_int_sts         => '0',
         app_int_ack         => open,
+
+        -- Transaction Layer Configuration
+        tl_cfg_add          => tl_cfg_add,
+        tl_cfg_ctl          => tl_cfg_ctl,
+        tl_cfg_sts          => open,
+        hpg_ctrler          => (others => '0'),
 
         -- Power Management
         pme_to_cr           => '0',
