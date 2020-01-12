@@ -33,7 +33,7 @@ int main() {
             fan.menu();
             break;
         case '3':
-            for(int i = 0; i < 32; i++) {
+            for(int i = 0; i < 64; i++) {
                 printf("[pcie] rx_data[0x%02X] = 0x%08X\n", i, ((uint32_t*)AVM_PCIE_BASE)[i]);
             }
             break;
