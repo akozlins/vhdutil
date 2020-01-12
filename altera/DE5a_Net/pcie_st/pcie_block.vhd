@@ -51,19 +51,18 @@ architecture arch of pcie_block is
 
     signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
 
+    signal clk, reset_n : std_logic;
+
 begin
 
-    o_clk <= coreclkout_hip;
-    o_reset_n <= pld_clk_inuse;
-
-    process(coreclkout_hip, pld_clk_inuse)
+    process(clk, reset_n)
     begin
-    if ( pld_clk_inuse = '0' ) then
+    if ( reset_n = '0' ) then
         rx_data <= (others => '0');
         tx.data <= (others => '0');
         rx.ready <= '0';
         --
-    elsif rising_edge(coreclkout_hip) then
+    elsif rising_edge(clk) then
         rx.ready <= '1';
         if ( rx.sop = '1' ) then
             rx_data <= rx.data;
@@ -120,12 +119,12 @@ begin
 
     block_avs : block
     begin
-        process(coreclkout_hip, pld_clk_inuse)
+        process(clk, reset_n)
         begin
-        if ( pld_clk_inuse = '0' ) then
+        if ( reset_n = '0' ) then
             o_avs_waitrequest <= '1';
             --
-        elsif rising_edge(coreclkout_hip) then
+        elsif rising_edge(clk) then
             o_avs_waitrequest <= '0';
             o_avs_readdata <= X"CCCCCCCC";
 
@@ -175,13 +174,13 @@ begin
             tl_cfg(9)(31 downto 12) & tl_cfg(5)(31 downto 20);
         cfg_msi_data <= tl_cfg(15)(31 downto 16);
 
-        process(coreclkout_hip, pld_clk_inuse)
+        process(clk, reset_n)
         begin
-        if ( pld_clk_inuse = '0' ) then
+        if ( reset_n = '0' ) then
             tl_cfg_add0_q <= (others => '0');
             tl_cfg <= (others => (others => '0'));
             --
-        elsif rising_edge(coreclkout_hip) then
+        elsif rising_edge(clk) then
             tl_cfg_add0_q <= tl_cfg_add(0) & tl_cfg_add0_q(tl_cfg_add0_q'left downto 1);
             if ( tl_cfg_add0_q(1) /= tl_cfg_add0_q(0) ) then
                 tl_cfg(to_integer(unsigned(tl_cfg_add))) <= tl_cfg_ctl;
@@ -283,5 +282,13 @@ begin
         pin_perst => i_pcie_perst_n,
         refclk => i_pcie_refclk--,
     );
+
+
+
+    clk <= coreclkout_hip;
+    reset_n <= pld_clk_inuse;
+
+    o_clk <= clk;
+    o_reset_n <= reset_n;
 
 end architecture;
