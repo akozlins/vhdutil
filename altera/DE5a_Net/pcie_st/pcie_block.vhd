@@ -61,6 +61,12 @@ begin
             rx_data <= rx.data;
         end if;
 
+        app_msi_req <= '0';
+        -- generate MSI for MWr TLP
+        if ( rx.sop = '1' and rx.data(31 downto 24) = "010" & "00000" ) then
+            app_msi_req <= '1';
+        end if;
+
 --        tx.data <= (others => '0');
         tx.sop <= '0';
         tx.eop <= '0';
