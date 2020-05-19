@@ -189,11 +189,11 @@ begin
             W => ram_addr_t'length--,
         )
         port map (
-            a => a,
-            b => b,
-            ci => '0',
-            s => s,
-            co => open--,
+            i_a => a,
+            i_b => b,
+            i_c => '0',
+            o_s => s,
+            o_c => open--,
         );
         a <= std_logic_vector(s_id.pc) when ( s_id.op_jump ) else
              std_logic_vector(s_if.pc);

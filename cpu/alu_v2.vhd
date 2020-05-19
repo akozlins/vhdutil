@@ -43,11 +43,11 @@ begin
         W => W--,
     )
     port map (
-        a => a_i,
-        b => b_i,
-        ci => ci_i,
-        s => s_i,
-        co => co--,
+        i_a => a_i,
+        i_b => b_i,
+        i_c => ci_i,
+        o_s => s_i,
+        o_c => co--,
     );
 
     process(op, a, b, ci, s_i)

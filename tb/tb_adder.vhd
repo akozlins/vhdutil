@@ -23,11 +23,11 @@ begin
     e_adder : entity work.ripple_adder
     generic map ( W => s'length )
     port map (
-        a   => a,
-        b   => b,
-        ci  => ci,
-        s   => s,
-        co  => co--,
+        i_a => a,
+        i_b => b,
+        i_c => ci,
+        o_s => s,
+        o_c => co--,
     );
 
     a <= i(a'length-1 downto 0);
