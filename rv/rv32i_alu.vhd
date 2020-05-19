@@ -13,17 +13,17 @@ generic (
 );
 port (
     -- operands
-    s1 : in std_logic_vector(W-1 downto 0);
-    s2 : in std_logic_vector(W-1 downto 0);
+    i_s1    : in    std_logic_vector(W-1 downto 0);
+    i_s2    : in    std_logic_vector(W-1 downto 0);
     -- operation
-    op : in std_logic_vector(3 downto 0); -- subsra & funct3
+    i_op    : in    std_logic_vector(3 downto 0);
 
-    eq : out std_logic;
-    lt : out std_logic;
-    ltu : out std_logic;
+    eq      : out   std_logic;
+    lt      : out   std_logic;
+    ltu     : out   std_logic;
 
     -- result
-    d : out std_logic_vector(W-1 downto 0)--;
+    o_d     : out   std_logic_vector(W-1 downto 0)--;
 );
 end entity;
 
@@ -34,14 +34,14 @@ architecture arch of rv32i_alu is
 
     signal eq_s, lt_s, ltu_s : std_logic;
 
-    signal nshift_s : integer;
+    signal nshift : integer;
 
 begin
 
-    xor_s <= s1 xor s2;
+    xor_s <= i_s1 xor i_s2;
 
-    add_s <= std_logic_vector(unsigned(s1) + unsigned(s2));
-    sub_s <= std_logic_vector(unsigned('0' & s1) - unsigned('0' & s2));
+    add_s <= std_logic_vector(unsigned(i_s1) + unsigned(i_s2));
+    sub_s <= std_logic_vector(unsigned('0' & i_s1) - unsigned('0' & i_s2));
 
     eq_s <= '1' when ( xor_s = (xor_s'range => '0') ) else '0';
     lt_s <= sub_s(W) xor xor_s(W-1); -- underflow xor sign1 xor sign2
@@ -51,19 +51,19 @@ begin
     lt <= lt_s;
     ltu <= ltu_s;
 
-    nshift_s <= to_integer(unsigned(s2(4 downto 0)));
+    nshift <= to_integer(unsigned(i_s2(4 downto 0)));
 
-    d <=
-        add_s                                                 when ( op = "0000" ) else -- add
-        sub_s(W-1 downto 0)                                   when ( op = "1000" ) else -- sub
-        std_logic_vector(shift_left (unsigned(s1), nshift_s)) when ( op = "0001" ) else -- sll
-        (0 => lt_s , others => '0')                           when ( op = "0010" ) else -- slt
-        (0 => ltu_s, others => '0')                           when ( op = "0011" ) else -- sltu
-        xor_s                                                 when ( op = "0100" ) else -- xor
-        std_logic_vector(shift_right(unsigned(s1), nshift_s)) when ( op = "0101" ) else -- srl
-        std_logic_vector(shift_right(  signed(s1), nshift_s)) when ( op = "1101" ) else -- sra
-        s1  or s2                                             when ( op = "0110" ) else -- or
-        s1 and s2                                             when ( op = "0111" ) else -- and
-        (others => '-');
+    o_d <=
+        add_s                                                 when ( i_op = "0000" ) else -- add
+        sub_s(W-1 downto 0)                                   when ( i_op = "1000" ) else -- sub
+        std_logic_vector(shift_left (unsigned(i_s1), nshift)) when ( i_op = "0001" ) else -- sll
+        (0 => lt_s , others => '0')                           when ( i_op = "0010" ) else -- slt
+        (0 => ltu_s, others => '0')                           when ( i_op = "0011" ) else -- sltu
+        xor_s                                                 when ( i_op = "0100" ) else -- xor
+        std_logic_vector(shift_right(unsigned(i_s1), nshift)) when ( i_op = "0101" ) else -- srl
+        std_logic_vector(shift_right(  signed(i_s1), nshift)) when ( i_op = "1101" ) else -- sra
+        i_s1  or i_s2                                         when ( i_op = "0110" ) else -- or
+        i_s1 and i_s2                                         when ( i_op = "0111" ) else -- and
+        (others => '0');
 
 end architecture;

@@ -8,10 +8,10 @@ use ieee.std_logic_1164.all;
 
 entity rv32i_cpu_v1 is
 port (
-    dbg_out :   out std_logic_vector(31 downto 0);
-    dbg_in  :   in  std_logic_vector(31 downto 0);
-    rst_n   :   in  std_logic;
-    clk     :   in  std_logic--;
+    dbg_out     : out   std_logic_vector(31 downto 0);
+    dbg_in      : in    std_logic_vector(31 downto 0);
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
@@ -48,12 +48,12 @@ begin
     )
     port map (
         a_addr  => pc(9 downto 2),
-        a_rd    => inst,
+        a_rdata => inst,
         b_addr  => ram_addr(9 downto 2),
-        b_rd    => ram_rdata,
-        b_wd    => ram_wdata,
+        b_rdata => ram_rdata,
+        b_wdata => ram_wdata,
         b_we    => ram_we,
-        clk     => clk--,
+        clk     => i_clk--,
     );
 
     ram_wdata <= reg_rdata2;
@@ -61,40 +61,40 @@ begin
 
     i_reg_file : entity work.rv32i_reg_file
     port map (
-        raddr1  => reg_raddr1,
-        rdata1  => reg_rdata1,
-        raddr2  => reg_raddr2,
-        rdata2  => reg_rdata2,
-        waddr   => reg_waddr,
-        wdata   => reg_wdata,
-        we      => '1',
-        rst_n   => rst_n,
-        clk     => clk--,
+        i_raddr1    => reg_raddr1,
+        o_rdata1    => reg_rdata1,
+        i_raddr2    => reg_raddr2,
+        o_rdata2    => reg_rdata2,
+        i_waddr     => reg_waddr,
+        i_wdata     => reg_wdata,
+        i_we        => '1',
+        i_reset_n   => i_reset_n,
+        i_clk       => i_clk--,
     );
 
     i_inst : entity work.rv32i_inst
     port map (
-        opcode => opcode,
+        o_opcode    => opcode,
 
-        funct3 => funct3,
-        funct7 => open,
+        o_funct3    => funct3,
+        o_funct7    => funct7,
 
-        rs1 => reg_raddr1,
-        rs2 => reg_raddr2,
-        rd => reg_waddr,
+        o_rs1       => reg_raddr1,
+        o_rs2       => reg_raddr2,
+        o_rd        => reg_waddr,
 
-        imm => imm,
+        o_imm       => imm,
 
-        inst => inst--;
+        i_inst      => inst--;
     );
 
     i_alu : entity work.rv32i_alu
     port map (
-        s1  => alu_s1,
-        s2  => alu_s2,
-        op  => alu_op,
-        eq  => alu_eq, lt => alu_lt, ltu => alu_ltu,
-        d   => alu_d--,
+        i_s1    => alu_s1,
+        i_s2    => alu_s2,
+        i_op    => alu_op,
+        eq      => alu_eq, lt => alu_lt, ltu => alu_ltu,
+        o_d     => alu_d--,
     );
 
     alu_s1 <=
@@ -133,12 +133,12 @@ begin
         ) else
         std_logic_vector(unsigned(pc) + 4);
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( i_reset_n = '0' ) then
         pc <= (others => '0');
         --
-    elsif rising_edge(clk) then
+    elsif rising_edge(i_clk) then
         pc <= pc_next;
 
         report "[" & to_string(pc) & "]" & " " & work.rv32i_pkg.inst_name(inst);
