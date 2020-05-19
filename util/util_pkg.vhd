@@ -390,7 +390,7 @@ package body util is
         variable s : string(1 to W/4);
         variable ok : boolean;
     begin
-        if fname = "" then
+        if fname'length = 0 then
             return data;
         end if;
 
