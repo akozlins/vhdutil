@@ -9,6 +9,8 @@ architecture arch of tb_cpu is
     constant CLK_MHZ : positive := 100;
     signal clk, reset_n : std_logic := '0';
 
+    signal debug : std_logic_vector(31 downto 0);
+
 begin
 
     clk <= not clk after (500 ns / CLK_MHZ);
@@ -16,8 +18,7 @@ begin
 
     e_cpu : entity work.rv32i_cpu_v1
     port map (
-        dbg_out => open,
-        dbg_in => (others => '0'),
+        o_debug => debug,
         i_reset_n => reset_n,
         i_clk => clk--,
     );

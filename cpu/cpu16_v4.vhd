@@ -100,10 +100,10 @@ begin
     )
     port map (
         a_addr  => std_logic_vector(ram_a.addr),
-        a_rd    => ram_a.rd,
+        a_rdata => ram_a.rd,
         b_addr  => std_logic_vector(ram_b.addr),
-        b_rd    => ram_b.rd,
-        b_wd    => ram_b.wd,
+        b_rdata => ram_b.rd,
+        b_wdata => ram_b.wd,
         b_we    => ram_b.we,
         clk     => clk--,
     );
@@ -115,10 +115,10 @@ begin
     )
     port map (
         a_addr  => std_logic_vector(reg_a.addr),
-        a_rd    => reg_a.rd,
+        a_rdata => reg_a.rd,
         b_addr  => std_logic_vector(reg_b.addr),
-        b_rd    => reg_b.rd,
-        b_wd    => reg_b.wd,
+        b_rdata => reg_b.rd,
+        b_wdata => reg_b.wd,
         b_we    => reg_b.we,
         clk     => clk--,
     );

@@ -39,7 +39,9 @@ begin
     if ( reset_n = '0' ) then
         i <= (others => '0');
     elsif rising_edge(clk) then
-        assert ( unsigned(co & s) = unsigned('0' & a) + unsigned(b) + ("" & ci) ) severity failure;
+        assert (
+            unsigned(co & s) = unsigned('0' & a) + unsigned(b) + ("" & ci)
+        ) severity error;
 
         i <= std_logic_vector(unsigned(i) + 1);
     end if;

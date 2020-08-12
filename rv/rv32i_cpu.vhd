@@ -8,8 +8,7 @@ use ieee.std_logic_1164.all;
 
 entity rv32i_cpu_v1 is
 port (
-    dbg_out     : out   std_logic_vector(31 downto 0);
-    dbg_in      : in    std_logic_vector(31 downto 0);
+    o_debug     : out   std_logic_vector(31 downto 0);
     i_reset_n   : in    std_logic;
     i_clk       : in    std_logic--;
 );
