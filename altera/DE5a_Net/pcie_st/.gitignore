@@ -1,11 +1,7 @@
-db/
-incremental_db/
-nios/
-output_files/
+#
 
-software/app/
-software/hal_bsp/
+/db/
+/nios/
 
-.qsys_edit
-*.qsys
-*.sopcinfo
+/software/app/
+/software/hal_bsp/

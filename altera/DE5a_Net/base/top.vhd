@@ -74,7 +74,7 @@ begin
 
 
 
-    e_nios : entity work.nios
+    e_nios : component work.components.nios
     port map (
         flash_tcm_address_out(27 downto 2) => FLASH_A,
         flash_tcm_data_out => FLASH_D,
