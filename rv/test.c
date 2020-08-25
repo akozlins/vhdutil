@@ -1,23 +1,33 @@
 
-int test();
+int collatz(unsigned k);
 
 int main() {
-    return test();
+    collatz(3);
+
+    while(1);
+
+    return 0;
 }
 
-int add(int a, int b) {
-    return a + b;
-}
+/**
+ * Collatz sequence:
+ * if the number is even - divide it by 2
+ * if odd - multiply by 3 and add 1
+ * repeat until number becomes 1
+ */
+int collatz(unsigned k) {
+    int n = 0; // number of steps
 
-int sub(int a, int b) {
-    return a - b;
-}
-
-int test() {
-    int s = 0;
-    for(int i = 0; i < 16; i++) {
-        s = add(s, 42);
-        s = sub(s, 1);
+    while(k != 1) {
+        n++;
+        if(k % 2 == 0) {
+            k = k / 2;
+        }
+        else {
+            if(k >= 0xFFFFFFFF / 3) return -1;
+            k = 3 * k + 1;
+        }
     }
-    return s;
+
+    return n;
 }
