@@ -7,6 +7,7 @@ STOPTIME=50us
 unset CDPATH
 cd .cache || exit 1
 [ -e cpu ] || ln -s ../cpu
+[ -e rv ] || ln -s ../rv
 [ -e tb ] || ln -s ../tb
 
 DIR=..

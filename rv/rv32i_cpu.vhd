@@ -21,7 +21,8 @@ architecture arch of rv32i_cpu_v1 is
 
     function to_string ( v : std_logic_vector ) return string is
     begin
-        return integer'image(to_integer(signed((v))));
+--        return integer'image(to_integer(signed((v))));
+        return work.util.to_hstring(v);
     end function;
 
     signal pc, pc_next, ram_addr : std_logic_vector(31 downto 0);
@@ -32,6 +33,7 @@ architecture arch of rv32i_cpu_v1 is
 
     signal opcode : std_logic_vector(6 downto 0);
     signal funct3 : std_logic_vector(2 downto 0);
+    signal funct7 : std_logic_vector(6 downto 0);
 
     signal alu_s1, alu_s2, alu_d : std_logic_vector(31 downto 0);
     signal alu_op : std_logic_vector(3 downto 0);
@@ -110,6 +112,7 @@ begin
         inst(30) & funct3 when ( opcode = work.rv32i_pkg.OP_c ) else
         inst(30) & funct3 when ( opcode = work.rv32i_pkg.OP_IMM_c and funct3 = "101" ) else
         '0' & funct3 when ( opcode = work.rv32i_pkg.OP_IMM_c ) else
+        "1000" when ( opcode = work.rv32i_pkg.BRANCH_c ) else
         "0000";
 
     reg_wdata <=

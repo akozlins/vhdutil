@@ -7,6 +7,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- 2r1w
 entity rv32i_reg_file is
 generic (
     W   : positive := 32; -- word width in bits
