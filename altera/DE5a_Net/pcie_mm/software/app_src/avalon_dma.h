@@ -31,6 +31,7 @@ struct avalon_dma_t {
 //            (1 << 2) | // WORD
             (1 << 11) | // QWORD
             (1 << 7) | (1 << 3); // LEEN | GO
+        regs->status = 0;
 
         if(irq >= 0) {
             if(int err = alt_ic_isr_register(0, irq, callback, this, nullptr)) {
@@ -115,6 +116,9 @@ struct avalon_dma_t {
                 regs->readaddress = 0;
                 regs->writeaddress = PCIE_RAM_SPAN/2;
                 regs->length = PCIE_RAM_SPAN/2;
+                while((regs->status >> 1) & 1) {
+                    printf("wait busy\n");
+                }
                 break;
             case 'q':
                 return;
