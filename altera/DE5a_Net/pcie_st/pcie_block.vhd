@@ -34,12 +34,16 @@ architecture arch of pcie_block is
 
 
 
-    signal app_msi_req : std_logic;
+    signal app_msi_req, app_msi_ack : std_logic;
 
     signal cfg : work.pcie.cfg_t;
 
     signal tl_cfg_add : std_logic_vector(3 downto 0);
     signal tl_cfg_ctl : std_logic_vector(31 downto 0);
+
+    signal lane_act : std_logic_vector(3 downto 0);
+    signal currentspeed : std_logic_vector(1 downto 0);
+    signal ltssmstate : std_logic_vector(4 downto 0);
 
     signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
 
@@ -128,6 +132,17 @@ begin
         elsif rising_edge(clk) then
             o_avs_waitrequest <= '0';
             o_avs_readdata <= X"CCCCCCCC";
+
+            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
+                o_avs_readdata <= (others => '0');
+                case i_avs_address(3 downto 0) is
+                when X"0" => o_avs_readdata(lane_act'range) <= lane_act;
+                when X"1" => o_avs_readdata(currentspeed'range) <= currentspeed;
+                when X"2" => o_avs_readdata(ltssmstate'range) <= ltssmstate;
+                when others =>
+                    o_avs_readdata <= X"CCCCCCCC";
+                end case;
+            end if;
 
             -- pcie config regs
             if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "01" ) then
@@ -235,7 +250,7 @@ begin
 
         -- Interrupt for Endpoints
         app_msi_req         => app_msi_req,
-        app_msi_ack         => open,
+        app_msi_ack         => app_msi_ack,
         app_msi_tc          => (others => '0'),
         app_msi_num         => (others => '0'),
         app_int_sts         => '0',
@@ -253,6 +268,10 @@ begin
         pm_event            => '0',
         pm_data             => (others => '0'),
         pm_auxpwr           => '0',
+
+        lane_act            => lane_act,
+        currentspeed        => currentspeed,
+        ltssmstate          => ltssmstate,
 
         -- Data Link and Transaction Layers clock (output)
         coreclkout_hip      => coreclkout_hip,
