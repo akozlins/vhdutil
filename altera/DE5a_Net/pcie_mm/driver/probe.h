@@ -5,7 +5,7 @@
 
 struct bar_t {
     // bar address (iomap)
-    void __iomem *ptr;
+    void __iomem* ptr;
     size_t len;
     // char device
     struct cdev cdev;
@@ -13,15 +13,15 @@ struct bar_t {
 
 struct dma_page {
     size_t size;
-    void *cpu_addr;
+    void* cpu_addr;
     dma_addr_t dma_addr;
 };
 
 struct a10_pcie {
-    struct pci_dev *pci_dev;
+    struct pci_dev* pci_dev;
     struct bar_t bars[6];
-    void __iomem *mm_cra;
-    void __iomem *mm_dma;
+    void __iomem* mm_cra;
+    void __iomem* mm_dma;
     struct dma_page dma_page;
     int irq;
 };
@@ -36,11 +36,12 @@ void irq_ack(void) {
 }
 
 static
-irqreturn_t irq_handler(int irq, void *dev_id) {
+irqreturn_t irq_handler(int irq, void* dev_id) {
     irq_ack();
     pr_info("[%s] irq_handler\n", DEVICE_NAME);
 
     dma_sync_single_for_cpu(&a10_pcie.pci_dev->dev, a10_pcie.dma_page.dma_addr, a10_pcie.dma_page.size, DMA_FROM_DEVICE);
+
     for(int i = 0; i < a10_pcie.dma_page.size;) {
         pr_info("[%s] %04X:", DEVICE_NAME, i);
         for(int j = 0; j < 8 && i < a10_pcie.dma_page.size; j++, i += 4) {
@@ -86,7 +87,7 @@ void pcidev_fini(void) {
 }
 
 static
-int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
+int pcidev_probe(struct pci_dev* pci_dev, const struct pci_device_id* id) {
     int err = 0;
 
     pr_info("[%s] probe\n", DEVICE_NAME);
@@ -127,7 +128,7 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
     }
 
     for(int i = 0; i < 6; i++) {
-        struct device *device;
+        struct device* device;
 
         // check bar is memory resource
         if(!(pci_resource_flags(a10_pcie.pci_dev, i) & IORESOURCE_MEM)) continue;
@@ -222,7 +223,7 @@ fail:
 }
 
 static
-void pcidev_remove(struct pci_dev *dev) {
+void pcidev_remove(struct pci_dev* dev) {
     pr_info("[%s] remove\n", DEVICE_NAME);
     pcidev_fini();
 }

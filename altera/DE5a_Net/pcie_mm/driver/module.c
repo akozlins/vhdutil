@@ -5,7 +5,7 @@
 MODULE_AUTHOR("Alexandr Kozlinskiy");
 MODULE_LICENSE("GPL");
 
-#define DEVICE_NAME "a10_pcie"
+#define DEVICE_NAME "a10_pcie_mm"
 #define VENDOR_ID 0x1172
 #define DEVICE_ID 0xE001
 

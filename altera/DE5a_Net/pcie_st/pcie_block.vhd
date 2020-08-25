@@ -130,7 +130,7 @@ begin
             o_avs_readdata <= X"CCCCCCCC";
 
             -- pcie config regs
-            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
+            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "01" ) then
                 o_avs_readdata <= (others => '0');
                 case i_avs_address(3 downto 0) is
                 when X"0" => o_avs_readdata(cfg.busdev'range) <= cfg.busdev;
@@ -142,7 +142,8 @@ begin
                 when X"6" => o_avs_readdata <= cfg.msi_addr(31 downto 0);
                 when X"7" => o_avs_readdata <= cfg.msi_addr(63 downto 32);
                 when X"8" => o_avs_readdata(cfg.tcvcmap'range) <= cfg.tcvcmap;
-                when others => null;
+                when others =>
+                    o_avs_readdata <= X"CCCCCCCC";
                 end case;
             end if;
 

@@ -7,7 +7,7 @@
 
 struct bar_t {
     // bar address (iomap)
-    void __iomem *ptr;
+    void __iomem* ptr;
     size_t len;
     // char device
     struct cdev cdev;
@@ -15,15 +15,15 @@ struct bar_t {
 
 struct dma_page {
     size_t size;
-    void *cpu_addr;
+    void* cpu_addr;
     dma_addr_t dma_addr;
 };
 
 struct pcie_device {
-    struct pci_dev *pci_dev;
+    struct pci_dev* pci_dev;
     struct bar_t bars[6];
-    void __iomem *mm_cra;
-    void __iomem *mm_dma;
+    void __iomem* mm_cra;
+    void __iomem* mm_dma;
     struct dma_page dma_page;
     int irq;
 };
@@ -34,8 +34,9 @@ void irq_ack(void) {
 }
 
 static
-irqreturn_t irq_handler(int irq, void *dev_id) {
+irqreturn_t irq_handler(int irq, void* dev_id) {
     irq_ack();
+    pr_info("[%s] irq_handler\n", DEVICE_NAME);
 
     return IRQ_HANDLED;
 }
@@ -63,7 +64,7 @@ void pcidev_fini(void) {
 }
 
 static
-int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
+int pcidev_probe(struct pci_dev* pci_dev, const struct pci_device_id* id) {
     int err = 0;
 
     pr_info("[%s] probe\n", DEVICE_NAME);
@@ -147,10 +148,13 @@ int pcidev_probe(struct pci_dev *pci_dev, const struct pci_device_id *id) {
 
 
 
-    // test write
-    iowrite32(0xDEADBEEF, pcie_device.bars[0].ptr);
-    pr_info("[%s] 0x%08X\n", DEVICE_NAME, ioread32(pcie_device.bars[0].ptr + 0));
-    pr_info("[%s] 0x%08X\n", DEVICE_NAME, ioread32(pcie_device.bars[0].ptr + 4));
+    // test
+    for(int i = 0; i < 4; i++) {
+        ioread32(pcie_device.bars[0].ptr + 4*i);
+    }
+    for(int i = 0; i < 4; i++) {
+        iowrite32(0xDEADBEEF, pcie_device.bars[0].ptr + 4*i);
+    }
 
 
 
@@ -161,7 +165,7 @@ fail:
 }
 
 static
-void pcidev_remove(struct pci_dev *dev) {
+void pcidev_remove(struct pci_dev* dev) {
     pr_info("[%s] remove\n", DEVICE_NAME);
     pcidev_fini();
 }

@@ -4,12 +4,12 @@
 struct chrdev_t {
     dev_t dev;
     int major;
-    struct class *class;
+    struct class* class;
 };
 static struct chrdev_t chrdev;
 
 static
-int chrdev_open(struct inode *inode, struct file *file) {
+int chrdev_open(struct inode* inode, struct file* file) {
     pr_info("[%s] chrdev_open(iminor = %d)\n", pci_name(a10_pcie.pci_dev), iminor(inode));
 
     file->private_data = &a10_pcie.bars[iminor(inode)];
@@ -18,9 +18,9 @@ int chrdev_open(struct inode *inode, struct file *file) {
 }
 
 static
-ssize_t chrdev_read(struct file *file, char __user *user_buffer, size_t size, loff_t *offset) {
+ssize_t chrdev_read(struct file* file, char __user* user_buffer, size_t size, loff_t* offset) {
     ssize_t n = 0;
-    struct bar_t *bar = file->private_data;
+    struct bar_t* bar = file->private_data;
 
     pr_info("[%s] chrdev_read(size = %ld, offset = %lld)\n", pci_name(a10_pcie.pci_dev), size, *offset);
 
@@ -37,10 +37,16 @@ ssize_t chrdev_read(struct file *file, char __user *user_buffer, size_t size, lo
 }
 
 static
+long ioctl(struct file* file, unsigned int cmd, unsigned long arg) {
+    return -EINVAL;
+}
+
+static
 struct file_operations fops = {
     .owner = THIS_MODULE,
     .open = chrdev_open,
     .read = chrdev_read,
+    .unlocked_ioctl = ioctl,
 };
 
 static
