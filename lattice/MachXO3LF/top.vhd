@@ -8,6 +8,9 @@ port (
     -- 4 switches
     i_sw_n      : in    std_logic_vector(3 downto 0);
 
+    i_rs232_rx  : in    std_logic;
+    o_rs232_tx  : out   std_logic;
+
     -- reset button (active low)
     i_reset_n   : in    std_logic;
     -- external clock
