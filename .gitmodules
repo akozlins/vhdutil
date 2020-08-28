@@ -1,0 +1,3 @@
+[submodule "dmabuf"]
+	path = dmabuf
+	url = git@github.com:akozlins/dmabuf

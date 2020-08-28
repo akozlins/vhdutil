@@ -1,3 +1,0 @@
-# dmabuf
-
-Allocate DMA buffer.
