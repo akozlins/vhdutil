@@ -11,7 +11,7 @@ use ieee.std_logic_1164.all;
 --
 -- FIFO
 -- - Single Clock
--- - Fall-Through
+-- - Fall-Through (Show-Ahead)
 --
 entity fifo_sc is
 generic (
@@ -52,8 +52,8 @@ architecture arch of fifo_sc is
 begin
 
     -- psl default clock is rising_edge(i_clk) ;
-    -- psl assert always ( i_rack = '0' or o_rempty = '0' ) ;
-    -- psl assert always ( i_we = '0' or o_wfull = '0' ) ;
+    -- psl assert always ( i_rack = '0' or rempty = '0' ) ;
+    -- psl assert always ( i_we = '0' or wfull = '0' ) ;
 
 
 
