@@ -24,7 +24,7 @@ architecture arch of debouncer is
 
     signal ff0, ff1 : std_logic_vector(i_d'range);
 
-    type cnt_array_t is array(i_d'range) of integer range 0 to N;
+    type cnt_array_t is array(i_d'range) of integer range 0 to N-1;
     signal cnt : cnt_array_t;
 
 begin
@@ -46,7 +46,7 @@ begin
         for i in i_d'range loop
             if ( ff0(i) /= ff1(i) ) then
                 cnt(i) <= 0;
-            elsif ( cnt(i) = N ) then
+            elsif ( cnt(i) = N-1 ) then
                 o_q(i) <= ff1(i);
             else
                 cnt(i) <= cnt(i) + 1;
