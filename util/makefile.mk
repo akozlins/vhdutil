@@ -6,6 +6,10 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
+ifeq ($(NIOS_SOPCINFO),)
+    NIOS_SOPCINFO := nios.sopcinfo
+endif
+
 .PRECIOUS : %.qip %.sip %.qsys %.sopcinfo $(BSP_DIR) $(APP_DIR)
 
 all : $(IPs)
@@ -42,11 +46,11 @@ pgm : $(SOF)
 	quartus_pgm -m jtag -c $(CABLE) --operation="p;$(SOF)"
 
 .PRECIOUS : $(BSP_DIR)
-$(BSP_DIR) : $(BSP_DIR).tcl nios.sopcinfo
+$(BSP_DIR) : $(BSP_DIR).tcl $(NIOS_SOPCINFO)
 	mkdir -p $(BSP_DIR)
 	nios2-bsp-create-settings \
 	--type hal --script $(SOPC_KIT_NIOS2)/sdk2/bin/bsp-set-defaults.tcl \
-	--sopc nios.sopcinfo --cpu-name cpu \
+	--sopc $(NIOS_SOPCINFO) --cpu-name cpu \
 	--bsp-dir $(BSP_DIR) --settings $(BSP_DIR)/settings.bsp --script $(BSP_DIR).tcl
 
 bsp : $(BSP_DIR)
@@ -55,7 +59,7 @@ bsp : $(BSP_DIR)
 .PHONY : $(APP_DIR)/main.elf
 $(APP_DIR)/main.elf : $(APP_DIR)_src/* $(BSP_DIR)
 	nios2-app-generate-makefile \
-        --set ALT_CFLAGS "-Wextra -Wformat=0 -pedantic -std=c++14" \
+        --set ALT_CFLAGS "-pedantic -Wall -Wextra -Wformat=0 -std=c++11" \
         --bsp-dir $(BSP_DIR) --app-dir $(APP_DIR) --src-dir $(APP_DIR)_src
 	$(MAKE) -C $(APP_DIR) clean
 	$(MAKE) -C $(APP_DIR)
