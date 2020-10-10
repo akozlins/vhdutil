@@ -31,7 +31,7 @@ ip_%.qip : ip_%.v
 
 .PHONY : flow
 flow : $(IPs)
-	quartus_sh -t util/flow.tcl top
+	quartus_sh -t util/altera/flow.tcl top
 
 .PHONY : sof2flash
 sof2flash :
