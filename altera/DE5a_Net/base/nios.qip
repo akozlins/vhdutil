@@ -1,4 +1,0 @@
-#
-
-set_global_assignment -name QSYS_FILE [file join $::quartus(qip_path) "nios.qsys"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "nios/synth/nios.vhd"]

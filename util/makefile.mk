@@ -23,15 +23,15 @@ ip_%.qip : ip_%.v
 
 .PRECIOUS : %.qsys
 %.qsys : %.tcl
-	qsys-script --cmd='source "$<"'
+	./util/altera/tcl2qsys.sh $< $@
 
 .PRECIOUS : %.sopcinfo
 %.sopcinfo : %.qsys
-	qsys-generate --synthesis=VHDL --output-directory='$(dir $<)' '$<'
+	./util/altera/qsys-generate.sh $<
 
 .PHONY : flow
 flow : $(IPs)
-	quartus_sh -t util/altera/flow.tcl top
+	./util/altera/flow.sh
 
 .PHONY : sof2flash
 sof2flash :

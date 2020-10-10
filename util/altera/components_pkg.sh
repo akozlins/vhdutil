@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eu
+set -euf
 
 # find '*.cmp' files
 # and make 'cmp' package
