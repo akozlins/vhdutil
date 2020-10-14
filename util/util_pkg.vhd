@@ -129,6 +129,11 @@ package util is
         v : unsigned--;
     ) return string;
 
+    -- Select Graphic Rendition
+    function sgr (
+        n : natural--;
+    ) return string;
+
 end package;
 
 package body util is
@@ -512,6 +517,13 @@ package body util is
     ) return string is
     begin
         return to_hstring(std_logic_vector(v));
+    end function;
+
+    function sgr (
+        n : natural--;
+    ) return string is
+    begin
+        return ESC & "[" & natural'image(n) & "m";
     end function;
 
 end package body;
