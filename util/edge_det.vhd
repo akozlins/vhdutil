@@ -8,8 +8,12 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+-- edge detector
 entity edge_det is
 generic (
+    -- EDGE > 0 - rising edge
+    -- EDGE < 0 - falling edge
+    -- EDGE = 0 (default) - both edges
     EDGE : integer := 0;
     -- bus width
     W : positive := 1--;
@@ -23,28 +27,30 @@ end entity;
 
 architecture arch of edge_det is
 
-    signal d : std_logic_vector(W-1 downto 0);
+    signal d0, d1 : std_logic_vector(W-1 downto 0);
 
 begin
+
+    d0 <= i_d;
 
     process(i_clk)
     begin
     if rising_edge(i_clk) then
-        d <= i_d;
+        d1 <= d0;
         --
     end if;
     end process;
 
     gen_rising_edge : if EDGE > 0 generate
-        o_q <= i_d and not d;
+        o_q <= d0 and not d1;
     end generate;
 
     gen : if EDGE = 0 generate
-        o_q <= i_d xor d;
+        o_q <= d1 xor d0;
     end generate;
 
     gen_faling_edge : if EDGE < 0 generate
-        o_q <= not i_d and d;
+        o_q <= not d0 and d1;
     end generate;
 
 end architecture;

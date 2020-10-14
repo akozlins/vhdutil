@@ -1,5 +1,5 @@
 
-.ONESHELL:
+.ONESHELL :
 
 CABLE=DE5
 SOF=output_files/top.sof

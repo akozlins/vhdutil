@@ -30,7 +30,7 @@ ip_%.qip : ip_%.v
 	./util/altera/qsys-generate.sh $<
 
 .PHONY : flow
-flow : $(IPs)
+flow : all
 	./util/altera/flow.sh
 
 .PHONY : sof2flash
