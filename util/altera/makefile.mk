@@ -2,6 +2,8 @@
 # author : Alexandr Kozlinskiy
 #
 
+.DEFAULT_GOAL := all
+
 .ONESHELL :
 
 ifndef QUARTUS_ROOTDIR
@@ -39,10 +41,11 @@ endif
 
 $(PREFIX)/top.qsf : top.qip $(PREFIX)
 	cat << EOF > $@
-	set_global_assignment -name QIP_FILE $<
+	set_global_assignment -name QIP_FILE top.qip
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:util/altera/pre_flow.tcl"
+	set_global_assignment -name QIP_FILE "ips.qip"
 	set_global_assignment -name VHDL_FILE "components_pkg.vhd"
 	EOF
 
@@ -50,6 +53,9 @@ QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(IPs))
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
 
 all : $(PREFIX)/top.qsf $(QSYS_FILES) $(SOPC_FILES)
+
+$(PREFIX) :
+	mkdir -pv $(PREFIX)
 
 .PRECIOUS : %.qip %.sip
 ip_%.qip : ip_%.v
@@ -66,6 +72,9 @@ $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 
 .PHONY : flow
 flow : all
+	find $(QSYS_FILES) -exec realpath --relative-to=$(PREFIX) {} \; \
+	    | awk '{print "set_global_assignment -name QSYS_FILE " $$0}' \
+	    > $(PREFIX)/ips.qip
 	( cd $(PREFIX) && ./util/altera/flow.sh )
 
 .PHONY : sof2flash

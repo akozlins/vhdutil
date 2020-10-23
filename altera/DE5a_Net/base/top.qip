@@ -6,5 +6,3 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "top.vhd"]
 set_global_assignment -name SDC_FILE [file join $::quartus(qip_path) "top.sdc"]
 
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "util/include.qip"]
-
-set_global_assignment -name QSYS_FILE [file join $::quartus(qip_path) "nios.qsys"]
