@@ -170,6 +170,7 @@ begin
     if ( rst_n = '0' ) then
         state <= S_FETCH;
         pc <= (others => '0');
+        flags <= (others => '0');
         --
     elsif rising_edge(clk) then
 

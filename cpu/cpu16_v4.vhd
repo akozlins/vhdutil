@@ -270,7 +270,7 @@ begin
     ----------------------------------------------------------------
 
     alu.a <= ex_reg_a when ( s_ex.reg_a_re ) else
-             std_logic_vector(resize(s_ex.pc, word_t'length)) when ( s_ex.op_loadi ) else
+             word_t(resize(s_ex.pc, word_t'length)) when ( s_ex.op_loadi ) else
              (others => '0');
     alu.b <= ex_reg_b when ( s_ex.reg_b_re ) else
              X"0001" when ( s_ex.op_loadi ) else

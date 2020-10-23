@@ -41,6 +41,8 @@ architecture arch of rv32i_cpu_v1 is
 
 begin
 
+    o_debug <= reg_wdata;
+
     i_ram : entity work.ram_dp
     generic map (
         W => 32,

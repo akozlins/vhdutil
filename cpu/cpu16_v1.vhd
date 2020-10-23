@@ -92,6 +92,7 @@ begin
         variable addr_v : ram_addr_t;
     begin
     if ( rst_n = '0' ) then
+        ram_we <= '0';
         state <= S_RESET;
         --
     elsif rising_edge(clk) then
