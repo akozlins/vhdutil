@@ -2,12 +2,22 @@
 # author : Alexandr Kozlinskiy
 #
 
+.ONESHELL :
+
 ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
 ifeq ($(PREFIX),)
     override PREFIX := .
+endif
+
+ifeq ($(CABLE),)
+    CABLE := 1
+endif
+
+ifeq ($(SOF),)
+    SOF := output_files/top.sof
 endif
 
 ifeq ($(NIOS_SOPCINFO),)
@@ -26,6 +36,15 @@ ifeq ($(APP_DIR),)
 endif
 
 .PRECIOUS : %.qip %.sip
+
+$(PREFIX)/top.qsf : top.qip $(PREFIX)
+	cat << EOF > $@
+	set_global_assignment -name QIP_FILE $<
+	set_global_assignment -name TOP_LEVEL_ENTITY top
+	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:util/altera/pre_flow.tcl"
+	set_global_assignment -name VHDL_FILE "components_pkg.vhd"
+	EOF
 
 QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(IPs))
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
