@@ -19,7 +19,7 @@ ifeq ($(CABLE),)
 endif
 
 ifeq ($(SOF),)
-    SOF := output_files/top.sof
+    SOF := $(PREFIX)/output_files/top.sof
 endif
 
 ifeq ($(NIOS_SOPCINFO),)
@@ -49,13 +49,19 @@ $(PREFIX)/top.qsf : $(PREFIX) top.qip $(PREFIX)/ips.qip
 	set_global_assignment -name VHDL_FILE "components_pkg.vhd"
 	EOF
 
+$(PREFIX)/top.qpf : $(PREFIX)/top.qsf
+	cat << EOF > $@
+	PROJECT_REVISION = "top"
+	EOF
+
 QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(IPs))
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
 
-all : $(PREFIX)/top.qsf $(QSYS_FILES) $(SOPC_FILES)
+all : $(PREFIX)/top.qpf $(QSYS_FILES) $(SOPC_FILES)
 
 $(PREFIX) :
 	mkdir -pv $(PREFIX)
+	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 
 $(PREFIX)/ips.qip :
 	echo "" > $@
