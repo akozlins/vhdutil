@@ -39,12 +39,12 @@ endif
 
 .PRECIOUS : %.qip %.sip
 
-$(PREFIX)/top.qsf : top.qip $(PREFIX)
+$(PREFIX)/top.qsf : $(PREFIX) top.qip $(PREFIX)/ips.qip
 	cat << EOF > $@
-	set_global_assignment -name QIP_FILE top.qip
+	set_global_assignment -name QIP_FILE $$(realpath --relative-to=$(PREFIX) top.qip)
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:util/altera/pre_flow.tcl"
+	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:./util/altera/pre_flow.tcl"
 	set_global_assignment -name QIP_FILE "ips.qip"
 	set_global_assignment -name VHDL_FILE "components_pkg.vhd"
 	EOF
@@ -56,6 +56,12 @@ all : $(PREFIX)/top.qsf $(QSYS_FILES) $(SOPC_FILES)
 
 $(PREFIX) :
 	mkdir -pv $(PREFIX)
+
+$(PREFIX)/ips.qip :
+	echo "" > $@
+	for ip in $(QSYS_FILES) ; do
+	    echo "set_global_assignment -name QSYS_FILE $$(realpath --relative-to=$(PREFIX) -- $$ip)" >> $@
+	done
 
 .PRECIOUS : %.qip %.sip
 ip_%.qip : ip_%.v
@@ -72,9 +78,6 @@ $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 
 .PHONY : flow
 flow : all
-	find $(QSYS_FILES) -exec realpath --relative-to=$(PREFIX) {} \; \
-	    | awk '{print "set_global_assignment -name QSYS_FILE " $$0}' \
-	    > $(PREFIX)/ips.qip
 	( cd $(PREFIX) && ./util/altera/flow.sh )
 
 .PHONY : sof2flash
