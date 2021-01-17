@@ -47,6 +47,12 @@ architecture arch of fifo_dc is
 
 begin
 
+    -- psl assert always ( i_re = '0' or rempty = '0' ) @ i_rclk;
+
+    -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_wclk;
+
+
+
     e_ram : entity work.ram_dp
     generic map (
         W => W,
