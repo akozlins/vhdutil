@@ -39,7 +39,7 @@ architecture arch of fifo_dc is
 
     signal re, we : std_logic;
     signal rempty, wfull : std_logic;
-    signal rptr, rgray, rwgray, wptr, wgray, wrgray : ptr_t;
+    signal rptr, rgray, rwgray, wptr, wgray, wrgray : ptr_t := (others => '0');
 
     attribute KEEP : string;
     attribute KEEP of rgray : signal is "true";
@@ -48,7 +48,6 @@ architecture arch of fifo_dc is
 begin
 
     -- psl assert always ( i_re = '0' or rempty = '0' ) @ i_rclk;
-
     -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_wclk;
 
 

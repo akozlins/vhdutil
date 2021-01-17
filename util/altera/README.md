@@ -1,4 +1,8 @@
-# Altera build utils
+# quartus build system
+
+## `top.qpf`
+## `top.qsf`
+## `top.qip`
 
 ## `makefile.mk`
 

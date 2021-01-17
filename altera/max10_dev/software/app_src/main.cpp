@@ -14,6 +14,7 @@ int main() {
         printf("\n");
         printf("  [a] => adc\n");
         printf("  [f] => ufm (flash)\n");
+        printf("  [t] => test\n");
 
         printf("Select entry ...\n");
         char cmd = wait_key();
@@ -24,6 +25,8 @@ int main() {
             break;
         case 'f':
             ufm.menu();
+            break;
+        case 't':
             break;
         default:
             printf("invalid command: '%c'\n", cmd);

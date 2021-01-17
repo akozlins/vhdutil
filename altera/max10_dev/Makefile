@@ -1,5 +1,5 @@
 
-CABLE=2
+CABLE=1
 
 IPs = \
     nios.tcl

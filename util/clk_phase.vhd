@@ -27,7 +27,7 @@ architecture arch of clk_phase is
 
     signal d, q : std_logic_vector(1 downto 0) := (others => '0');
 
-    signal cnt, phase : unsigned(o_phase'range);
+    signal cnt, phase : unsigned(o_phase'range) := (others => '0');
 
     -- avoid registers merge between clk_phase entities
     attribute ALTERA_ATTRIBUTE : string;

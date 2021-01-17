@@ -124,7 +124,7 @@ proc nios_base.connect_irq { name irq } {
 }
 
 # uart, timers, i2c, spi
-if 1 {
+proc nios_base.init {} {
     add_instance sysid altera_avalon_sysid_qsys
 
     add_instance jtag_uart altera_avalon_jtag_uart
@@ -165,6 +165,7 @@ if 1 {
 
     nios_base.add_pio pio 32 Output 0x700F0280
 }
+nios_base.init
 
 #package require cmdline
 
