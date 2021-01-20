@@ -31,18 +31,18 @@ struct ufm_t {
             printf("[ufm] -------- menu --------\n");
 
             printf("\n");
-            printf("  status =");
+            printf("  status = 0x%08X :", csr[0]);
             if((csr[0] & 0x3) == 0x0) printf(" IDLE");
             else if((csr[0] & 0x3) == 0x1) printf(" BUSY_ERASE");
             else if((csr[0] & 0x3) == 0x2) printf(" BUSY_WRITE");
             else if((csr[0] & 0x3) == 0x3) printf(" BUSY_READ");
-            printf(" %sRS", (csr[0] & 0x04) ? "" : "~");
-            printf(" %sWS", (csr[0] & 0x08) ? "" : "~");
-            printf(" %sES", (csr[0] & 0x10) ? "" : "~");
+            printf(" %sRS", (csr[0] & 0x04) ? "" : "!");
+            printf(" %sWS", (csr[0] & 0x08) ? "" : "!");
+            printf(" %sES", (csr[0] & 0x10) ? "" : "!");
             printf(" %d%d%d%d%d", (csr[0] >> 5) & 1, (csr[0] >> 6) & 1, (csr[0] >> 7) & 1, (csr[0] >> 8) & 1, (csr[0] >> 9) & 1);
             printf("\n");
 
-            printf("  control =");
+            printf("  control = 0x%08X :", csr[1]);
             printf(" 0x%05X", csr[1] & 0xFFFFF);
             printf(" 0x%01X", (csr[1] >> 20) & 0x7);
             printf(" %d%d%d%d%d", (csr[0] >> 23) & 1, (csr[0] >> 24) & 1, (csr[0] >> 25) & 1, (csr[0] >> 26) & 1, (csr[0] >> 27) & 1);
