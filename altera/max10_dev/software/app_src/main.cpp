@@ -7,6 +7,8 @@ adc_t adc;
 #include "ufm.h"
 ufm_t ufm;
 
+#include "test.h"
+
 int main() {
     base_init();
 
@@ -27,6 +29,7 @@ int main() {
             ufm.menu();
             break;
         case 't':
+            test();
             break;
         default:
             printf("invalid command: '%c'\n", cmd);
