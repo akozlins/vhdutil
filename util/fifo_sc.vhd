@@ -37,11 +37,8 @@ use ieee.numeric_std.all;
 
 architecture arch of fifo_sc is
 
-    type ram_t is array (2**ADDR_WIDTH_g-1 downto 0) of std_logic_vector(DATA_WIDTH_g-1 downto 0);
-    signal ram : ram_t;
-
-    subtype addr_t is unsigned(ADDR_WIDTH_g-1 downto 0);
-    subtype ptr_t is unsigned(ADDR_WIDTH_g downto 0);
+    subtype addr_t is std_logic_vector(ADDR_WIDTH_g-1 downto 0);
+    subtype ptr_t is std_logic_vector(ADDR_WIDTH_g downto 0);
 
     constant XOR_FULL_c : ptr_t := "10" & ( ADDR_WIDTH_g-2 downto 0 => '0' );
 
@@ -49,11 +46,19 @@ architecture arch of fifo_sc is
     signal rempty, wfull : std_logic;
     signal rptr, wptr, rptr_next, wptr_next : ptr_t := (others => '0');
 
+    signal rdata : std_logic_vector(DATA_WIDTH_g-1 downto 0);
+
+    signal rdw : std_logic;
+    signal rdata_rdw : std_logic_vector(DATA_WIDTH_g-1 downto 0);
+
 begin
 
     -- psl assert always ( i_rack = '0' or rempty = '0' ) @ i_clk ;
-
     -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_clk ;
+
+    -- psl assert always ( we = '1' |=> rempty = '0' ) @ i_clk ;
+    -- psl assert always ( rptr = wptr |-> rempty = '1' ) @ i_clk ;
+    -- psl assert always ( unsigned(rptr) = unsigned(wptr) + 2**ADDR_WIDTH_g |-> wfull = '1' ) @ i_clk ;
 
 
 
@@ -64,16 +69,17 @@ begin
     rack <= ( i_rack and not rempty );
     we <= ( i_we and not wfull );
 
-    rptr_next <= rptr + ("" & rack);
-    wptr_next <= wptr + ("" & we);
+    rptr_next <= std_logic_vector(unsigned(rptr) + ("" & rack));
+    wptr_next <= std_logic_vector(unsigned(wptr) + ("" & we));
 
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
-        rempty <= '1';
-        wfull <= '1';
         rptr <= (others => '0');
         wptr <= (others => '0');
+        rempty <= '1';
+        wfull <= '1';
+        rdw <= '0';
         --
     elsif rising_edge(i_clk) then
         -- advance pointers
@@ -83,16 +89,31 @@ begin
         rempty <= work.util.to_std_logic( rptr_next = wptr_next );
         wfull <= work.util.to_std_logic( (rptr_next xor wptr_next) = XOR_FULL_c );
 
-        -- infer RAM
-        if ( we = '1' ) then
-            ram(to_integer(wptr(addr_t'range))) <= i_wdata;
-        end if;
-        -- TODO : use ramstyle no_rw_check, simulate new data
+        -- read during write
+        rdw <= we and work.util.to_std_logic( rptr_next = wptr );
+        rdata_rdw <= i_wdata;
         --
     end if; -- rising_edge
     end process;
 
-    -- synchronous read (new data)
-    o_rdata <= ram(to_integer(rptr(addr_t'range)));
+    e_ram : entity work.ram_1r1w
+    generic map (
+        DATA_WIDTH_g => DATA_WIDTH_g,
+        ADDR_WIDTH_g => ADDR_WIDTH_g--,
+    )
+    port map (
+        i_raddr         => rptr_next(addr_t'range),
+        o_rdata         => rdata,
+        i_rclk          => i_clk,
+
+        i_waddr         => wptr(addr_t'range),
+        i_wdata         => i_wdata,
+        i_we            => we,
+        i_wclk          => i_clk--,
+    );
+
+    o_rdata <=
+        rdata_rdw when ( rdw = '1' ) else
+        rdata;
 
 end architecture;
