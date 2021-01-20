@@ -37,19 +37,17 @@ ifeq ($(APP_DIR),)
     APP_DIR := $(PREFIX)/software/app
 endif
 
-.PRECIOUS : %.qip %.sip
-
-$(PREFIX)/top.qsf : $(PREFIX) top.qip $(PREFIX)/ips.qip
+$(PREFIX)/top.qsf : $(PREFIX)/util $(PREFIX)/IPs.qip
 	cat << EOF > $@
-	set_global_assignment -name QIP_FILE $$(realpath --relative-to=$(PREFIX) top.qip)
+	set_global_assignment -name QIP_FILE $$(realpath --relative-to=$(PREFIX) -- top.qip)
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:./util/altera/pre_flow.tcl"
-	set_global_assignment -name QIP_FILE "ips.qip"
+	set_global_assignment -name QIP_FILE "IPs.qip"
 	set_global_assignment -name VHDL_FILE "components_pkg.vhd"
 	EOF
 
-$(PREFIX)/top.qpf : $(PREFIX)/top.qsf
+$(PREFIX)/top.qpf : $(PREFIX)
 	cat << EOF > $@
 	PROJECT_REVISION = "top"
 	EOF
@@ -57,16 +55,18 @@ $(PREFIX)/top.qpf : $(PREFIX)/top.qsf
 QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(IPs))
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
 
-all : $(PREFIX)/top.qpf $(QSYS_FILES) $(SOPC_FILES)
+all : $(PREFIX)/top.qpf $(PREFIX)/top.qsf $(QSYS_FILES) $(SOPC_FILES)
 
 $(PREFIX) :
 	mkdir -pv $(PREFIX)
+
+e$(PREFIX)/util : $(PREFIX)
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 
-$(PREFIX)/ips.qip :
+$(PREFIX)/IPs.qip : $(PREFIX)
 	echo "" > $@
 	for ip in $(QSYS_FILES) ; do
-	    echo "set_global_assignment -name QSYS_FILE $$(realpath --relative-to=$(PREFIX) -- $$ip)" >> $@
+	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$ip)\" ]" >> $@
 	done
 
 .PRECIOUS : %.qip %.sip
