@@ -1,8 +1,5 @@
 #
 
-package require qsys
-
-create_system {nios}
 source [ file join [ file dirname [ info script ] ] "device.tcl" ]
 
 source [ file join [ file dirname [ info script ] ] "util/nios_base.tcl" ]

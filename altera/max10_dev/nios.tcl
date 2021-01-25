@@ -1,7 +1,5 @@
 #
 
-create_system {nios}
-
 source {device.tcl}
 
 source {util/nios_base.tcl}
