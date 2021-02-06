@@ -4,6 +4,7 @@ set -euf
 TCL=$1
 QSYS=$2
 
+# use tcl file basename as system name
 NAME=$(basename -- "$TCL")
 NAME=${NAME%.*}
 
