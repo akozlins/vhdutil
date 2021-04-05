@@ -1,5 +1,7 @@
 #
 
+package require qsys;
+
 # ::add_fifo --
 #
 #   Add FIFO Intel FPGA IP (fifo) instance and auto export.

@@ -1,8 +1,0 @@
-#
-
-# include qsys files
-foreach f [ lsort [ glob -nocomplain -directory $::quartus(qip_path) -- \
-    "*.qsys" \
-] ] {
-    set_global_assignment -name QSYS_FILE $f
-}

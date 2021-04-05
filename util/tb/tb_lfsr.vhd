@@ -25,10 +25,10 @@ begin
         g_TAPS => "10111000"--,
     )
     port map (
-        o_lfsr      => lfsr,
+        o_lfsr                  => lfsr,
 
-        i_reset_n   => reset_n,
-        i_clk       => clk--,
+        i_reset_n               => reset_n,
+        i_clk                   => clk--,
     );
 
     process
