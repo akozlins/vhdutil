@@ -98,8 +98,8 @@ begin
 
     e_ram : entity work.ram_1r1w
     generic map (
-        DATA_WIDTH_g => DATA_WIDTH_g,
-        ADDR_WIDTH_g => ADDR_WIDTH_g--,
+        g_DATA_WIDTH => DATA_WIDTH_g,
+        g_ADDR_WIDTH => ADDR_WIDTH_g--,
     )
     port map (
         i_raddr         => rptr_next(addr_t'range),
