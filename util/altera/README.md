@@ -1,21 +1,24 @@
-# quartus build system
+#
 
 ## `top.qpf`
+
 ## `top.qsf`
+
 ## `top.qip`
 
 ## `makefile.mk`
 
-TODO
+This `mk` file contains helper tagets
+that allow to process specific quartus build steps:
 
-## Simulation
+- generate `qsys` files
+- generate `sopcinfo` files
+- generate BSP from NIOS `sopcinfo` file
+- build software for NIOS
+- execute flow command on quartus project (compile firmware)
 
-```
-# compile altera libs
-/usr/lib/ghdl/vendors/compile-altera.sh \
-    --src "$QUARTUS_ROOTDIR/eda/sim_lib" \
-    --out "$HOME/.cache/altera-quartus" \
-    --altera
-# run simulation
-./sim.sh <tb_entity> <sources>
-```
+The `qsys` files can be created from quartus
+either by creating new system in QSYS editor
+or by generating specific IP.
+
+The `sopcinfo` files are generated directly from `qsys` files.
