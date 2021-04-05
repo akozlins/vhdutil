@@ -35,7 +35,7 @@ endif
 
 # location (directory) of main.cpp
 ifeq ($(SRC_DIR),)
-    SRC_DIR := software/app_src
+    SRC_DIR := software
 endif
 
 # destination for generated BSP

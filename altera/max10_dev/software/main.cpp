@@ -1,5 +1,5 @@
 
-#include "../include/base.h"
+#include "include/base.h"
 
 #include "adc.h"
 adc_t adc;

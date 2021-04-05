@@ -3,12 +3,12 @@
  * date : 2019
  */
 
-#include "../include/base.h"
+#include "include/base.h"
 
-#include "../include/a10/flash.h"
+#include "include/a10/flash.h"
 flash_t flash;
 
-#include "../include/a10/fan.h"
+#include "include/a10/fan.h"
 fan_t fan;
 
 int main() {
