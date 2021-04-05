@@ -85,16 +85,18 @@ $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	for file in $(QSYS_FILES) ; do \
 	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file)\" ]" >> $@ ; \
 	done
+	# add qmegawiz *.qip files
+	for file in $(patsubst %.vhd,%,$(QMEGAWIZ_VHD_FILES)) ; do \
+	    [ -e $$file.qip ] && echo "set_global_assignment -name QIP_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qip)\" ]" >> $@ ; \
+	    [ -e $$file.qip ] || echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.vhd)\" ]" >> $@ ; \
+	    >> $@ ; \
+	done
 
 device.tcl :
 	touch $@
 
-.PRECIOUS : %.qip %.sip
-ip_%.qip : ip_%.v
-#	qmegawiz -silent OPTIONAL_FILES=NONE ip_$*.v
-	qmegawiz -silent ip_$*.v
-#	sed -r 's/ +/ /g' -i ip_$*.v
-	touch ip_$*.qip
+$(PREFIX)/%.vhd : %.vhd.qmegawiz
+	./util/altera/qmegawiz.sh $< $@
 
 $(PREFIX)/%.qsys : %.tcl device.tcl $(PREFIX)
 	./util/altera/tcl2qsys.sh $< $@
