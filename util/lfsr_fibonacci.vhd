@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-
 -- https://en.wikipedia.org/wiki/Linear-feedback_shift_register
 entity lfsr_fibonacci is
 generic (
@@ -20,29 +19,25 @@ end entity;
 architecture arch of lfsr_fibonacci is
 
     signal lfsr : std_logic_vector(o_lfsr'range);
+    signal feedback : std_logic;
 
 begin
 
     o_lfsr <= lfsr;
 
-    process(i_clk, i_reset_n)
-        variable feedback : std_logic;
-    begin
-    if ( i_reset_n = '0' ) then
-        lfsr <= (others => '0');
-        lfsr(g_INIT'length-1 downto 0) <= g_INIT;
-        --
-    elsif rising_edge(i_clk) then
-        feedback := '0';
-        -- handle taps
-        for i in lfsr'range loop
-            if ( g_TAPS(i) = '1' ) then
-                feedback := feedback xor lfsr(i);
-            end if;
-        end loop;
-        lfsr <= lfsr(lfsr'left-1 downto 0) & feedback;
-        --
-    end if;
-    end process;
+    feedback <= work.util.xor_reduce((lfsr & '0') and g_TAPS);
+
+    e_lfsr : entity work.shift_register
+    generic map (
+        g_W => lfsr'length,
+        g_INIT => g_INIT--,
+    )
+    port map (
+        o_q         => lfsr,
+        i_d         => feedback,
+
+        i_reset_n   => i_reset_n,
+        i_clk       => i_clk--,
+    );
 
 end architecture;
