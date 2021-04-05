@@ -12,29 +12,29 @@ generic (
     N : positive := 16#FFFF#--;
 );
 port (
-    rstout_n    : out   std_logic_vector(W-1 downto 0);
+    o_reset_n   : out   std_logic_vector(W-1 downto 0);
 
-    rst_n       : in    std_logic;
-    clk         : in    std_logic--;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
 architecture arch of reset_ctrl is
 
-    signal ff0 : std_logic_vector(rstout_n'range);
+    signal ff0 : std_logic_vector(o_reset_n'range);
     signal cnt : integer range 0 to N;
 
 begin
 
-    rstout_n <= ff0;
+    o_reset_n <= ff0;
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
     begin
-    if ( rst_n = '0' ) then
+    if ( i_reset_n = '0' ) then
         ff0 <= (others => '0');
         cnt <= 0;
         --
-    elsif rising_edge(clk) then
+    elsif rising_edge(i_clk) then
         if cnt = N then
             ff0 <= work.util.shift_right(ff0, 1);
             ff0(ff0'left) <= '1';

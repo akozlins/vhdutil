@@ -13,37 +13,37 @@ generic (
     N : positive := 16#FFFF#--;
 );
 port (
-    d           : in    std_logic_vector(W-1 downto 0);
+    i_d         : in    std_logic_vector(W-1 downto 0);
 
-    rstout_n    : out   std_logic;
+    o_reset_n   : out   std_logic;
 
-    rst_n       : in    std_logic;
-    clk         : in    std_logic--;
+    i_reset_n   : in    std_logic;
+    i_clk       : in    std_logic--;
 );
 end entity;
 
 architecture arch of watchdog is
 
-    signal ff0 : std_logic_vector(d'range);
+    signal ff0 : std_logic_vector(i_d'range);
     signal cnt : integer range 0 to N;
 
 begin
 
-    process(clk, rst_n)
+    process(i_clk, i_reset_n)
     begin
-    if ( rst_n = '0' ) then
-        rstout_n <= '0';
+    if ( i_reset_n = '0' ) then
+        o_reset_n <= '0';
         ff0 <= (others => '0');
         cnt <= 0;
         --
-    elsif rising_edge(clk) then
-        rstout_n <= '1';
-        ff0 <= d;
+    elsif rising_edge(i_clk) then
+        o_reset_n <= '1';
+        ff0 <= i_d;
         cnt <= 0;
 
         if cnt = N then
-            rstout_n <= '0';
-        elsif ( ff0 = d ) then
+            o_reset_n <= '0';
+        elsif ( ff0 = i_d ) then
             cnt <= cnt + 1;
         end if;
         --
