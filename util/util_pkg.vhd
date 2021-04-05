@@ -156,6 +156,12 @@ package util is
         n : natural--;
     ) return string;
 
+    -- get next Round-Robin index
+    function round_robin_next (
+        i : std_logic_vector;
+        req : std_logic_vector--;
+    ) return std_logic_vector;
+
 end package;
 
 package body util is
@@ -599,6 +605,28 @@ package body util is
     ) return string is
     begin
         return ESC & "[" & natural'image(n) & "m";
+    end function;
+
+    function round_robin_next (
+        -- one hot encoded active link
+        i : std_logic_vector;
+        -- bit encoded available links
+        req : std_logic_vector--;
+    ) return std_logic_vector is
+        variable mask, nxt : std_logic_vector(i'range);
+    begin
+        -- bits to the right of active link
+        mask := std_logic_vector(unsigned(i) - 1);
+        -- ... to the left ...
+        mask := not mask xor i;
+        -- selects availabe links to the left of active link
+        nxt := req and mask;
+        if ( nxt = (nxt'range => '0') ) then
+            -- select all available links
+            nxt := req or i;
+        end if;
+        -- return least significant set bit
+        return nxt and std_logic_vector(unsigned(not nxt) + 1);
     end function;
 
 end package body;
