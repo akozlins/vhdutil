@@ -18,24 +18,41 @@ ifeq ($(CABLE),)
     CABLE := 1
 endif
 
+# location of compiled firmware (SOF file)
 ifeq ($(SOF),)
     SOF := $(PREFIX)/output_files/top.sof
 endif
 
+# location of generated nios.sopcinfo
 ifeq ($(NIOS_SOPCINFO),)
     NIOS_SOPCINFO := $(PREFIX)/nios.sopcinfo
 endif
 
-BSP_SCRIPT := software/hal_bsp.tcl
-SRC_DIR := software/app_src
+# tcl script to generate BSP
+ifeq ($(BSP_SCRIPT),)
+    BSP_SCRIPT := software/hal_bsp.tcl
+endif
 
+# location (directory) of main.cpp
+ifeq ($(SRC_DIR),)
+    SRC_DIR := software/app_src
+endif
+
+# destination for generated BSP
 ifeq ($(BSP_DIR),)
     BSP_DIR := $(PREFIX)/software/hal_bsp
 endif
 
+# destination for compiled software (nios)
 ifeq ($(APP_DIR),)
     APP_DIR := $(PREFIX)/software/app
 endif
+
+QSYS_TCL_FILES := $(filter %.tcl,$(IPs))
+QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(QSYS_TCL_FILES))
+SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
+QMEGAWIZ_XML_FILES := $(filter %.vhd.qmegawiz,$(IPs))
+QMEGAWIZ_VHD_FILES := $(patsubst %.vhd.qmegawiz,$(PREFIX)/%.vhd,$(QMEGAWIZ_XML_FILES))
 
 $(PREFIX)/top.qsf : $(PREFIX)/include.qip
 	cat << EOF > $@
@@ -51,24 +68,26 @@ $(PREFIX)/top.qpf : $(PREFIX)
 	PROJECT_REVISION = "top"
 	EOF
 
-QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(IPs))
-SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
-
-all : $(PREFIX)/top.qpf $(PREFIX)/top.qsf
+all : $(PREFIX)/include.qip $(PREFIX)/top.qpf $(PREFIX)/top.qsf
 
 $(PREFIX) :
 	mkdir -pv $(PREFIX)
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 
-.PHONY : $(PREFIX)/componets_pkg.vhd
-$(PREFIX)/componets_pkg.vhd : $(PREFIX) $(SOPC_FILES)
+.PHONY : $(PREFIX)/components_pkg.vhd
+$(PREFIX)/components_pkg.vhd : $(PREFIX) $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
 	( cd $(PREFIX) ; ./util/altera/components_pkg.sh )
 
-$(PREFIX)/include.qip : $(PREFIX)/componets_pkg.vhd $(QSYS_FILES)
+$(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
+	# components package
 	echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"components_pkg.vhd\" ]" > $@
-	for ip in $(QSYS_FILES) ; do \
-	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$ip)\" ]" >> $@ ; \
+	# add qsys *.qsys files
+	for file in $(QSYS_FILES) ; do \
+	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file)\" ]" >> $@ ; \
 	done
+
+device.tcl :
+	touch $@
 
 .PRECIOUS : %.qip %.sip
 ip_%.qip : ip_%.v
@@ -77,7 +96,7 @@ ip_%.qip : ip_%.v
 #	sed -r 's/ +/ /g' -i ip_$*.v
 	touch ip_$*.qip
 
-$(PREFIX)/%.qsys : %.tcl
+$(PREFIX)/%.qsys : %.tcl device.tcl $(PREFIX)
 	./util/altera/tcl2qsys.sh $< $@
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
@@ -113,13 +132,13 @@ bsp : $(BSP_DIR)
 .PHONY : $(APP_DIR)/main.elf
 $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)
 	nios2-app-generate-makefile \
-	    --set ALT_CFLAGS "-pedantic -Wall -Wextra -Wformat=0 -std=c++11" \
+	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic -std=c++14" \
 	    --bsp-dir $(BSP_DIR) --app-dir $(APP_DIR) --src-dir $(SRC_DIR)
 	$(MAKE) -C $(APP_DIR) clean
 	$(MAKE) -C $(APP_DIR)
 	nios2-elf-objcopy $(APP_DIR)/main.elf -O srec $(APP_DIR)/main.srec
-	# generate flash image (srec)
-	( cd $(APP_DIR) ; make mem_init_generate )
+	# generate flash (srec) image (see AN730 / HEX File Generation)
+	$(MAKE) -C $(APP_DIR) mem_init_generate
 
 .PHONY : app
 app : $(APP_DIR)/main.elf
