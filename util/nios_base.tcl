@@ -167,6 +167,9 @@ proc nios_base.init {} {
     set_interface_property spi EXPORTOF spi.external
 
     nios_base.add_pio pio 32 Output 0x700F0280
+
+    # i2c slave select port
+    nios_base.add_pio i2c_mask 32 Output 0x700F02A0
 }
 nios_base.init
 

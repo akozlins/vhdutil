@@ -10,6 +10,8 @@
  */
 struct fan_t {
     i2c_t i2c;
+    uint32_t i2c_mask;
+    alt_u8 i2c_slave;
 
     const alt_u32 fclk = 254000;
 
@@ -17,20 +19,36 @@ struct fan_t {
     alt_u8 scale = 4;
     alt_u8 rps = 50;
 
+    fan_t(uint32_t i2c_mask = 0xFFFFFFFF, alt_u8 i2c_slave = 0x48)
+        : i2c_mask(i2c_mask)
+        , i2c_slave(i2c_slave)
+    {
+    }
+
+    alt_u8 get(alt_u8 addr) {
+        i2c.set_mask(i2c_mask);
+        return i2c.get(i2c_slave, addr);
+    }
+
+    void set(alt_u8 addr, alt_u8 data) {
+        i2c.set_mask(i2c_mask);
+        i2c.set(i2c_slave, addr, data);
+    }
+
     alt_u8 get_rps() {
-        return scale * fclk / ( 128 * 2 * (i2c.get(0x48, 0x00) + 1));
+        return scale * fclk / ( 128 * 2 * (get(0x00) + 1));
     }
 
     void set_rps(alt_u8 rps) {
-        i2c.set(0x48, 0x00, scale * fclk / (128 * 2 * rps) - 1);
+        set(0x00, scale * fclk / (128 * 2 * rps) - 1);
     }
 
     void init() {
-        i2c.set(0x48, 0x16, 0x02); // tachometer count time
-        i2c.set(0x48, 0x08, 0x07); // alarm enable
-        i2c.set(0x48, 0x04, 0xF5); // gpio definition
-        i2c.set(0x48, 0x02, 0x2A); // configuration
-//        i2c.set(0x48, 0x00, 0x4E); // fan speed
+        set(0x16, 0x02); // tachometer count time
+        set(0x08, 0x07); // alarm enable
+        set(0x04, 0xF5); // gpio definition
+        set(0x02, 0x2A); // configuration
+//        set(0x00, 0x4E); // fan speed
         set_rps(rps);
     }
 
@@ -44,9 +62,9 @@ struct fan_t {
                 "  conf = 0x%02X, gpio = 0x%02X, tach = 0x%02X\n"
                 "  alarm = 0x%02X => 0x%02X\n"
                 "  rps = 0x%02X (%u) => %u\n",
-                i2c.get(0x48, 0x02), i2c.get(0x48, 0x04), i2c.get(0x48, 0x16),
-                i2c.get(0x48, 0x08), i2c.get(0x48, 0x0A),
-                i2c.get(0x48, 0x00), rps, i2c.get(0x48, 0x0C) / 2
+                get(0x02), get(0x04), get(0x16),
+                get(0x08), get(0x0A),
+                get(0x00), rps, get(0x0C) / 2
             );
 
             printf("\n");
