@@ -9,7 +9,7 @@
 flash_t flash;
 
 #include "include/a10/fan.h"
-fan_t fan;
+fan_t fan(0x01);
 
 int main() {
     base_init();
@@ -19,16 +19,16 @@ int main() {
     flash.init();
 
     while (1) {
-        printf("  [0] => flash\n");
-        printf("  [1] => fan\n");
+        printf("  [1] => flash\n");
+        printf("  [8] => fan\n");
 
         printf("Select entry ...\n");
         char cmd = wait_key();
         switch(cmd) {
-        case '0':
+        case '1':
             flash.menu();
             break;
-        case '1':
+        case '8':
             fan.menu();
             break;
         default:

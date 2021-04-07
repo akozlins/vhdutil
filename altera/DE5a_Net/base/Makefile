@@ -1,8 +1,8 @@
 
-CABLE=DE5
+CABLE := DE5
 
-IPs = \
-    ip/ip_pcie.tcl \
+IPs := \
+    $(wildcard ip/*.tcl) \
     nios.tcl
 
 include util/altera/makefile.mk

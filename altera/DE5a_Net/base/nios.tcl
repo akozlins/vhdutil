@@ -1,8 +1,9 @@
 #
 
-source [ file join [ file dirname [ info script ] ] "device.tcl" ]
+source {device.tcl}
 
-source [ file join [ file dirname [ info script ] ] "util/nios_base.tcl" ]
+source {util/nios_base.tcl}
 set_instance_parameter_value ram {memorySize} {0x00080000}
+set_instance_parameter_value spi numberOfSlaves 32
 
-source [ file join [ file dirname [ info script ] ] "util/altera/modules/flash1616.tcl" ]
+source {util/flash1616.tcl}
