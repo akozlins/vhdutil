@@ -79,7 +79,8 @@ all : $(PREFIX)/include.qip $(PREFIX)/top.qpf $(PREFIX)/top.qsf
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
-	./util/altera/components_pkg.sh "$(PREFIX)" > "$@"
+	# find and exec components_pkg.sh
+	$(lastword $(realpath $(addsuffix components_pkg.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)" > "$@"
 
 # include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
@@ -100,20 +101,24 @@ device.tcl :
 	touch -- "$@"
 
 $(PREFIX)/%.vhd : %.vhd.qmegawiz
-	./util/altera/qmegawiz.sh "$<" "$@"
+	# find and exec qmegawiz.sh
+	$(lastword $(realpath $(addsuffix qmegawiz.sh,$(dir $(MAKEFILE_LIST))))) "$<" "$@"
 
 $(PREFIX)/%.qsys : %.tcl device.tcl
 	mkdir -pv $(PREFIX)
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
-	./util/altera/tcl2qsys.sh "$<" "$@"
+	# find and exec tcl2qsys.sh
+	$(lastword $(realpath $(addsuffix tcl2qsys.sh,$(dir $(MAKEFILE_LIST))))) "$<" "$@"
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
-	./util/altera/qsys-generate.sh "$<"
+	# find and exec qsys-generate.sh
+	$(lastword $(realpath $(addsuffix qsys-generate.sh,$(dir $(MAKEFILE_LIST))))) "$<"
 
 .PHONY : flow
 flow : all
-	( cd $(PREFIX) && ./util/altera/flow.sh )
+	# find and exec flow.sh
+	( cd -- "$(PREFIX)" && $(lastword $(realpath $(addsuffix flow.sh,$(dir $(MAKEFILE_LIST))))) )
 
 .PHONY : sof2flash
 sof2flash :
