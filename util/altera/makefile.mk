@@ -21,7 +21,7 @@ endif
 
 # location of compiled firmware (SOF file)
 ifeq ($(SOF),)
-    SOF := $(PREFIX)/output_files/top.sof
+    SOF := output_files/top.sof
 endif
 
 # location of generated nios.sopcinfo
@@ -61,21 +61,21 @@ QMEGAWIZ_XML_FILES := $(filter %.vhd.qmegawiz,$(IPs))
 QMEGAWIZ_VHD_FILES := $(patsubst %.vhd.qmegawiz,$(PREFIX)/%.vhd,$(QMEGAWIZ_XML_FILES))
 
 # default qpf file
-$(PREFIX)/top.qpf :
+top.qpf :
 	cat << EOF > "$@"
 	PROJECT_REVISION = "top"
 	EOF
 
 # default qsf file - load top.qip, and generated include.qip
-$(PREFIX)/top.qsf : $(PREFIX)/include.qip
+top.qsf : $(MAKEFILE_LIST)
 	cat << EOF > "$@"
-	set_global_assignment -name QIP_FILE $$(realpath --relative-to=$(PREFIX) -- top.qip)
+	set_global_assignment -name QIP_FILE top.qip
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-	set_global_assignment -name QIP_FILE "include.qip"
+	set_global_assignment -name QIP_FILE $(PREFIX)/include.qip
 	EOF
 
-all : $(PREFIX)/include.qip $(PREFIX)/top.qpf $(PREFIX)/top.qsf
+all : top.qpf top.qsf $(PREFIX)/include.qip
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
@@ -118,7 +118,7 @@ $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 .PHONY : flow
 flow : all
 	# find and exec flow.sh
-	( cd -- "$(PREFIX)" && $(lastword $(realpath $(addsuffix flow.sh,$(dir $(MAKEFILE_LIST))))) )
+	$(lastword $(realpath $(addsuffix flow.sh,$(dir $(MAKEFILE_LIST)))))
 
 .PHONY : sof2flash
 sof2flash :
