@@ -4,6 +4,10 @@ set -euf
 # find '*.cmp' files
 # and make 'cmp' package
 
+if [ $# -ge 1 ] ; then
+    cd -- "$1" || exit
+fi
+
 (
 
 cat << EOF
@@ -22,4 +26,4 @@ cat << EOF
 end package;
 EOF
 
-) > components_pkg.vhd
+)

@@ -61,7 +61,7 @@ QMEGAWIZ_XML_FILES := $(filter %.vhd.qmegawiz,$(IPs))
 QMEGAWIZ_VHD_FILES := $(patsubst %.vhd.qmegawiz,$(PREFIX)/%.vhd,$(QMEGAWIZ_XML_FILES))
 
 # default qpf file
-$(PREFIX)/top.qpf : $(PREFIX)
+$(PREFIX)/top.qpf :
 	cat << EOF > "$@"
 	PROJECT_REVISION = "top"
 	EOF
@@ -77,13 +77,9 @@ $(PREFIX)/top.qsf : $(PREFIX)/include.qip
 
 all : $(PREFIX)/include.qip $(PREFIX)/top.qpf $(PREFIX)/top.qsf
 
-$(PREFIX) :
-	mkdir -pv $(PREFIX)
-	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
-
 .PHONY : $(PREFIX)/components_pkg.vhd
-$(PREFIX)/components_pkg.vhd : $(PREFIX) $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
-	( cd $(PREFIX) ; ./util/altera/components_pkg.sh )
+$(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
+	./util/altera/components_pkg.sh "$(PREFIX)" > "$@"
 
 # include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
@@ -106,7 +102,10 @@ device.tcl :
 $(PREFIX)/%.vhd : %.vhd.qmegawiz
 	./util/altera/qmegawiz.sh "$<" "$@"
 
-$(PREFIX)/%.qsys : %.tcl device.tcl $(PREFIX)
+$(PREFIX)/%.qsys : %.tcl device.tcl
+	mkdir -pv $(PREFIX)
+	# util link is used by qsys to find _hw.tcl modules
+	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 	./util/altera/tcl2qsys.sh "$<" "$@"
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
