@@ -10,6 +10,7 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
+# directory for generated files (*.qsys, *.sopcinfo, etc.)
 ifeq ($(PREFIX),)
     override PREFIX := .cache
 endif
@@ -48,24 +49,30 @@ ifeq ($(APP_DIR),)
     APP_DIR := $(PREFIX)/software/app
 endif
 
+# list all .tcl files
 QSYS_TCL_FILES := $(filter %.tcl,$(IPs))
+# convert all .tcl files into .qsys files
 QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(QSYS_TCL_FILES))
+# convert all .qsys files into .sopcinfo files
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
+# list all .vhd.qmegawiz files
 QMEGAWIZ_XML_FILES := $(filter %.vhd.qmegawiz,$(IPs))
+# convert all .vhd.qmegawiz files into .vhd files
 QMEGAWIZ_VHD_FILES := $(patsubst %.vhd.qmegawiz,$(PREFIX)/%.vhd,$(QMEGAWIZ_XML_FILES))
 
+# default qpf file
+$(PREFIX)/top.qpf : $(PREFIX)
+	cat << EOF > "$@"
+	PROJECT_REVISION = "top"
+	EOF
+
+# default qsf file - load top.qip, and generated include.qip
 $(PREFIX)/top.qsf : $(PREFIX)/include.qip
 	cat << EOF > "$@"
 	set_global_assignment -name QIP_FILE $$(realpath --relative-to=$(PREFIX) -- top.qip)
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:./util/altera/pre_flow.tcl"
 	set_global_assignment -name QIP_FILE "include.qip"
-	EOF
-
-$(PREFIX)/top.qpf : $(PREFIX)
-	cat << EOF > "$@"
-	PROJECT_REVISION = "top"
 	EOF
 
 all : $(PREFIX)/include.qip $(PREFIX)/top.qpf $(PREFIX)/top.qsf
@@ -78,6 +85,7 @@ $(PREFIX) :
 $(PREFIX)/components_pkg.vhd : $(PREFIX) $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
 	( cd $(PREFIX) ; ./util/altera/components_pkg.sh )
 
+# include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	# components package
 	echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"components_pkg.vhd\" ]" > "$@"
@@ -91,6 +99,7 @@ $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	    [ -e "$$file.qip" ] || echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.vhd)\" ]" >> "$@"
 	done
 
+# default device.tcl file
 device.tcl :
 	touch -- "$@"
 
