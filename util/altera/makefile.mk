@@ -11,6 +11,7 @@ ifndef QUARTUS_ROOTDIR
 endif
 
 # directory for generated files (*.qsys, *.sopcinfo, etc.)
+# TODO: rename PREFIX -> QP_TMP_DIR
 ifeq ($(PREFIX),)
     override PREFIX := .cache
 endif
@@ -30,24 +31,32 @@ ifeq ($(NIOS_SOPCINFO),)
 endif
 
 # tcl script to generate BSP
+# TODO: rename BSP_SCRIPT to NIOS_BSP_SCRIPT
 ifeq ($(BSP_SCRIPT),)
     BSP_SCRIPT := software/hal_bsp.tcl
 endif
 
 # location (directory) of main.cpp
+# TODO: rename SRC_DIR to NIOS_SRC_DIR
 ifeq ($(SRC_DIR),)
     SRC_DIR := software
 endif
 
 # destination for generated BSP
+# TODO: rename BSP_DIR to NIOS_BSP_DIR
 ifeq ($(BSP_DIR),)
     BSP_DIR := $(PREFIX)/software/hal_bsp
 endif
 
 # destination for compiled software (nios)
+# TODO: rename APP_DIR to NIOS_APP_DIR
 ifeq ($(APP_DIR),)
     APP_DIR := $(PREFIX)/software/app
 endif
+
+# TODO: how to solve ../ in path to .tcl file?
+# TODO: - use $(addprefix $(PREFIX),$(realpath $(...)))
+# TODO: - or use $(subst $(DOTDOT),DOTDOT,...)
 
 # list all .tcl files
 QSYS_TCL_FILES := $(filter %.tcl,$(IPs))
@@ -145,6 +154,7 @@ bsp : $(BSP_DIR)
 .PRECIOUS : $(APP_DIR)/main.elf
 .PHONY : $(APP_DIR)/main.elf
 $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)
+	# TODO: --elf-name
 	nios2-app-generate-makefile \
 	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic -std=c++14" \
 	    --bsp-dir "$(BSP_DIR)" --app-dir "$(APP_DIR)" --src-dir "$(SRC_DIR)"
