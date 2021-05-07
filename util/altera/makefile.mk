@@ -141,19 +141,19 @@ update_mif :
 pgm : $(SOF)
 	quartus_pgm -m jtag -c "$(CABLE)" --operation="p;$(SOF)"
 
-.PRECIOUS : $(BSP_DIR)
-$(BSP_DIR) : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
+.PRECIOUS : $(BSP_DIR)/settings.bsp
+$(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
 	mkdir -pv -- "$(BSP_DIR)"
 	nios2-bsp-create-settings \
 	    --type hal --script "$(SOPC_KIT_NIOS2)/sdk2/bin/bsp-set-defaults.tcl" \
 	    --sopc $(NIOS_SOPCINFO) --cpu-name cpu \
 	    --bsp-dir "$(BSP_DIR)" --settings "$(BSP_DIR)/settings.bsp" --script "$(BSP_SCRIPT)"
 
-bsp : $(BSP_DIR)
+bsp : $(BSP_DIR)/settings.bsp
 
 .PRECIOUS : $(APP_DIR)/main.elf
 .PHONY : $(APP_DIR)/main.elf
-$(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)
+$(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)/settings.bsp
 	# TODO: --elf-name
 	nios2-app-generate-makefile \
 	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic -std=c++14" \
