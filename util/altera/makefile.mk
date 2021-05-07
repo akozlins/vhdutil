@@ -106,6 +106,8 @@ $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	    [ -e "$$file.qip" ] && echo "set_global_assignment -name QIP_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qip)\" ]" >> "$@"
 	    [ -e "$$file.qip" ] || echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.vhd)\" ]" >> "$@"
 	done
+	# add $(APP_DIR)/mem_init/meminit.qip
+	echo "set_global_assignment -name QIP_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $(APP_DIR)/mem_init/meminit.qip)\" ]" >> "$@"
 
 # default device.tcl file
 device.tcl :
@@ -131,13 +133,9 @@ flow : all
 	# find and exec flow.sh
 	$(lastword $(realpath $(addsuffix flow.sh,$(dir $(MAKEFILE_LIST)))))
 
-.PHONY : sof2flash
-sof2flash :
-	sof2flash --pfl --programmingmode=PS \
-	    --optionbit=0x00030000 \
-	    --input="$(SOF)" \
-	    --output="$(SOF).flash" --offset=0x02B40000
-	objcopy -Isrec -Obinary "$(SOF).flash" "$(SOF).bin"
+update_mif :
+	quartus_cdb top --update_mif
+	quartus_asm top
 
 .PHONY : pgm
 pgm : $(SOF)
@@ -168,14 +166,6 @@ $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)
 
 .PHONY : app
 app : $(APP_DIR)/main.elf
-
-.PHONY : app_flash
-app_flash :
-	nios2-flash-programmer -c "$(CABLE)" --base=0x0 "$(APP_DIR)/main.flash"
-
-.PHONY : flash
-flash : app_flash
-	nios2-flash-programmer -c "$(CABLE)" --base=0x0 "$(SOF).flash"
 
 .PHONY : app_upload
 app_upload : app

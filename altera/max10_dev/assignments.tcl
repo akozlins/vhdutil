@@ -1,5 +1,8 @@
 #
 
+# Configuration mode: Single Uncompressed Image with Memory Initialization
+set_global_assignment -name INTERNAL_FLASH_UPDATE_MODE "SINGLE IMAGE WITH ERAM"
+
 set_location_assignment PIN_120 -to i_sw[0]
 set_location_assignment PIN_124 -to i_sw[1]
 set_location_assignment PIN_127 -to i_sw[2]
