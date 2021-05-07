@@ -4,9 +4,9 @@
 #
 
 set dir0 [ file dirname [ info script ] ]
-source [ file join $dir0 "mm.tcl" ]
-source [ file join $dir0 "ufm.tcl" ]
-source [ file join $dir0 "srec.tcl" ]
+source [ file join $dir0 "../util/altera/tcl/mm.tcl" ]
+source [ file join $dir0 "../util/altera/tcl/srec.tcl" ]
+source [ file join $dir0 "../util/altera/tcl/ufm.tcl" ]
 
 
 

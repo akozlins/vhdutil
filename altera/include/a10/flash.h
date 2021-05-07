@@ -1,3 +1,5 @@
+#ifndef __UTIL_A10_FLAHS_H__
+#define __UTIL_A10_FLAHS_H__
 
 #include "cfi1616.h"
 
@@ -114,3 +116,5 @@ struct flash_t {
         }
     }
 };
+
+#endif // __UTIL_A10_FLAHS_H__

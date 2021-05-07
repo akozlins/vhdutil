@@ -5,8 +5,8 @@
  * date : 2017-11-13
  */
 
-#ifndef SOFTWARE_APP_SRC_I2C_H_
-#define SOFTWARE_APP_SRC_I2C_H_
+#ifndef __UTIL_I2C_H__
+#define __UTIL_I2C_H__
 
 #include <system.h>
 
@@ -82,4 +82,4 @@ struct i2c_t {
     }
 };
 
-#endif /* SOFTWARE_APP_SRC_I2C_H_ */
+#endif // __UTIL_I2C_H__

@@ -31,7 +31,7 @@ architecture arch of top is
 
 begin
 
-    o_led_n <= not led and (led'range => i_clk_50);
+    o_led_n <= not led or (led'range => i_clk_50);
 
     e_reset_50_n : entity work.reset_sync
     port map ( o_reset_n => reset_50_n, i_reset_n => i_reset_n, i_clk => i_clk_50 );

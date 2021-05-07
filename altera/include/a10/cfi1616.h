@@ -5,8 +5,8 @@
  * date : 2017-10-30
  */
 
-#ifndef SOFTWARE_APP_SRC_CFI1616_H_
-#define SOFTWARE_APP_SRC_CFI1616_H_
+#ifndef __UTIL_A10_CFI1616_H__
+#define __UTIL_A10_CFI1616_H__
 
 #include <io.h>
 
@@ -435,4 +435,4 @@ struct cfi1616_t {
     }
 };
 
-#endif /* SOFTWARE_APP_SRC_CFI1616_H_ */
+#endif // __UTIL_A10_CFI1616_H__

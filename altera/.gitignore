@@ -1,13 +1,12 @@
 #
 
+db/
 incremental_db/
 output_files/
 
-components_pkg.vhd
+.qsys_edit/
 
-.qsys_edit
-
+*.qpf
 *.qsf
-*.qsys
 *.qws
 *.sopcinfo

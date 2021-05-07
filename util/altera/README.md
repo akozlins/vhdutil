@@ -1,11 +1,5 @@
 #
 
-## `top.qpf`
-
-## `top.qsf`
-
-## `top.qip`
-
 ## `makefile.mk`
 
 This `mk` file contains helper tagets
