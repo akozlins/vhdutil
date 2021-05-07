@@ -18,8 +18,7 @@ CMD=(
     "save_system {$QSYS};"
 )
 
-# TODO: --search-path=$,.
-
 exec \
 qsys-script \
+    --search-path='$,'"$(realpath -- .)" \
     --cmd="${CMD[*]}"

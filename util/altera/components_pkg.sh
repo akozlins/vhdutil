@@ -5,7 +5,7 @@ set -euf
 # and make 'cmp' package
 
 if [ $# -ge 1 ] ; then
-    cd -- "$1" || exit
+    cd -- "$1" || exit 1
 fi
 
 (
@@ -19,7 +19,7 @@ package components is
 
 EOF
 
-find -L -name "*.cmp" -exec cat {} \;
+find -L . -name '*.cmp' -exec echo "--" '{}' ';' -exec cat '{}' ';'
 
 cat << EOF
 

@@ -4,6 +4,7 @@
 
 .DEFAULT_GOAL := all
 
+.DELETE_ON_ERROR :
 .ONESHELL :
 
 ifndef QUARTUS_ROOTDIR
@@ -54,20 +55,18 @@ ifeq ($(APP_DIR),)
     APP_DIR := $(PREFIX)/software/app
 endif
 
-# TODO: how to solve ../ in path to .tcl file?
-# TODO: - use $(addprefix $(PREFIX),$(realpath $(...)))
-# TODO: - or use $(subst $(DOTDOT),DOTDOT,...)
-
 # list all .tcl files
-QSYS_TCL_FILES := $(filter %.tcl,$(IPs))
+# (use absolute path for files outside project directory)
+QSYS_TCL_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.tcl,$(IPs))))
 # convert all .tcl files into .qsys files
-QSYS_FILES := $(patsubst %.tcl,$(PREFIX)/%.qsys,$(QSYS_TCL_FILES))
+# (place generated files into $(PREFIX) directory)
+QSYS_FILES := $(addprefix $(PREFIX)/,$(patsubst %.tcl,%.qsys,$(QSYS_TCL_FILES)))
 # convert all .qsys files into .sopcinfo files
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
 # list all .vhd.qmegawiz files
-QMEGAWIZ_XML_FILES := $(filter %.vhd.qmegawiz,$(IPs))
+QMEGAWIZ_XML_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.vhd.qmegawiz,$(IPs))))
 # convert all .vhd.qmegawiz files into .vhd files
-QMEGAWIZ_VHD_FILES := $(patsubst %.vhd.qmegawiz,$(PREFIX)/%.vhd,$(QMEGAWIZ_XML_FILES))
+QMEGAWIZ_VHD_FILES := $(addprefix $(PREFIX)/,$(patsubst %.vhd.qmegawiz,%.vhd,$(QMEGAWIZ_XML_FILES)))
 
 # default qpf file
 top.qpf :
@@ -81,23 +80,26 @@ top.qsf : $(MAKEFILE_LIST)
 	set_global_assignment -name QIP_FILE top.qip
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-	set_global_assignment -name QIP_FILE $(PREFIX)/include.qip
+	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "util/altera/settings.tcl"
+	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
 
 all : top.qpf top.qsf $(PREFIX)/include.qip
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
+	mkdir -pv -- "$(PREFIX)"
 	# find and exec components_pkg.sh
 	$(lastword $(realpath $(addsuffix components_pkg.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)" > "$@"
+	if [ -x /bin/awk ] ; then awk -f $(lastword $(realpath $(addsuffix components_pkg.awk,$(dir $(MAKEFILE_LIST))))) "$@" ; fi
 
 # include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	# components package
 	echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"components_pkg.vhd\" ]" > "$@"
 	# add qsys *.qsys files
-	for file in $(QSYS_FILES) ; do
-	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file)\" ]" >> "$@"
+	for file in $(patsubst %.qsys,%,$(QSYS_FILES)) ; do
+	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qsys)\" ]" >> "$@"
 	done
 	# add qmegawiz *.qip files
 	for file in $(patsubst %.vhd,%,$(QMEGAWIZ_VHD_FILES)) ; do
@@ -114,7 +116,7 @@ $(PREFIX)/%.vhd : %.vhd.qmegawiz
 	$(lastword $(realpath $(addsuffix qmegawiz.sh,$(dir $(MAKEFILE_LIST))))) "$<" "$@"
 
 $(PREFIX)/%.qsys : %.tcl device.tcl
-	mkdir -pv $(PREFIX)
+	mkdir -pv -- "$(PREFIX)"
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 	# find and exec tcl2qsys.sh
