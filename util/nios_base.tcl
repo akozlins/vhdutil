@@ -49,6 +49,8 @@ set_instance_parameter_value cpu {io_regionsize} {0x10000000}
 add_instance ram altera_avalon_onchip_memory2
 set_instance_parameter_value ram {memorySize} {0x00010000}
 set_instance_parameter_value ram {initMemContent} {1}
+set_instance_parameter_value ram {useNonDefaultInitFile} {1}
+set_instance_parameter_value ram {initializationFileName} {output_files/nios_ram.hex}
 
 
 

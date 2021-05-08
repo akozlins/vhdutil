@@ -163,6 +163,7 @@ $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)/settings.bsp
 	nios2-elf-objcopy "$(APP_DIR)/main.elf" -O srec "$(APP_DIR)/main.srec"
 	# generate mem_init/*.hex files (see AN730 / HEX File Generation)
 	$(MAKE) -C "$(APP_DIR)" mem_init_generate
+	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "output_files/"
 
 .PHONY : app
 app : $(APP_DIR)/main.elf
