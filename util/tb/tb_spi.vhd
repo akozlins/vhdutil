@@ -25,6 +25,11 @@ begin
         g_CLK_MHZ => CLK_MHZ--,
     )
     port map (
+        o_ss_n => open,
+        o_sck => open,
+        o_sdo => open,
+        i_sdi => '0',
+
         i_wdata => wdata,
         i_we => we,
         o_wfull => open,
@@ -32,16 +37,11 @@ begin
         o_rdata => open,
         i_rack => rack,
         o_rempty => open,
-        
-        o_ss_n => open,
-        o_sck => open,
-        o_mosi => open,
-        i_miso => '0',
 
         i_sck_div => X"0010",
         i_cpol => '0',
-        i_mosi_cpha => '0',
-        i_miso_cpha => '0',
+        i_sdo_cpha => '0',
+        i_sdi_cpha => '0',
 
         i_reset_n => reset_n,
         i_clk => clk--,
