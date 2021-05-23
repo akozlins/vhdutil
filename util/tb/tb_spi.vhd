@@ -15,6 +15,8 @@ architecture arch of tb_spi is
     signal wdata : std_logic_vector(7 downto 0);
     signal we, wfull, rack, rempty : std_logic := '0';
 
+    signal sdo, sdi : std_logic;
+
 begin
 
     clk <= not clk after (0.5 us / CLK_MHZ);
@@ -27,8 +29,8 @@ begin
     port map (
         o_ss_n => open,
         o_sck => open,
-        o_sdo => open,
-        i_sdi => '0',
+        o_sdo => sdo,
+        i_sdi => sdi,
 
         i_wdata => wdata,
         i_we => we,
@@ -46,6 +48,8 @@ begin
         i_reset_n => reset_n,
         i_clk => clk--,
     );
+
+    sdi <= sdo;
 
     process
     begin

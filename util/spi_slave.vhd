@@ -48,14 +48,18 @@ end entity;
 architecture arch of spi_slave is
 
     signal ss, ss_q : std_logic;
-
-    -- sck clock
     signal sck, sck_q : std_logic;
 
-    signal wfifo_rdata, rfifo_wdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    signal wfifo_rdata, wfifo_rdata_q, rfifo_wdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
     signal wfifo_rack, wfifo_rempty, rfifo_we, rfifo_wfull : std_logic;
 
-    signal data_index : integer range g_DATA_WIDTH-1 downto 0;
+    signal update_sdo, sample_sdo, sample_sdi : std_logic;
+
+    signal sdo_cnt, sdi_cnt : integer range 0 to g_DATA_WIDTH-1;
+
+    signal error_sdi_uf : std_logic := '0';
+    signal error_wfifo_uf : std_logic := '0';
+    signal error_rfifo_of : std_logic := '0';
 
 begin
 
@@ -100,6 +104,8 @@ begin
         i_clk           => i_clk--;
     );
 
+    o_wfifo_rempty <= wfifo_rempty;
+
     -- read fifo (from sdi)
     e_rfifo : entity work.fifo_sc
     generic map (
@@ -121,50 +127,108 @@ begin
 
 
 
+    update_sdo <=
+        -- cpha == 0 and falling_edge(sck)
+        '1' when ( ss = '1' and i_sdo_cpha = '0' and sck_q = '1' and sck = '0' ) else
+        -- cpha == 1 and rising_edge(sck)
+        '1' when ( ss = '1' and i_sdo_cpha = '1' and sck_q = '0' and sck = '1' ) else
+        '0';
+
+    sample_sdo <=
+        -- cpha == 0 and rising_edge(sck)
+        '1' when ( ss = '1' and i_sdo_cpha = '0' and sck_q = '0' and sck = '1' ) else
+        -- cpha == 1 and falling_edge(sck)
+        '1' when ( ss = '1' and i_sdo_cpha = '1' and sck_q = '1' and sck = '0' ) else
+        '0';
+
+    sample_sdi <=
+        -- cpha == 0 and rising_edge(sck)
+        '1' when ( ss = '1' and i_sdi_cpha = '0' and sck_q = '0' and sck = '1' ) else
+        -- cpha == 1 and falling_edge(sck)
+        '1' when ( ss = '1' and i_sdi_cpha = '1' and sck_q = '1' and sck = '0' ) else
+        '0';
+
     o_sdo <=
-        '-' when ( ss = '0' or wfifo_rempty = '1' ) else
-        wfifo_rdata(data_index);
+        '-' when ( ss = '0' ) else
+        wfifo_rdata_q(g_DATA_WIDTH-1);
 
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
+        wfifo_rdata_q <= (others => '-');
         wfifo_rack <= '0';
+        rfifo_wdata <= (others => '-');
         rfifo_we <= '0';
+        sdo_cnt <= 0;
+        sdi_cnt <= 0;
         --
     elsif rising_edge(i_clk) then
         wfifo_rack <= '0';
         rfifo_we <= '0';
 
-        if ( ss = '1' ) then
-            -- reset data_index on ss rising edge
-            if ( ss_q = '0' ) then
-                if ( i_sdo_cpha = '1' ) then
-                    -- for CPHA = 1 first bit should be shifted on sck rising edge
-                    data_index <= 0;
-                else
-                    data_index <= g_DATA_WIDTH-1;
-                end if;
-            end if;
+        if ( ss = '0' ) then
+            sdo_cnt <= 0;
+            sdi_cnt <= 0;
+        end if;
 
-            -- update sdo
-            if ( (i_sdo_cpha = '0' and sck_q = '1' and sck = '0') or
-                 (i_sdo_cpha = '1' and sck_q = '0' and sck = '1') ) then
-                if ( data_index = 0 ) then
-                    wfifo_rack <= '1';
-                    rfifo_we <= '1';
-                    data_index <= g_DATA_WIDTH-1;
-                else
-                    data_index <= data_index - 1;
-                end if;
+        -- sdo
+        if ( ss_q = '0' and ss = '1' ) then
+            if ( i_sdo_cpha = '0' ) then
+                wfifo_rdata_q <= wfifo_rdata;
+                sdo_cnt <= 0;
+            else
+                sdo_cnt <= g_DATA_WIDTH-1;
             end if;
-
-            -- sample sdi
-            if ( (i_sdi_cpha = '0' and sck_q = '0' and sck = '1') or
-                 (i_sdi_cpha = '1' and sck_q = '1' and sck = '0') ) then
-                rfifo_wdata(data_index) <= i_sdi;
+        end if;
+        if ( update_sdo = '1' ) then
+            if ( sdo_cnt = g_DATA_WIDTH-1 ) then
+                if ( wfifo_rempty = '0' ) then
+                    wfifo_rdata_q <= wfifo_rdata;
+                else
+                    wfifo_rdata_q <= (others => '-');
+                end if;
+                sdo_cnt <= 0;
+            else
+                wfifo_rdata_q <= wfifo_rdata_q(g_DATA_WIDTH-2 downto 0) & '-';
+                sdo_cnt <= sdo_cnt + 1;
+            end if;
+        end if;
+        if ( sample_sdo = '1' ) then
+            if ( sdo_cnt = g_DATA_WIDTH-1 ) then
+                wfifo_rack <= '1';
             end if;
         end if;
 
+        -- wfifo underflow
+        if ( wfifo_rack = '1' and wfifo_rempty = '1' ) then
+            error_wfifo_uf <= '1';
+        end if;
+
+        -- sdi
+        if ( ss_q = '0' and ss = '1' ) then
+            rfifo_wdata <= (others => '-');
+            sdi_cnt <= 0;
+        end if;
+        if ( sample_sdi = '1' ) then
+            rfifo_wdata <= rfifo_wdata(g_DATA_WIDTH-2 downto 0) & i_sdi;
+            if ( sdi_cnt = g_DATA_WIDTH-1 ) then
+                rfifo_we <= '1';
+                sdi_cnt <= 0;
+            else
+                sdi_cnt <= sdi_cnt + 1;
+            end if;
+        end if;
+
+        -- sdi underflow
+        if ( ss_q = '1' and ss = '0' and sdi_cnt /= 0 ) then
+            rfifo_we <= '1';
+            error_sdi_uf <= '1';
+        end if;
+
+        -- rfifo overflow
+        if ( rfifo_we = '1' and rfifo_wfull = '1' ) then
+            error_rfifo_of <= '1';
+        end if;
         --
     end if;
     end process;

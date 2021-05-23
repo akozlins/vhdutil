@@ -48,7 +48,6 @@ end entity;
 architecture arch of spi_master is
 
     signal ss : std_logic;
-
     signal sck, sck_i : std_logic;
     signal sck_cnt : unsigned(15 downto 0);
 
@@ -79,9 +78,7 @@ begin
             -- reset ss on rising edge
             if ( sck_i = '0' and wfifo_rempty = '1' ) then
                 ss <= '0';
-            end if;
-
-            if ( ss = '1' ) then
+            elsif ( ss = '1' ) then
                 sck <= not sck;
             end if;
 
