@@ -24,7 +24,7 @@ begin
 
     e_spi_master : entity work.spi_master
     generic map (
-        g_CLK_MHZ => CLK_MHZ--,
+        g_N => 1--,
     )
     port map (
         o_ss_n => open,
@@ -32,10 +32,12 @@ begin
         o_sdo => sdo,
         i_sdi => sdi,
 
+        i_slave => (others => '1'),
+
         i_wdata => wdata,
         i_we => we,
         o_wfull => open,
-        
+
         o_rdata => open,
         i_rack => rack,
         o_rempty => open,

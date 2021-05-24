@@ -12,15 +12,17 @@ use ieee.numeric_std.all;
 -- - ...
 entity spi_master is
 generic (
+    g_N                 : positive := 32;
     g_DATA_WIDTH        : positive := 8;
-    g_FIFO_ADDR_WIDTH   : positive := 4;
-    g_CLK_MHZ           : real--;
+    g_FIFO_ADDR_WIDTH   : positive := 4--;
 );
 port (
-    o_ss_n      : out   std_logic;
+    o_ss_n      : out   std_logic_vector(g_N-1 downto 0);
     o_sck       : out   std_logic;
     o_sdo       : out   std_logic;
     i_sdi       : in    std_logic;
+
+    i_slave     : in    std_logic_vector(g_N-1 downto 0);
 
     i_wdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we        : in    std_logic;
@@ -30,13 +32,11 @@ port (
     i_rack      : in    std_logic;
     o_rempty    : out   std_logic;
 
-    -- number of cycles between sck clock transitions
+    -- sck clock divider (cycles between clock transitions)
     i_sck_div   : in    std_logic_vector(15 downto 0) := (others => '0');
     -- clock polarity
     i_cpol      : in    std_logic := '0';
-    -- clock phase (separate for mosi and miso)
-    -- - cpha = 0 -> sample on first clock transitions
-    -- - cpha = 1 -> sample on second clock transition
+    -- clock phase (separate for sdo and sdi)
     i_sdo_cpha  : in    std_logic := '0';
     i_sdi_cpha  : in    std_logic := '0';
 
@@ -55,7 +55,7 @@ architecture arch of spi_master is
 
 begin
 
-    o_ss_n <= not ss;
+    o_ss_n <= not ( i_slave and (g_N-1 downto 0 => ss) );
 
     -- clock polarity
     o_sck <= sck xor i_cpol;
@@ -94,8 +94,7 @@ begin
     e_spi_slave : entity work.spi_slave
     generic map (
         g_DATA_WIDTH => g_DATA_WIDTH,
-        g_FIFO_ADDR_WIDTH => g_FIFO_ADDR_WIDTH,
-        g_CLK_MHZ => g_CLK_MHZ--,
+        g_FIFO_ADDR_WIDTH => g_FIFO_ADDR_WIDTH--,
     )
     port map (
         i_wdata => i_wdata,
