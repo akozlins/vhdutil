@@ -71,4 +71,8 @@ ghdl -m "${OPTS[@]}" "$TB"
 # run: run/simulate the design
 ghdl -r "${OPTS[@]}" "$TB" "${SIM_OPTS[@]}"
 
-gtkwave "$TB.ghw"
+if [ -f "../$TB.gtkw" ] ; then
+    gtkwave "$TB.ghw" "../$TB.gtkw"
+else
+    gtkwave --autosavename "$TB.ghw"
+fi
