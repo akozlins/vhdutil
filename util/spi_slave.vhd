@@ -163,6 +163,8 @@ begin
     -- read from wfifo on last bit
     wfifo_rack <= '1' when ( sdo_sample = '1' and sdo_cnt = 0 ) else '0';
 
+    rfifo_wdata <= sdi_reg;
+
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
@@ -209,8 +211,10 @@ begin
             -- shift from LSB side
             sdi_reg <= sdi_reg(g_DATA_WIDTH-2 downto 0) & i_sdi;
             if ( sdi_cnt = g_DATA_WIDTH-1 ) then
-                rfifo_wdata <= sdi_reg;
                 rfifo_we <= '1';
+            end if;
+
+            if ( sdi_cnt = g_DATA_WIDTH-1 ) then
                 sdi_cnt <= 0;
             else
                 sdi_cnt <= sdi_cnt + 1;
