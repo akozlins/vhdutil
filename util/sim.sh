@@ -9,8 +9,6 @@ fi
 TB="$1"
 shift
 
-STOPTIME="${STOPTIME:-1us}"
-
 SRC=()
 for arg in "$@" ; do
     arg=$(realpath -s --relative-to=.cache -- "$arg")
@@ -44,7 +42,6 @@ done
 
 # simulation options
 SIM_OPTS=(
-    --stop-time="$STOPTIME"
     # display the design hierarchy
     --disp-tree=inst
     # disable ieee asserts at the start of simulation
@@ -57,8 +54,18 @@ SIM_OPTS=(
     --vcd="$TB.vcd" --wave="$TB.ghw" --fst="$TB.fst"
     # write PSL report at the end of simulation
     --psl-report="$TB.psl-report"
-
 )
+if [ -n "${STOP_TIME_US:+x}" ] ; then
+    SIM_OPTS+=(
+        --stop-time="$STOP_TIME_US"us
+        -gg_STOP_TIME_US="$STOP_TIME_US"
+        -gg_SEED="$((0x$(cat /dev/random | tr -dc "0-9A-F" | head -c 8)-0x80000000))"
+    )
+else
+    SIM_OPTS+=(
+        --stop-time="${STOPTIME:-1us}"
+    )
+fi
 [ -f "$TB.wave-opt" ] && SIM_OPTS+=(--read-wave-opt="../$TB.wave-opt")
 
 mkdir -p -- .cache
