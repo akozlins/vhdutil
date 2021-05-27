@@ -22,10 +22,10 @@ begin
 
     e_lfsr : entity work.lfsr_fibonacci
     generic map (
-        g_TAPS => "10111000"--,
+        g_TAPS => "101110001"--,
     )
     port map (
-        o_lfsr                  => lfsr,
+        o_lfsr(8 downto 1)      => lfsr,
 
         i_reset_n               => reset_n,
         i_clk                   => clk--,
