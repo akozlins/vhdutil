@@ -168,7 +168,6 @@ begin
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
-        rfifo_wdata <= (others => '-');
         rfifo_we <= '0';
         sdo_reg <= (others => '-');
         sdi_reg <= (others => '-');
@@ -179,7 +178,6 @@ begin
         error_rfifo_of <= '0';
         --
     elsif rising_edge(i_clk) then
-        rfifo_wdata <= (others => '-');
         rfifo_we <= '0';
 
         -- reset
