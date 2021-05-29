@@ -30,7 +30,9 @@ architecture arch of top is
     signal led : std_logic_vector(o_led_n'range) := (others => '0');
 
     signal clk_50, reset_50_n : std_logic;
-    
+
+    signal av_test : work.util.avalon_t;
+
 begin
 
     o_led_n <= not led;
@@ -60,8 +62,24 @@ begin
         spi_sclk => o_si5342_spi_sclk,
         spi_ss_n(0) => o_si5342_spi_ss_n,
 
+        avm_test_address        => av_test.address(7 downto 0),
+        avm_test_read           => av_test.read,
+        avm_test_readdata       => av_test.readdata,
+        avm_test_write          => av_test.write,
+        avm_test_writedata      => av_test.writedata,
+        avm_test_waitrequest    => av_test.waitrequest,
+
         rst_reset_n => reset_50_n,
         clk_clk => clk_50--,
     );
+
+    process(clk_50, reset_50_n)
+    begin
+    if ( reset_50_n = '0' ) then
+        av_test.readdata <= X"CCCCCCCC";
+    elsif rising_edge(clk_50) then
+        av_test.readdata <= X"CCCCCCCC";
+    end if;
+    end process;
 
 end architecture;

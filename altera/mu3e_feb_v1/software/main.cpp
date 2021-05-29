@@ -11,7 +11,8 @@ int main() {
         printf("\n");
         printf("[mu3e_fev_v1] -------- menu --------\n");
         printf("\n");
-        printf("  [1] => si5345\n");
+        printf("  [1] => si5342\n");
+        printf("  [t] => test\n");
 
         printf("Select entry ...\n");
         char cmd = wait_key();
@@ -19,6 +20,10 @@ int main() {
         case '1':
             si5342.menu();
             break;
+        case 't': {
+            auto base = (volatile alt_u32*)AVM_TEST_BASE;
+            break;
+        }
         default:
             printf("invalid command: '%c'\n", cmd);
         }
