@@ -4,6 +4,27 @@
 #include "include/si534x.h"
 si534x_t si5342 { SPI_BASE, 0 };
 
+void spi_do(int n, const alt_u8* tx, alt_u8* rx) {
+    int tx_off = 0, rx_off = 0;
+
+    auto base = (volatile alt_u32*)AVM_TEST_BASE;
+    base[0] = 0x0010;
+
+    while((base[0] & 0x00020000) == 0) rx[0] = base[1];
+
+    while(tx_off < n or rx_off < n) {
+        while((base[0] & 0x00010000) == 0 and tx_off < n) {
+            base[1] = tx[tx_off];
+            tx_off++;
+        }
+        if((base[0] & 0x00020000) == 0 and rx_off < n) {
+            rx[rx_off] = base[1];
+            rx_off++;
+            continue;
+        }
+    }
+}
+
 int main() {
     base_init();
 
@@ -21,26 +42,10 @@ int main() {
             si5342.menu();
             break;
         case 't': {
-            auto base = (volatile alt_u32*)AVM_TEST_BASE;
-            base[0] = 0x0001;
-            printf("ctrl = 0x%08X\n", base[0]);
-
-            base[1] = 0x00; // Set Addr
-            base[1] = 0x02; // Addr
-            base[1] = 0x80; // Read Data
-            base[1] = 0x00; // Data
-
-            alt_u32 r;
-            while(base[0] & 0x00020000) { printf("."); usleep(1); }
-            r = base[1];
-            while(base[0] & 0x00020000) { printf("."); usleep(1); }
-            r = base[1];
-            while(base[0] & 0x00020000) { printf("."); usleep(1); }
-            r = base[1];
-            while(base[0] & 0x00020000) { printf("."); usleep(1); }
-            r = base[1];
-            printf("\n");
-            printf("r = 0x%08X\n", r);
+            //               Set   Addr  Read  Data
+            alt_u8 tx[4] = { 0x00, 0x02, 0x80, 0x00 }, rx[4];
+            spi_do(4, tx, rx);
+            printf("rx = 0x%08X\n", rx[3]);
 
             break;
         }

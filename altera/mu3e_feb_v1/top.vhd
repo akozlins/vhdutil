@@ -98,7 +98,7 @@ begin
             av_test.readdata(17) <= spi_rempty;
 --            av_test.readdata(18) <= spi_cpol;
 --            av_test.readdata(19) <= spi_sdo_cpha;
---            av_test.readdata(10) <= spi_sdi_cpha;
+--            av_test.readdata(20) <= spi_sdi_cpha;
         end if;
 
         if ( av_test.write = '1' and av_test.address(7 downto 0) = X"01" and spi_wfull = '0' ) then
