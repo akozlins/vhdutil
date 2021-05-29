@@ -31,10 +31,10 @@ begin
         g_N => 1--,
     )
     port map (
-        o_ss_n => open,
-        o_sck => open,
+        o_sclk => open,
         o_sdo => sdo,
         i_sdi => sdi,
+        o_ss_n => open,
 
         i_slave => (others => '1'),
 
@@ -46,7 +46,7 @@ begin
         i_rack => rack,
         o_rempty => rempty,
 
-        i_sck_div => X"0010",
+        i_sclk_div => X"0010",
         i_cpol => '0',
         i_sdo_cpha => '0',
         i_sdi_cpha => '0',

@@ -30,10 +30,10 @@ generic (
     g_FIFO_ADDR_WIDTH   : positive := 4--;
 );
 port (
-    i_ss_n              : in    std_logic;
-    i_sck               : in    std_logic;
+    i_sclk              : in    std_logic;
     o_sdo               : out   std_logic;
     i_sdi               : in    std_logic;
+    i_ss_n              : in    std_logic;
 
     i_wdata             : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we                : in    std_logic;
@@ -59,7 +59,7 @@ end entity;
 architecture arch of spi_slave is
 
     signal ss, ss_q : std_logic;
-    signal sck, sck_q : std_logic;
+    signal sclk, sclk_q : std_logic;
 
     signal wfifo_rdata, rfifo_wdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
     signal wfifo_rack, wfifo_rempty, rfifo_we, rfifo_wfull : std_logic;
@@ -75,17 +75,17 @@ architecture arch of spi_slave is
 begin
 
     ss <= not i_ss_n;
-    sck <= i_sck xor i_cpol;
+    sclk <= i_sclk xor i_cpol;
 
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
         ss_q <= '0';
-        sck_q <= '0';
+        sclk_q <= '0';
         --
     elsif rising_edge(i_clk) then
         ss_q <= ss;
-        sck_q <= sck;
+        sclk_q <= sclk;
         --
     end if;
     end process;
@@ -138,23 +138,23 @@ begin
         -- cpha == 0 and riging_edge(ss)
         '1' when ( ss = '1' and i_sdo_cpha = '0' and ss_q = '0' ) else
         -- cpha == 0 and falling_edge(sck)
-        '1' when ( ss = '1' and i_sdo_cpha = '0' and sck_q = '1' and sck = '0' ) else
+        '1' when ( ss = '1' and i_sdo_cpha = '0' and sclk_q = '1' and sclk = '0' ) else
         -- cpha == 1 and rising_edge(sck)
-        '1' when ( ss = '1' and i_sdo_cpha = '1' and sck_q = '0' and sck = '1' ) else
+        '1' when ( ss = '1' and i_sdo_cpha = '1' and sclk_q = '0' and sclk = '1' ) else
         '0';
 
     sdo_sample <=
         -- cpha == 0 and rising_edge(sck)
-        '1' when ( ss = '1' and i_sdo_cpha = '0' and sck_q = '0' and sck = '1' ) else
+        '1' when ( ss = '1' and i_sdo_cpha = '0' and sclk_q = '0' and sclk = '1' ) else
         -- cpha == 1 and falling_edge(sck)
-        '1' when ( ss = '1' and i_sdo_cpha = '1' and sck_q = '1' and sck = '0' ) else
+        '1' when ( ss = '1' and i_sdo_cpha = '1' and sclk_q = '1' and sclk = '0' ) else
         '0';
 
     sdi_sample <=
         -- cpha == 0 and rising_edge(sck)
-        '1' when ( ss = '1' and i_sdi_cpha = '0' and sck_q = '0' and sck = '1' ) else
+        '1' when ( ss = '1' and i_sdi_cpha = '0' and sclk_q = '0' and sclk = '1' ) else
         -- cpha == 1 and falling_edge(sck)
-        '1' when ( ss = '1' and i_sdi_cpha = '1' and sck_q = '1' and sck = '0' ) else
+        '1' when ( ss = '1' and i_sdi_cpha = '1' and sclk_q = '1' and sclk = '0' ) else
         '0';
 
     -- put MSB on sdo

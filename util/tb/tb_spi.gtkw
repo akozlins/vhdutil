@@ -5,7 +5,7 @@
 [treeopen] top.tb_spi.e_spi_master.e_spi_slave.
 top.tb_spi.e_spi_master.i_reset_n
 top.tb_spi.e_spi_master.i_clk
-top.tb_spi.e_spi_master.o_sck
+top.tb_spi.e_spi_master.o_sclk
 top.tb_spi.e_spi_master.ss
 -SDO
 top.tb_spi.e_spi_master.e_spi_slave.sdo_update
