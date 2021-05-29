@@ -35,7 +35,7 @@ port (
     i_sdi               : in    std_logic;
     i_ss_n              : in    std_logic;
 
-    i_wdata             : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    i_wdata             : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we                : in    std_logic;
     o_wfull             : out   std_logic;
 
