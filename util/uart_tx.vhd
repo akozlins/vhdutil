@@ -20,10 +20,11 @@ generic (
     PARITY_g : integer := 0;
     STOP_BITS_g : positive := 1;
     BAUD_RATE_g : positive := 115200; -- bps
-    FIFO_ADDR_WIDTH_g : positive := 2;
+    FIFO_ADDR_WIDTH_g : positive := 4;
     CLK_MHZ_g : real--;
 );
 port (
+    -- serial data
     o_data      : out   std_logic;
     -- output enable
     o_data_oe   : out   std_logic;

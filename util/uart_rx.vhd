@@ -20,10 +20,11 @@ generic (
     DATA_BITS_g : positive := 8;
     STOP_BITS_g : positive := 1;
     BAUD_RATE_g : positive := 115200; -- bps
-    FIFO_ADDR_WIDTH_g : positive := 2;
+    FIFO_ADDR_WIDTH_g : positive := 4;
     CLK_MHZ_g : real--;
 );
 port (
+    -- serial data
     i_data      : in    std_logic;
 
     o_rdata     : out   std_logic_vector(DATA_BITS_g-1 downto 0);

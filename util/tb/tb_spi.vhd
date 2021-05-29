@@ -13,6 +13,7 @@ end entity;
 architecture arch of tb_spi is
 
     signal clk, reset_n : std_logic := '0';
+    signal cycle : integer := 0;
 
     signal DONE : std_logic_vector(0 downto 0) := (others => '0');
 
@@ -25,6 +26,7 @@ begin
 
     clk <= not clk after (0.5 us / g_CLK_MHZ);
     reset_n <= '0', '1' after (1.0 us / g_CLK_MHZ);
+    cycle <= cycle + 1 after (1 us / g_CLK_MHZ);
 
     e_spi_master : entity work.spi_master
     generic map (
@@ -67,7 +69,11 @@ begin
         we <= '0';
 
         wait until rising_edge(clk) and rempty = '0';
-        assert ( rdata = wdata ) report "" severity error;
+        assert ( rdata = wdata ) report work.util.sgr(31) & "ERROR @ cycle = " & integer'image(cycle) & work.util.sgr(0) severity error;
+        rack <= '1';
+
+        wait until rising_edge(clk);
+        rack <= '0';
 
         DONE(0) <= '1';
 

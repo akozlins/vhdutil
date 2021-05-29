@@ -4,9 +4,9 @@ use ieee.std_logic_1164.all;
 -- https://en.wikipedia.org/wiki/Linear-feedback_shift_register
 entity lfsr_fibonacci is
 generic (
+    g_INIT : std_logic_vector := "1";
     -- taps (e.g. poly 'x^8 + x^6 + x^5 + x^4 + 1' corresponds to "101110001")
-    g_TAPS : std_logic_vector;
-    g_INIT : std_logic_vector := "1"--;
+    g_TAPS : std_logic_vector--;
 );
 port (
     -- bits (g_TAPS'length-1 downto 1) - lfsr output
@@ -25,6 +25,7 @@ architecture arch of lfsr_fibonacci is
 
 begin
 
+    assert ( g_INIT /= (g_INIT'range => '0') ) report "" severity failure;
     assert ( g_TAPS(g_TAPS'left) = '1' ) report "" severity failure;
     assert ( g_TAPS(g_TAPS'right) = '1' ) report "" severity failure;
 
