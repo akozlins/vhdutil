@@ -1,0 +1,9 @@
+#
+
+set_global_assignment -name SOURCE_TCL_SCRIPT_FILE ../assignments/mu3e_feb_v1.tcl
+set_global_assignment -name SOURCE_TCL_SCRIPT_FILE assignments.tcl
+
+set_global_assignment -name VHDL_FILE top.vhd
+set_global_assignment -name SDC_FILE top.sdc
+
+set_global_assignment -name QIP_FILE util/include.qip
