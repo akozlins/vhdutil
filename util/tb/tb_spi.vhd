@@ -36,8 +36,6 @@ begin
         i_sdi => sdi,
         o_ss_n => open,
 
-        i_slave => (others => '1'),
-
         i_wdata => wdata,
         i_we => we,
         o_wfull => wfull,

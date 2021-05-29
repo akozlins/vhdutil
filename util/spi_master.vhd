@@ -20,9 +20,7 @@ port (
     o_sclk      : out   std_logic;
     o_sdo       : out   std_logic;
     i_sdi       : in    std_logic;
-    o_ss_n      : out   std_logic_vector(g_N-1 downto 0);
-
-    i_slave     : in    std_logic_vector(g_N-1 downto 0);
+    o_ss_n      : out   std_logic;
 
     i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we        : in    std_logic;
@@ -54,8 +52,6 @@ architecture arch of spi_master is
     signal wfifo_rempty : std_logic;
 
 begin
-
-    o_ss_n <= not ( i_slave and (g_N-1 downto 0 => ss) );
 
     -- clock polarity
     o_sclk <= sclk xor i_cpol;
