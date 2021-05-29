@@ -4,25 +4,31 @@
 #include "include/si534x.h"
 si534x_t si5342 { SPI_BASE, 0 };
 
+#include <sys/alt_irq.h>
+
 void spi_do(int n, const alt_u8* tx, alt_u8* rx) {
     int tx_off = 0, rx_off = 0;
 
     auto base = (volatile alt_u32*)AVM_TEST_BASE;
     base[0] = 0x0010;
 
+    // clean rx fifo
     while((base[0] & 0x00020000) == 0) rx[0] = base[1];
 
+    alt_irq_context irq_context = alt_irq_disable_all();
     while(tx_off < n or rx_off < n) {
+        // write
         while((base[0] & 0x00010000) == 0 and tx_off < n) {
             base[1] = tx[tx_off];
             tx_off++;
         }
+        // read
         if((base[0] & 0x00020000) == 0 and rx_off < n) {
             rx[rx_off] = base[1];
             rx_off++;
-            continue;
         }
     }
+    alt_irq_enable_all(irq_context);
 }
 
 int main() {
