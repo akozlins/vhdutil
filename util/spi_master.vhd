@@ -12,7 +12,6 @@ use ieee.numeric_std.all;
 -- - ...
 entity spi_master is
 generic (
-    g_N                 : positive := 32;
     g_DATA_WIDTH        : positive := 8;
     g_FIFO_ADDR_WIDTH   : positive := 4--;
 );
@@ -55,6 +54,7 @@ begin
 
     -- clock polarity
     o_sclk <= sclk xor i_cpol;
+    o_ss_n <= not ss;
 
     -- generate clock (sclk) and slave select (ss)
     process(i_clk)

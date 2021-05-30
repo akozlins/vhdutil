@@ -29,9 +29,6 @@ begin
     cycle <= cycle + 1 after (1 us / g_CLK_MHZ);
 
     e_spi_master : entity work.spi_master
-    generic map (
-        g_N => 1--,
-    )
     port map (
         o_sclk => open,
         o_sdo => sdo,
