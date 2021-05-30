@@ -36,6 +36,8 @@ architecture arch of top is
     signal spi_wdata, spi_rdata : std_logic_vector(31 downto 0);
     signal spi_we, spi_wfull, spi_rack, spi_rempty : std_logic;
     signal spi_sclk_div : std_logic_vector(15 downto 0);
+    signal spi_cpol, spi_sdo_cpha, spi_sdi_cpha : std_logic;
+    signal spi_reset : std_logic;
 
 begin
 
@@ -88,27 +90,52 @@ begin
         spi_we <= '0';
         spi_rack <= '0';
 
-        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"00" ) then
-            spi_sclk_div <= av_test.writedata(15 downto 0);
-        end if;
-        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"00" ) then
-            av_test.readdata <= (others => '0');
-            av_test.readdata(15 downto 0) <= spi_sclk_div;
-            av_test.readdata(16) <= spi_wfull;
-            av_test.readdata(17) <= spi_rempty;
---            av_test.readdata(18) <= spi_cpol;
---            av_test.readdata(19) <= spi_sdo_cpha;
---            av_test.readdata(20) <= spi_sdi_cpha;
-        end if;
-
-        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"01" and spi_wfull = '0' ) then
+        -- tx data
+        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"00" and spi_wfull = '0' ) then
             spi_wdata <= av_test.writedata;
             spi_we <= '1';
         end if;
-        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"01" and spi_rempty = '0' ) then
+        -- rx data
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"00" and spi_rempty = '0' ) then
             av_test.readdata <= spi_rdata;
             spi_rack <= '1';
         end if;
+
+        -- slave select
+        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"01" ) then
+            --
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"01" ) then
+            --
+        end if;
+
+        -- status
+        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"02" ) then
+            --
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"02" ) then
+            av_test.readdata <= (others => '0');
+            av_test.readdata(0) <= spi_wfull;
+            av_test.readdata(8) <= spi_rempty;
+        end if;
+
+        -- control
+        if ( av_test.write = '1' and av_test.address(7 downto 0) = X"03" ) then
+            spi_sclk_div <= av_test.writedata(15 downto 0);
+            spi_cpol <= av_test.writedata(16);
+            spi_sdo_cpha <= av_test.writedata(17);
+            spi_sdi_cpha <= av_test.writedata(18);
+            spi_reset <= av_test.writedata(31);
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"03" ) then
+            av_test.readdata <= (others => '0');
+            av_test.readdata(15 downto 0) <= spi_sclk_div;
+            av_test.readdata(16) <= spi_cpol;
+            av_test.readdata(17) <= spi_sdo_cpha;
+            av_test.readdata(18) <= spi_sdi_cpha;
+            av_test.readdata(31) <= spi_reset;
+        end if;
+
     end if;
     end process;
 
@@ -129,7 +156,7 @@ begin
 
         i_sclk_div => spi_sclk_div,
 
-        i_reset_n => reset_50_n,
+        i_reset_n => reset_50_n and not spi_reset,
         i_clk => clk_50--,
     );
 
