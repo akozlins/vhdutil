@@ -51,7 +51,6 @@ architecture arch of spi_master is
 
     signal sclk : std_logic;
     signal ss : std_logic;
-    signal sclk_i : std_logic;
     signal sclk_cnt : unsigned(i_sclk_div'range);
 
     signal wfifo_rempty : std_logic;
@@ -67,27 +66,27 @@ begin
     begin
     if ( i_reset_n = '0' ) then
         sclk <= '0';
-        sclk_i <= '0';
         ss <= '0';
         sclk_cnt <= (others => '0');
         --
     elsif rising_edge(i_clk) then
-        if ( sclk_cnt >= unsigned(i_sclk_div) ) then
-            -- set ss on falling edge
-            if ( sclk_i = '1' and wfifo_rempty = '0' ) then
-                ss <= '1';
-            end if;
-            -- reset ss on rising edge
-            if ( sclk_i = '0' and wfifo_rempty = '1' ) then
-                ss <= '0';
-            elsif ( ss = '1' ) then
-                sclk <= not sclk;
-            end if;
+        if ( ss = '1' ) then
+            if ( sclk_cnt = unsigned(i_sclk_div) ) then
+                -- reset ss on sclk rising edge
+                if ( sclk = '0' and wfifo_rempty = '1' ) then
+                    ss <= '0';
+                else
+                    sclk <= not sclk;
+                end if;
 
-            sclk_i <= not sclk_i;
+                sclk_cnt <= (others => '0');
+            else
+                sclk_cnt <= sclk_cnt + 1;
+            end if;
+        elsif ( wfifo_rempty = '0' ) then
+            sclk <= '0';
+            ss <= '1';
             sclk_cnt <= (others => '0');
-        else
-            sclk_cnt <= sclk_cnt + 1;
         end if;
         --
     end if;
