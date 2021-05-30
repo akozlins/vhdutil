@@ -75,20 +75,20 @@ begin
 
     e_spi : entity work.avalon_spi_master
     port map (
-        o_sclk              => o_si5342_spi_sclk,
-        o_sdo               => o_si5342_spi_mosi,
-        i_sdi               => i_si5342_spi_miso,
-        o_ss_n(0)           => o_si5342_spi_ss_n,
+        sclk            => o_si5342_spi_sclk,
+        sdo             => o_si5342_spi_mosi,
+        sdi             => i_si5342_spi_miso,
+        ss_n(0)         => o_si5342_spi_ss_n,
 
-        i_avs_address       => av_test.address(1 downto 0),
-        i_avs_read          => av_test.read,
-        o_avs_readdata      => av_test.readdata,
-        i_avs_write         => av_test.write,
-        i_avs_writedata     => av_test.writedata,
-        o_avs_waitrequest   => av_test.waitrequest,
+        avs_address     => av_test.address(1 downto 0),
+        avs_read        => av_test.read,
+        avs_readdata    => av_test.readdata,
+        avs_write       => av_test.write,
+        avs_writedata   => av_test.writedata,
+        avs_waitrequest => av_test.waitrequest,
 
-        i_reset_n           => reset_50_n,
-        i_clk =>            clk_50--,
+        reset           => not reset_50_n,
+        clk             => clk_50--,
     );
 
 end architecture;
