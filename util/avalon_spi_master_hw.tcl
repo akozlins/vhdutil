@@ -22,6 +22,24 @@ set_parameter_property FIFO_ADDR_WIDTH DISPLAY_NAME "FIFO address width"
 set_parameter_property FIFO_ADDR_WIDTH ALLOWED_RANGES {1:32}
 set_parameter_property FIFO_ADDR_WIDTH HDL_PARAMETER {true}
 
+add_fileset synth QUARTUS_SYNTH generate
+proc generate { name } {
+    set temp_file [ create_temp_file $name.vhd ]
+
+    set in [ open avalon_spi_master.vhd r ]
+    set out [ open $temp_file w ]
+    while { [ gets $in line ] != -1 } {
+        # set entity name
+        set line [ regsub -- avalon_spi_master $line $name ]
+
+        puts $out $line
+    }
+    close $in
+    close $out
+
+    add_fileset_file $name.vhd VHDL PATH $temp_file
+}
+
 #
 set_module_property ELABORATION_CALLBACK elaborate
 proc elaborate {} {
@@ -50,6 +68,7 @@ proc elaborate {} {
     set_interface_property $name associatedClock clk
     set_interface_property $name associatedReset reset
     set_interface_property $name addressUnits WORDS
+    set_interface_property $name readLatency 1
 
     set prefix {avs}
     add_interface_port $name ${prefix}_address address Input 2

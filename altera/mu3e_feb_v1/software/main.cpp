@@ -7,12 +7,17 @@ si534x_t si5342 { SPI_BASE, 0 };
 #include <sys/alt_irq.h>
 
 struct avalon_spi_master_t {
-    volatile alt_u32* base = (alt_u32*)AVM_TEST_BASE;
+    volatile alt_u32* base = (alt_u32*)AVALON_SPI_MASTER_BASE;
 
     static const alt_u32 WFULL = 0x00000001;
     static const alt_u32 REMPTY = 0x00000100;
 
     void spi_do(int ss, int n, const alt_u8* tx, alt_u8* rx) {
+        if(base[2] == 0xCCCCCCCC || base[3] == 0xCCCCCCCC) {
+            printf("E [avalon_spi_master_t::spi_do] invalid base address\n");
+            return;
+        }
+
         base[1] = ss;
         base[3] = (base[3] & 0xFFFF0000) | 0x0010;
 

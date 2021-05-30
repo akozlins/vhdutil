@@ -62,6 +62,11 @@ begin
 --        spi_miso => i_si5342_spi_miso,
 --        spi_ss_n(0) => o_si5342_spi_ss_n,
 
+        spi_master_sclk => o_si5342_spi_sclk,
+        spi_master_sdo => o_si5342_spi_mosi,
+        spi_master_sdi => i_si5342_spi_miso,
+        spi_master_ss_n(0) => o_si5342_spi_ss_n,
+
         avm_test_address        => av_test.address(7 downto 0),
         avm_test_read           => av_test.read,
         avm_test_readdata       => av_test.readdata,
@@ -71,24 +76,6 @@ begin
 
         rst_reset_n => reset_50_n,
         clk_clk => clk_50--,
-    );
-
-    e_spi : entity work.avalon_spi_master
-    port map (
-        sclk            => o_si5342_spi_sclk,
-        sdo             => o_si5342_spi_mosi,
-        sdi             => i_si5342_spi_miso,
-        ss_n(0)         => o_si5342_spi_ss_n,
-
-        avs_address     => av_test.address(1 downto 0),
-        avs_read        => av_test.read,
-        avs_readdata    => av_test.readdata,
-        avs_write       => av_test.write,
-        avs_writedata   => av_test.writedata,
-        avs_waitrequest => av_test.waitrequest,
-
-        reset           => not reset_50_n,
-        clk             => clk_50--,
     );
 
 end architecture;
