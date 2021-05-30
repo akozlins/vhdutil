@@ -51,6 +51,10 @@ port (
 
     o_wfifo_rempty      : out   std_logic;
 
+    o_error_wfifo_uf    : out   std_logic;
+    o_error_sdi_uf      : out   std_logic;
+    o_error_rfifo_of    : out   std_logic;
+
     i_reset_n           : in    std_logic;
     i_clk               : in    std_logic--;
 );
@@ -58,8 +62,8 @@ end entity;
 
 architecture arch of spi_slave is
 
-    signal ss, ss_q : std_logic;
     signal sclk, sclk_q : std_logic;
+    signal ss, ss_q : std_logic;
 
     signal wfifo_rdata, rfifo_wdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
     signal wfifo_rack, wfifo_rempty, rfifo_we, rfifo_wfull : std_logic;
@@ -68,24 +72,20 @@ architecture arch of spi_slave is
     signal sdo_reg, sdi_reg : std_logic_vector(g_DATA_WIDTH-1 downto 0);
     signal sdo_cnt, sdi_cnt : integer range 0 to g_DATA_WIDTH-1;
 
-    signal error_wfifo_uf : std_logic;
-    signal error_sdi_uf : std_logic;
-    signal error_rfifo_of : std_logic;
-
 begin
 
-    ss <= not i_ss_n;
     sclk <= i_sclk xor i_cpol;
+    ss <= not i_ss_n;
 
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
-        ss_q <= '0';
         sclk_q <= '0';
+        ss_q <= '0';
         --
     elsif rising_edge(i_clk) then
-        ss_q <= ss;
         sclk_q <= sclk;
+        ss_q <= ss;
         --
     end if;
     end process;
@@ -173,9 +173,9 @@ begin
         sdi_reg <= (others => '-');
         sdo_cnt <= 0;
         sdi_cnt <= 0;
-        error_wfifo_uf <= '0';
-        error_sdi_uf <= '0';
-        error_rfifo_of <= '0';
+        o_error_wfifo_uf <= '0';
+        o_error_sdi_uf <= '0';
+        o_error_rfifo_of <= '0';
         --
     elsif rising_edge(i_clk) then
         rfifo_we <= '0';
@@ -221,18 +221,21 @@ begin
 
         -- wfifo underflow
         if ( wfifo_rack = '1' and wfifo_rempty = '1' ) then
-            error_wfifo_uf <= '1';
+            o_error_wfifo_uf <= '1';
         end if;
+
+        -- wfifo overflow
+        -- TODO: o_wfull = '1' and i_we = '1'
 
         -- sdi underflow
         if ( ss_q = '1' and ss = '0' and sdi_cnt /= 0 ) then
             rfifo_we <= '1';
-            error_sdi_uf <= '1';
+            o_error_sdi_uf <= '1';
         end if;
 
         -- rfifo overflow
         if ( rfifo_we = '1' and rfifo_wfull = '1' ) then
-            error_rfifo_of <= '1';
+            o_error_rfifo_of <= '1';
         end if;
         --
     end if;

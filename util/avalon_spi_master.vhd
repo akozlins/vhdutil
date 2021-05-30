@@ -40,6 +40,7 @@ architecture arch of avalon_spi_master is
     signal spi_we, spi_wfull, spi_rack, spi_rempty : std_logic;
     signal spi_sclk_div : std_logic_vector(15 downto 0);
     signal spi_cpol, spi_sdo_cpha, spi_sdi_cpha : std_logic;
+    signal spi_error_wfifo_uf, spi_error_sdi_uf, spi_error_rfifo_of : std_logic;
     signal spi_reset : std_logic;
 
 begin
@@ -91,7 +92,10 @@ begin
         if ( i_avs_read = '1' and i_avs_address = "10" ) then
             o_avs_readdata <= (others => '0');
             o_avs_readdata(0) <= spi_wfull;
+            o_avs_readdata(1) <= spi_error_wfifo_uf;
             o_avs_readdata(8) <= spi_rempty;
+            o_avs_readdata(9) <= spi_error_sdi_uf;
+            o_avs_readdata(10) <= spi_error_rfifo_of;
         end if;
 
         -- control
@@ -137,6 +141,10 @@ begin
         i_cpol => spi_cpol,
         i_sdo_cpha => spi_sdo_cpha,
         i_sdi_cpha => spi_sdi_cpha,
+
+        o_error_wfifo_uf => spi_error_wfifo_uf,
+        o_error_sdi_uf => spi_error_sdi_uf,
+        o_error_rfifo_of => spi_error_rfifo_of,
 
         i_reset_n => i_reset_n and not spi_reset,
         i_clk => i_clk--,
