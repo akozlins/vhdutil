@@ -17,6 +17,8 @@ architecture arch of tb_spi is
 
     signal DONE : std_logic_vector(0 downto 0) := (others => '0');
 
+    signal prbs : work.util.slv32_array_t(0 to 15);
+
     signal wdata, rdata : std_logic_vector(7 downto 0);
     signal we, wfull, rack, rempty : std_logic := '0';
 
@@ -27,6 +29,19 @@ begin
     clk <= not clk after (0.5 us / g_CLK_MHZ);
     reset_n <= '0', '1' after (1.0 us / g_CLK_MHZ);
     cycle <= cycle + 1 after (1 us / g_CLK_MHZ);
+
+    process
+        variable lfsr : std_logic_vector(31 downto 0);
+    begin
+        lfsr := std_logic_vector(to_signed(g_SEED, lfsr'length));
+        for i in prbs'range loop
+            for j in 31 downto 0 loop
+                lfsr := lfsr(30 downto 0) & work.util.xor_reduce(lfsr and "10000000001000000000000000000011");
+                prbs(i)(j) <= lfsr(0);
+            end loop;
+        end loop;
+        wait;
+    end process;
 
     e_spi_master : entity work.spi_master
     port map (
@@ -59,14 +74,31 @@ begin
         wait until rising_edge(reset_n);
 
         wait until rising_edge(clk);
-        wdata <= std_logic_vector(to_signed(g_SEED, 32)(7 downto 0));
+        we <= '0';
+
+        wait until rising_edge(clk);
+        wdata <= prbs(0)(7 downto 0);
+        we <= '1';
+
+        wait until rising_edge(clk);
+        we <= '0';
+
+        wait until rising_edge(clk);
+        wdata <= prbs(1)(7 downto 0);
         we <= '1';
 
         wait until rising_edge(clk);
         we <= '0';
 
         wait until rising_edge(clk) and rempty = '0';
-        assert ( rdata = wdata ) report work.util.sgr(31) & "ERROR @ cycle = " & integer'image(cycle) & work.util.sgr(0) severity error;
+        assert ( rdata = prbs(0)(7 downto 0) ) report work.util.sgr(31) & "ERROR @ cycle = " & integer'image(cycle) & work.util.sgr(0) severity error;
+        rack <= '1';
+
+        wait until rising_edge(clk);
+        rack <= '0';
+
+        wait until rising_edge(clk) and rempty = '0';
+        assert ( rdata = prbs(1)(7 downto 0) ) report work.util.sgr(31) & "ERROR @ cycle = " & integer'image(cycle) & work.util.sgr(0) severity error;
         rack <= '1';
 
         wait until rising_edge(clk);
