@@ -16,8 +16,6 @@ port (
     -- out1 (50 MHz)
     i_si5342_clk_50     : in    std_logic;
 
-
-
     o_led_n             : out   std_logic_vector(15 downto 0);
     i_btn_n             : in    std_logic_vector(1 downto 0);
 
@@ -30,6 +28,7 @@ architecture arch of top is
     signal led : std_logic_vector(o_led_n'range) := (others => '0');
 
     signal clk_50, reset_50_n : std_logic;
+    signal clk_125, reset_125_n : std_logic;
 
     signal av_test : work.util.avalon_t;
 
@@ -55,6 +54,21 @@ begin
         i_clk       => clk_50--,
     );
 
+    clk_125 <= i_si5342_clk_125;
+
+    e_reset_125_n : entity work.reset_sync
+    port map ( o_reset_n => reset_125_n, i_reset_n => i_reset_n, i_clk => clk_125 );
+
+    e_clk_125_hz : entity work.clkdiv
+    generic map (
+        P => 125000000--,
+    )
+    port map (
+        o_clk       => led(1),
+        i_reset_n   => reset_125_n,
+        i_clk       => clk_125--,
+    );
+
     e_nios : component work.components.nios
     port map (
 --        spi_sclk => o_si5342_spi_sclk,
@@ -74,8 +88,8 @@ begin
         avm_test_writedata      => av_test.writedata,
         avm_test_waitrequest    => av_test.waitrequest,
 
-        rst_reset_n => reset_50_n,
-        clk_clk => clk_50--,
+        rst_reset_n => reset_125_n,
+        clk_clk => clk_125--,
     );
 
 end architecture;
