@@ -33,7 +33,9 @@ end entity;
 
 architecture arch of avalon_spi_master is
 
+    -- slave select register
     signal ss : std_logic_vector(ss_n'range);
+    -- slave select override
     signal sso : std_logic;
 
     signal spi_ss_n : std_logic;
@@ -89,6 +91,7 @@ begin
 
         -- status
         if ( avs_write = '1' and avs_address = "10" ) then
+            sso <= avs_writedata(31);
             --
         end if;
         if ( avs_read = '1' and avs_address = "10" ) then
@@ -98,6 +101,7 @@ begin
             avs_readdata(8) <= spi_rempty;
             avs_readdata(9) <= spi_error_sdi_uf;
             avs_readdata(10) <= spi_error_rfifo_of;
+            avs_readdata(31) <= sso;
         end if;
 
         -- control
