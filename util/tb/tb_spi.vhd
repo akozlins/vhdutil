@@ -35,8 +35,9 @@ begin
     begin
         lfsr := std_logic_vector(to_signed(g_SEED, lfsr'length));
         for i in prbs'range loop
-            for j in 31 downto 0 loop
-                lfsr := lfsr(30 downto 0) & work.util.xor_reduce(lfsr and "10000000001000000000000000000011");
+            for j in prbs(0)'range loop
+                lfsr := lfsr sll 1;
+                lfsr(0) := work.util.xor_reduce(lfsr and "10000000001000000000000000000011");
                 prbs(i)(j) <= lfsr(0);
             end loop;
         end loop;
