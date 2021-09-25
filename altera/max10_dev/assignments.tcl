@@ -3,6 +3,10 @@
 # Configuration mode: Single Uncompressed Image with Memory Initialization
 set_global_assignment -name INTERNAL_FLASH_UPDATE_MODE "SINGLE IMAGE WITH ERAM"
 
+# 'Assignment -> Device -> Device and Pin Options -> Configuration' (see AN730)
+# Configuration mode: Dual Compressed Images
+#set_global_assignment -name INTERNAL_FLASH_UPDATE_MODE "DUAL IMAGES"
+
 proc set_assignment { name pins } {
     set i 0
     foreach pin $pins {
