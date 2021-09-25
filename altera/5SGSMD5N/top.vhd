@@ -6,6 +6,11 @@ entity top is
 port (
     user_led_g                  : out   std_logic_vector(7 downto 0);
 
+    qsfp_rx_p                   : in    std_logic_vector(3 downto 0);
+    qsfp_tx_p                   : out   std_logic_vector(3 downto 0);
+
+    refclk4_ql2_p               : in    std_logic;
+
     clkin_50                    : in    std_logic--;
 );
 end entity;
@@ -13,6 +18,8 @@ end entity;
 architecture arch of top is
 
     signal clk_50 : std_logic;
+
+    signal tx_clk : std_logic;
 
     signal cnt_50 : unsigned(31 downto 0);
 
@@ -28,5 +35,20 @@ begin
     end process;
 
     user_led_g <= not std_logic_vector(cnt_50(31 downto 24));
+
+    e_xcvr : entity work.xcvr
+    port map (
+        o_tx_serial                     => qsfp_tx_p,
+        i_rx_serial                     => qsfp_rx_p,
+
+        o_tx_clk(0)                     => tx_clk,
+        i_tx_clk                        => (others => tx_clk),
+        i_rx_clk                        => (others => tx_clk),
+
+        i_refclk                        => refclk4_ql2_p,
+
+        i_reset_n                       => '1',
+        i_clk                           => clk_50--,
+    );
 
 end architecture;
