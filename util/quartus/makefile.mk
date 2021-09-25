@@ -11,6 +11,10 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
+ifeq ($(QUARTUS_OUTPUT_FILES),)
+    override QUARTUS_OUTPUT_FILES := output_files
+endif
+
 # directory for generated files (*.qsys, *.sopcinfo, etc.)
 # TODO: rename PREFIX -> QP_TMP_DIR
 ifeq ($(PREFIX),)
@@ -23,7 +27,7 @@ endif
 
 # location of compiled firmware (SOF file)
 ifeq ($(SOF),)
-    SOF := output_files/top.sof
+    SOF := $(QUARTUS_OUTPUT_FILES)/top.sof
 endif
 
 # location of generated nios.sopcinfo
@@ -63,10 +67,14 @@ QSYS_TCL_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.tcl,$(IPs))))
 QSYS_FILES := $(addprefix $(PREFIX)/,$(patsubst %.tcl,%.qsys,$(QSYS_TCL_FILES)))
 # convert all .qsys files into .sopcinfo files
 SOPC_FILES := $(patsubst %.qsys,%.sopcinfo,$(QSYS_FILES))
-# list all .vhd.qmegawiz files
-QMEGAWIZ_XML_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.vhd.qmegawiz,$(IPs))))
-# convert all .vhd.qmegawiz files into .vhd files
-QMEGAWIZ_VHD_FILES := $(addprefix $(PREFIX)/,$(patsubst %.vhd.qmegawiz,%.vhd,$(QMEGAWIZ_XML_FILES)))
+# make list of .vhd.qmegawiz and .vhd.envsubst files
+VHD_QMEGAWIZ_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.vhd.qmegawiz,$(IPs))))
+VHD_ENVSUBST_FILES := $(patsubst $(abspath .)/%,%,$(abspath $(filter %.vhd.envsubst,$(IPs))))
+# generate list of .vhd files
+VHD_FILES := $(addprefix $(PREFIX)/, \
+    $(patsubst %.vhd.qmegawiz,%.vhd,$(VHD_QMEGAWIZ_FILES)) \
+    $(patsubst %.vhd.envsubst,%.vhd,$(VHD_ENVSUBST_FILES)) \
+)
 
 # default qpf file
 top.qpf :
@@ -79,7 +87,7 @@ top.qsf : $(MAKEFILE_LIST)
 	cat << EOF > "$@"
 	set_global_assignment -name QIP_FILE top.qip
 	set_global_assignment -name TOP_LEVEL_ENTITY top
-	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY $(QUARTUS_OUTPUT_FILES)
 	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "util/altera/settings.tcl"
 	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
@@ -87,11 +95,13 @@ top.qsf : $(MAKEFILE_LIST)
 all : top.qpf top.qsf $(PREFIX)/include.qip
 
 .PHONY : $(PREFIX)/components_pkg.vhd
-$(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(QMEGAWIZ_VHD_FILES)
+$(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
 	mkdir -pv -- "$(PREFIX)"
 	# find and exec components_pkg.sh
 	$(lastword $(realpath $(addsuffix components_pkg.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)" > "$@"
 	if [ -x /bin/awk ] ; then awk -f $(lastword $(realpath $(addsuffix components_pkg.awk,$(dir $(MAKEFILE_LIST))))) "$@" ; fi
+	# patch generated "altera_pci_express.sdc" files
+	$(lastword $(realpath $(addsuffix altera_pci_express.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)"
 
 # include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
@@ -99,10 +109,11 @@ $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 	echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"components_pkg.vhd\" ]" > "$@"
 	# add qsys *.qsys files
 	for file in $(patsubst %.qsys,%,$(QSYS_FILES)) ; do
+	#    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qip)\" ]" >> "$@"
 	    echo "set_global_assignment -name QSYS_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qsys)\" ]" >> "$@"
 	done
-	# add qmegawiz *.qip files
-	for file in $(patsubst %.vhd,%,$(QMEGAWIZ_VHD_FILES)) ; do
+	# add *.vhd (*.qip) files
+	for file in $(patsubst %.vhd,%,$(VHD_FILES)) ; do
 	    [ -e "$$file.qip" ] && echo "set_global_assignment -name QIP_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.qip)\" ]" >> "$@"
 	    [ -e "$$file.qip" ] || echo "set_global_assignment -name VHDL_FILE [ file join $$::quartus(qip_path) \"$$(realpath -m --relative-to=$(PREFIX) -- $$file.vhd)\" ]" >> "$@"
 	done
@@ -112,6 +123,9 @@ $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
 # default device.tcl file
 device.tcl :
 	touch -- "$@"
+
+$(PREFIX)/%.vhd : %.vhd.envsubst
+	NAME="$(basename $(notdir $@))" envsubst '$$NAME' < "$<" > "$@"
 
 $(PREFIX)/%.vhd : %.vhd.qmegawiz
 	# find and exec qmegawiz.sh
@@ -163,7 +177,12 @@ $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)/settings.bsp
 	nios2-elf-objcopy "$(APP_DIR)/main.elf" -O srec "$(APP_DIR)/main.srec"
 	# generate mem_init/*.hex files (see AN730 / HEX File Generation)
 	$(MAKE) -C "$(APP_DIR)" mem_init_generate
-	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "output_files/"
+	mkdir -pv -- "$(QUARTUS_OUTPUT_FILES)"
+	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "$(QUARTUS_OUTPUT_FILES)/"
+
+app_gdb:
+	nios2-gdb-server --cable $(CABLE) --tcpport 2342 --tcptimeout 2 &
+	nios2-elf-gdb --eval-command='target remote :2342' $(APP_DIR)/app/main.elf
 
 .PHONY : app
 app : $(APP_DIR)/main.elf
