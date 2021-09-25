@@ -32,6 +32,8 @@ architecture arch of top is
 
     signal av_test : work.util.avalon_t;
 
+    signal clk_rx_phase : slv32_array_t(3 downto 0);
+
 begin
 
     o_led_n <= not led;
@@ -91,5 +93,40 @@ begin
         rst_reset_n => reset_125_n,
         clk_clk => clk_125--,
     );
+
+    generate_clk_rx_phase : for i in clk_rx_phase'range generate
+    begin
+        e_clk_rx_phase : entity work.clk_phase
+        port map (
+            i_clk1              => i_clk_125,
+            i_clk2              => pod_rx_clk(i),
+
+            o_phase             => clk_rx_phase(i)(15 downto 0),
+
+            i_reset_n           => nios_reset_n,
+            i_clk               => i_nios_clk--,
+        );
+    end generate;
+
+    process(i_nios_clk)
+    begin
+    if rising_edge(i_nios_clk) then
+        av_test.readdata <= X"CCCCCCCC";
+        av_test.waitrequest <= '0';
+
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"00" ) then
+            av_test.readdata <= clk_rx_phase(0);
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"01" ) then
+            av_test.readdata <= clk_rx_phase(1);
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"02" ) then
+            av_test.readdata <= clk_rx_phase(2);
+        end if;
+        if ( av_test.read = '1' and av_test.address(7 downto 0) = X"03" ) then
+            av_test.readdata <= clk_rx_phase(3);
+        end if;
+    end if;
+    end process;
 
 end architecture;
