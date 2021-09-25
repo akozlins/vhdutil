@@ -15,15 +15,15 @@ use ieee.std_logic_1164.all;
 --
 entity fifo_sc is
 generic (
-    DATA_WIDTH_g : positive := 8;
-    ADDR_WIDTH_g : positive := 8--;
+    g_DATA_WIDTH : positive := 8;
+    g_ADDR_WIDTH : positive := 8--;
 );
 port (
-    o_rdata     : out   std_logic_vector(DATA_WIDTH_g-1 downto 0);
+    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_rack      : in    std_logic;
     o_rempty    : out   std_logic;
 
-    i_wdata     : in    std_logic_vector(DATA_WIDTH_g-1 downto 0);
+    i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we        : in    std_logic;
     o_wfull     : out   std_logic;
 
@@ -37,19 +37,19 @@ use ieee.numeric_std.all;
 
 architecture arch of fifo_sc is
 
-    subtype addr_t is std_logic_vector(ADDR_WIDTH_g-1 downto 0);
-    subtype ptr_t is std_logic_vector(ADDR_WIDTH_g downto 0);
+    subtype addr_t is std_logic_vector(g_ADDR_WIDTH-1 downto 0);
+    subtype ptr_t is std_logic_vector(g_ADDR_WIDTH downto 0);
 
-    constant XOR_FULL_c : ptr_t := "10" & ( ADDR_WIDTH_g-2 downto 0 => '0' );
+    constant XOR_FULL_c : ptr_t := "10" & ( g_ADDR_WIDTH-2 downto 0 => '0' );
 
     signal rack, we : std_logic;
     signal rempty, wfull : std_logic;
     signal rptr, wptr, rptr_next, wptr_next : ptr_t := (others => '0');
 
-    signal rdata : std_logic_vector(DATA_WIDTH_g-1 downto 0);
+    signal rdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
 
     signal rdw : std_logic;
-    signal rdata_rdw : std_logic_vector(DATA_WIDTH_g-1 downto 0);
+    signal rdata_rdw : std_logic_vector(g_DATA_WIDTH-1 downto 0);
 
 begin
 
@@ -57,8 +57,6 @@ begin
     -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_clk ;
 
     -- psl assert always ( we = '1' |=> rempty = '0' ) @ i_clk ;
-    -- psl assert always ( rptr = wptr |-> rempty = '1' ) @ i_clk ;
-    -- psl assert always ( unsigned(rptr) = unsigned(wptr) + 2**ADDR_WIDTH_g |-> wfull = '1' ) @ i_clk ;
 
 
 
@@ -98,8 +96,8 @@ begin
 
     e_ram : entity work.ram_1r1w
     generic map (
-        g_DATA_WIDTH => DATA_WIDTH_g,
-        g_ADDR_WIDTH => ADDR_WIDTH_g--,
+        g_DATA_WIDTH => g_DATA_WIDTH,
+        g_ADDR_WIDTH => g_ADDR_WIDTH--,
     )
     port map (
         i_raddr         => rptr_next(addr_t'range),

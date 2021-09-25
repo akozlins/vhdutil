@@ -52,9 +52,9 @@ begin
 
     e_uart_tx : entity work.uart_tx
     generic map (
-        DATA_BITS_g => 9,
-        BAUD_RATE_g => BAUD_RATE,
-        CLK_MHZ_g => CLK_MHZ--,
+        g_DATA_BITS => 9,
+        g_BAUD_RATE => BAUD_RATE,
+        g_CLK_MHZ => CLK_MHZ--,
     )
     port map (
         o_data          => serial,
@@ -69,9 +69,9 @@ begin
 
     e_uart_rx : entity work.uart_rx
     generic map (
-        DATA_BITS_g => 9,
-        BAUD_RATE_g => BAUD_RATE,
-        CLK_MHZ_g => CLK_MHZ--,
+        g_DATA_BITS => 9,
+        g_BAUD_RATE => BAUD_RATE,
+        g_CLK_MHZ => CLK_MHZ--,
     )
     port map (
         i_data          => serial,

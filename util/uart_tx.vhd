@@ -13,15 +13,15 @@ use ieee.std_logic_1164.all;
 -- - LSB first
 entity uart_tx is
 generic (
-    DATA_BITS_g : positive := 8;
+    g_DATA_BITS : positive := 8;
     -- PARITY = 0 - none
     -- PARITY = 1 - odd
     -- PARITY = 2 - even
-    PARITY_g : integer := 0;
-    STOP_BITS_g : positive := 1;
-    BAUD_RATE_g : positive := 115200; -- bps
-    FIFO_ADDR_WIDTH_g : positive := 4;
-    CLK_MHZ_g : real--;
+    g_PARITY : integer := 0;
+    g_STOP_BITS : positive := 1;
+    g_BAUD_RATE : positive := 115200; -- bps
+    g_FIFO_ADDR_WIDTH : positive := 4;
+    g_CLK_MHZ : real--;
 );
 port (
     -- serial data
@@ -29,7 +29,7 @@ port (
     -- output enable
     o_data_oe   : out   std_logic;
 
-    i_wdata     : in    std_logic_vector(DATA_BITS_g-1 downto 0);
+    i_wdata     : in    std_logic_vector(g_DATA_BITS-1 downto 0);
     i_we        : in    std_logic;
     o_wfull     : out   std_logic;
 
@@ -40,10 +40,10 @@ end entity;
 
 architecture arch of uart_tx is
 
-    signal rdata : std_logic_vector(DATA_BITS_g-1 downto 0);
+    signal rdata : std_logic_vector(g_DATA_BITS-1 downto 0);
     signal rack, rempty : std_logic;
 
-    constant CNT_MAX_c : positive := positive(1000000.0 * CLK_MHZ_g / real(BAUD_RATE_g)) - 1;
+    constant CNT_MAX_c : positive := positive(1000000.0 * g_CLK_MHZ / real(g_BAUD_RATE)) - 1;
     signal cnt : integer range 0 to CNT_MAX_c;
 
     type state_t is (
@@ -55,9 +55,9 @@ architecture arch of uart_tx is
     );
     signal state : state_t;
 
-    signal data_bit : integer range 0 to DATA_BITS_g-1;
+    signal data_bit : integer range 0 to g_DATA_BITS-1;
     signal parity : std_logic;
-    signal stop_bit : integer range 0 to STOP_BITS_g-1;
+    signal stop_bit : integer range 0 to g_STOP_BITS-1;
 
 begin
 
@@ -82,8 +82,8 @@ begin
     -- use fifo to buffer input data
     e_fifo : entity work.fifo_sc
     generic map (
-        DATA_WIDTH_g => DATA_BITS_g,
-        ADDR_WIDTH_g => FIFO_ADDR_WIDTH_g--,
+        g_DATA_WIDTH => g_DATA_BITS,
+        g_ADDR_WIDTH => g_FIFO_ADDR_WIDTH--,
     )
     port map (
         o_rdata         => rdata,
@@ -100,9 +100,9 @@ begin
 
     parity <=
         -- total parity odd
-        '1' xor work.util.xor_reduce(rdata) when ( PARITY_g = 1 ) else
+        '1' xor work.util.xor_reduce(rdata) when ( g_PARITY = 1 ) else
         -- total parity even
-        '0' xor work.util.xor_reduce(rdata) when ( PARITY_g = 2 ) else
+        '0' xor work.util.xor_reduce(rdata) when ( g_PARITY = 2 ) else
         '-';
 
     process(i_clk, i_reset_n)
@@ -124,9 +124,9 @@ begin
                 state <= STATE_DATA;
                 --
             when STATE_DATA =>
-                if ( data_bit /= DATA_BITS_g-1) then
+                if ( data_bit /= g_DATA_BITS-1) then
                     data_bit <= data_bit + 1;
-                elsif ( PARITY_g /= 0 ) then
+                elsif ( g_PARITY /= 0 ) then
                     state <= STATE_PARITY;
                 else
                     rack <= '1';
@@ -138,7 +138,7 @@ begin
                 state <= STATE_STOP;
                 --
             when STATE_STOP =>
-                if ( stop_bit /= STOP_BITS_g-1) then
+                if ( stop_bit /= g_STOP_BITS-1) then
                     stop_bit <= stop_bit + 1;
                 elsif ( rempty = '0' ) then
                     -- continue transmission

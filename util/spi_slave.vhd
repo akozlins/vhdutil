@@ -95,8 +95,8 @@ begin
     -- write fifo (to sdo)
     e_wfifo : entity work.fifo_sc
     generic map (
-        DATA_WIDTH_g => g_DATA_WIDTH,
-        ADDR_WIDTH_g => g_FIFO_ADDR_WIDTH--,
+        g_DATA_WIDTH => g_DATA_WIDTH,
+        g_ADDR_WIDTH => g_FIFO_ADDR_WIDTH--,
     )
     port map (
         o_rdata         => wfifo_rdata,
@@ -116,8 +116,8 @@ begin
     -- read fifo (from sdi)
     e_rfifo : entity work.fifo_sc
     generic map (
-        DATA_WIDTH_g => g_DATA_WIDTH,
-        ADDR_WIDTH_g => g_FIFO_ADDR_WIDTH--,
+        g_DATA_WIDTH => g_DATA_WIDTH,
+        g_ADDR_WIDTH => g_FIFO_ADDR_WIDTH--,
     )
     port map (
         o_rdata         => o_rdata,
