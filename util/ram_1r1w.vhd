@@ -16,6 +16,7 @@ generic (
 port (
     i_raddr     : in    std_logic_vector(g_ADDR_WIDTH-1 downto 0);
     o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    i_re        : in    std_logic := '1';
     i_rclk      : in    std_logic;
 
     i_waddr     : in    std_logic_vector(g_ADDR_WIDTH-1 downto 0);
@@ -46,7 +47,9 @@ begin
     process(i_rclk)
     begin
     if rising_edge(i_rclk) then
-        o_rdata <= ram(to_integer(unsigned(i_raddr)));
+        if ( i_re = '1' ) then
+            o_rdata <= ram(to_integer(unsigned(i_raddr)));
+        end if;
     end if;
     end process;
 
