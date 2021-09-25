@@ -19,6 +19,9 @@ architecture arch of tb_fifo_sc is
     signal wdata, rdata : std_logic_vector(11 downto 0) := (others => '0');
     signal we, wfull, re, rempty : std_logic := '0';
 
+    signal fifo_rdata : std_logic_vector(11 downto 0) := (others => '0');
+    signal fifo_re, fifo_rempty : std_logic := '0';
+
     signal DONE : std_logic_vector(1 downto 0) := (others => '0');
 
     signal prbs : work.util.slv32_array_t(0 to 1023);
@@ -53,8 +56,25 @@ begin
         i_we        => we,
         i_wdata     => wdata,
 
+        o_rempty    => fifo_rempty,
+        i_rack      => fifo_re,
+        o_rdata     => fifo_rdata,
+
+        i_reset_n   => reset_n,
+        i_clk       => clk--,
+    );
+
+    e_fifo_rreg : entity work.fifo_rreg
+    generic map (
+        g_DATA_WIDTH => rdata'length--,
+    )
+    port map (
+        i_rempty    => fifo_rempty,
+        o_re        => fifo_re,
+        i_rdata     => fifo_rdata,
+
         o_rempty    => rempty,
-        i_rack      => re,
+        i_re        => re,
         o_rdata     => rdata,
 
         i_reset_n   => reset_n,
@@ -62,7 +82,7 @@ begin
     );
 
     -- write
-    we <= reset_n and not wfull and prbs(cycle / 32)(cycle mod 32);
+    we <= not wfull and prbs(cycle / 32)(cycle mod 32);
 
     process
     begin
@@ -77,7 +97,7 @@ begin
     end process;
 
     -- read
-    re <= reset_n and not rempty and prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
+    re <= not rempty and prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
 
     process
     begin
