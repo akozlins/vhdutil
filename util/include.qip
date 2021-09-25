@@ -1,5 +1,7 @@
 #
 
+set_global_assignment -name QIP_FILE [ file join $::quartus(qip_path) "altera/include.qip" ]
+
 # include sdc files
 foreach f [ lsort [ glob -directory $::quartus(qip_path) -nocomplain \
     "*.sdc" \
@@ -10,7 +12,6 @@ foreach f [ lsort [ glob -directory $::quartus(qip_path) -nocomplain \
 # include vhd files
 foreach f [ lsort [ glob -directory $::quartus(qip_path) -nocomplain \
     "*.vhd" \
-    "altera/ip_ram.vhd" \
 ] ] {
     set_global_assignment -name VHDL_FILE $f
 }

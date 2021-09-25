@@ -1,8 +1,8 @@
 
 CABLE=1
 
-IPs = \
+IPs := \
     $(wildcard ip/*.vhd.qmegawiz) \
     nios.tcl
 
-include util/altera/makefile.mk
+include util/quartus/makefile.mk

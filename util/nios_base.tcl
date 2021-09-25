@@ -30,9 +30,6 @@ proc nios_base.add_clock_source { name clockFrequency args } {
     set_interface_property ${reset_export} EXPORT_OF ${name}.clk_in_reset
 }
 
-if { ! [ info exists nios_clk_mhz ] } {
-    set nios_clk_mhz [ expr $nios_freq / 1e6 ]
-}
 nios_base.add_clock_source clk [ expr int($nios_clk_mhz * 1e6) ] -reset_export rst
 
 # cpu

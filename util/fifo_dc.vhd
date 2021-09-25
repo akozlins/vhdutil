@@ -50,6 +50,9 @@ begin
     -- psl assert always ( i_re = '0' or rempty = '0' ) @ i_rclk;
     -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_wclk;
 
+    -- psl assert always ( wfull = '1' |=> i_we = '0' ) @ i_wclk;
+    -- psl assert always ( rempty = '1' |=> i_re = '0' ) @ i_rclk;
+
 
 
     e_ram : entity work.ram_dp

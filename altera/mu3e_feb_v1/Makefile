@@ -1,7 +1,7 @@
 
 CABLE=USB-Blaster
 
-IPs = \
+IPs := \
     $(wildcard ip/*.tcl) \
     nios.tcl
 

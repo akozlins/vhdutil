@@ -15,6 +15,13 @@ for arg in "$@" ; do
     SRC+=("$arg")
 done
 
+# directories to be searched for library files
+DIRS=(
+    "/usr/local/lib/ghdl/vendors/altera"
+    "/usr/lib/ghdl/vendors/altera"
+    "$HOME/.local/share/ghdl/vendors/altera"
+)
+
 # elaboration options
 OPTS=(
     # vhdl standard (default is '93c', '08' is VHDL-2008 standard)
@@ -31,11 +38,6 @@ OPTS=(
     -fpsl
 )
 
-# directories to be searched for library files
-DIRS=(
-    "/usr/local/lib/ghdl/vendors/altera"
-    "$HOME/.local/share/ghdl/vendors/altera"
-)
 for arg in "${DIRS[@]}" ; do
     [ -d "$arg" ] && OPTS+=(-P"$arg")
 done

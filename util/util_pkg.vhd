@@ -12,6 +12,15 @@ use std.textio.all;
 
 package util is
 
+    subtype slv4_t is std_logic_vector(3 downto 0);
+    type slv4_array_t is array ( natural range <> ) of slv4_t;
+    subtype slv8_t is std_logic_vector(7 downto 0);
+    type slv8_array_t is array ( natural range <> ) of slv8_t;
+    subtype slv16_t is std_logic_vector(15 downto 0);
+    type slv16_array_t is array ( natural range <> ) of slv16_t;
+    subtype slv32_t is std_logic_vector(31 downto 0);
+    type slv32_array_t is array ( natural range <> ) of slv32_t;
+
     type avalon_t is record
         address         :   std_logic_vector(31 downto 0);
         read            :   std_logic;
