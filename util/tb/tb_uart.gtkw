@@ -1,0 +1,13 @@
+[*]
+[treeopen] top.
+[treeopen] top.tb_uart.
+top.tb_uart.clk
+top.tb_uart.reset_n
+-TX
+#{top.tb_uart.wdata[8:0]} top.tb_uart.wdata[8] top.tb_uart.wdata[7] top.tb_uart.wdata[6] top.tb_uart.wdata[5] top.tb_uart.wdata[4] top.tb_uart.wdata[3] top.tb_uart.wdata[2] top.tb_uart.wdata[1] top.tb_uart.wdata[0]
+top.tb_uart.we
+top.tb_uart.wfull
+-RX
+#{top.tb_uart.rdata[8:0]} top.tb_uart.rdata[8] top.tb_uart.rdata[7] top.tb_uart.rdata[6] top.tb_uart.rdata[5] top.tb_uart.rdata[4] top.tb_uart.rdata[3] top.tb_uart.rdata[2] top.tb_uart.rdata[1] top.tb_uart.rdata[0]
+top.tb_uart.rack
+top.tb_uart.rempty
