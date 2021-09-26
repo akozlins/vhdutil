@@ -9,6 +9,7 @@ port (
     qsfp_rx_p                   : in    std_logic_vector(3 downto 0);
     qsfp_tx_p                   : out   std_logic_vector(3 downto 0);
 
+    -- QSFP reference clock 282.5 MHz
     refclk4_ql2_p               : in    std_logic;
 
     clkin_50                    : in    std_logic--;
@@ -42,7 +43,15 @@ begin
         i_rx_serial                     => qsfp_rx_p,
 
         o_tx_clk(0)                     => tx_clk,
+
+        i_tx_data                       =>
+            X"000000BC" & X"000000BC" & X"000000BC" & X"000000BC",
+        i_tx_datak                      =>
+            "0001" & "0001" & "0001" & "0001",
         i_tx_clk                        => (others => tx_clk),
+
+        o_rx_data                       => open,
+        o_rx_datak                      => open,
         i_rx_clk                        => (others => tx_clk),
 
         i_refclk                        => refclk4_ql2_p,
