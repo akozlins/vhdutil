@@ -1,5 +1,6 @@
 #
 
+set_global_assignment -name SOURCE_TCL_SCRIPT_FILE [file join $::quartus(qip_path) "assignments/s5_dev.tcl"]
 set_global_assignment -name SOURCE_TCL_SCRIPT_FILE [file join $::quartus(qip_path) "assignments.tcl"]
 
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "top.vhd"]
