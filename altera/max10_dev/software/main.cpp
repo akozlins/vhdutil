@@ -17,6 +17,7 @@ int main() {
         printf("  [a] => adc\n");
         printf("  [f] => ufm (flash)\n");
         printf("  [t] => test\n");
+        printf("  [0] => n/a\n");
 
         printf("Select entry ...\n");
         char cmd = wait_key();
