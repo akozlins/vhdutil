@@ -30,4 +30,3 @@
 -- Retrieval info: 	<generic name="T_RX_DIGITALRESET" value="4000" />
 -- Retrieval info: </instance>
 -- IPFS_FILES : ip_xcvr_reset.vho
--- RELATED_FILES: ip_xcvr_reset.vhd, altera_xcvr_functions.sv, alt_xcvr_resync.sv, altera_xcvr_reset_control.sv, alt_xcvr_reset_counter.sv
