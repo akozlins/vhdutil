@@ -120,7 +120,7 @@ begin
         rx_cal_busy                     => rx_cal_busy,
         rx_is_lockedtodata              => rx_is_lockedtodata,
 
-        pll_select                      => "11100100",
+        pll_select                      => "00",
 
         tx_ready                        => o_tx_ready,
         rx_ready                        => o_rx_ready,
