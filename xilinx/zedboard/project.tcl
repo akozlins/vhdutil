@@ -17,5 +17,6 @@ read_xdc -unmanaged "top.xdc"
 set_property top top [ current_fileset ]
 
 add_files_glob "../../util/*.vhd"
+add_files_glob "../../rv/*.vhd"
 
 set_property -name "source_mgmt_mode" -value "All" -objects [ current_project ]

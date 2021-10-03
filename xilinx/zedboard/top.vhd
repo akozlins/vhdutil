@@ -15,6 +15,8 @@ architecture arch of top is
 
     signal reset_100_n : std_logic;
 
+    signal debug : std_logic_vector(31 downto 0);
+
 begin
 
     e_reset_100_n : entity work.reset_sync
@@ -27,8 +29,16 @@ begin
         --
     elsif rising_edge(i_clk_100) then
         o_led <= i_sw;
+        o_led(0) <= work.util.xor_reduce(debug);
         --
     end if;
     end process;
+
+    e_cpu : entity work.rv32i_cpu_v1
+    port map (
+        o_debug => debug,
+        i_reset_n => reset_100_n,
+        i_clk => i_clk_100--,
+    );
 
 end architecture;

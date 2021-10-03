@@ -14,8 +14,9 @@ proc pgm { bit } {
 
 proc add_files_glob { pattern { fileset "sources_1" }  } {
     foreach { file } [ lsort [ glob -nocomplain -- $pattern ] ] {
-        add_files -fileset $fileset $file
+#        add_files -fileset $fileset $file
     }
+    add_files -fileset $fileset [ lsort [ glob -nocomplain -- $pattern ] ]
 }
 
 proc read_xdc_glob { pattern  } {

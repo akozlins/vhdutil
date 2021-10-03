@@ -23,7 +23,7 @@ report_timing
 
 #set_property BITSTREAM.STARTUP.STARTUPCLK JtagClk [current_design]
 #set_property BITSTREAM.CONFIG.DCIUPDATEMODE Quiet [current_design]
-write_bitstream -verbose -force "$::dir/top.bit"
+write_bitstream -verbose -force "top.bit"
 
 open_hw
 connect_hw_server
