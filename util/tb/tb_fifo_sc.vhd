@@ -66,7 +66,8 @@ begin
 
     e_fifo_rreg : entity work.fifo_rreg
     generic map (
-        g_DATA_WIDTH => rdata'length--,
+        g_DATA_WIDTH => rdata'length,
+        g_N => 2--,
     )
     port map (
         i_fifo_rempty   => fifo_rempty,
