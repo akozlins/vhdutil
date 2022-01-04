@@ -17,19 +17,16 @@ generic (
     g_N : natural := 1--;
 );
 port (
-    -- to user
-    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
-    i_re        : in    std_logic;
-    o_rempty    : out   std_logic;
+    o_rdata         : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    i_re            : in    std_logic;
+    o_rempty        : out   std_logic;
 
-    -- from fifo
-    i_rdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
-    o_re        : out   std_logic;
-    i_rempty    : in    std_logic;
+    i_fifo_rdata    : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    o_fifo_re       : out   std_logic;
+    i_fifo_rempty   : in    std_logic;
 
-    -- read side reset and clock
-    i_reset_n   : in    std_logic;
-    i_clk       : in    std_logic--;
+    i_reset_n       : in    std_logic;
+    i_clk           : in    std_logic--;
 );
 end entity;
 
@@ -44,17 +41,17 @@ begin
     assert ( g_N < 2 ) report "" severity failure;
 
     o_rdata <= rdata;
-    o_re <= re;
+    o_fifo_re <= re;
     o_rempty <= rempty;
 
     generate_N_0 : if ( g_N = 0 ) generate
-        rdata <= i_rdata;
+        rdata <= i_fifo_rdata;
         re <= i_re;
-        rempty <= i_rempty;
+        rempty <= i_fifo_rempty;
     end generate;
 
     generate_N_1 : if ( g_N = 1 ) generate
-        re <= ( i_re or rempty ) and not i_rempty;
+        re <= ( i_re or rempty ) and not i_fifo_rempty;
 
         process(i_clk, i_reset_n)
         begin
@@ -63,9 +60,9 @@ begin
             rempty <= '1';
         elsif rising_edge(i_clk) then
             if ( i_re = '1' or rempty = '1' ) then
-                rdata <= i_rdata;
-                rempty <= i_rempty;
-                if ( i_rempty = '1' ) then
+                rdata <= i_fifo_rdata;
+                rempty <= i_fifo_rempty;
+                if ( i_fifo_rempty = '1' ) then
                     rdata <= (others => '0');
                 end if;
             end if;

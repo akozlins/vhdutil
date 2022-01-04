@@ -69,16 +69,16 @@ begin
         g_DATA_WIDTH => rdata'length--,
     )
     port map (
-        i_rempty    => fifo_rempty,
-        o_re        => fifo_re,
-        i_rdata     => fifo_rdata,
+        i_fifo_rempty   => fifo_rempty,
+        o_fifo_re       => fifo_re,
+        i_fifo_rdata    => fifo_rdata,
 
-        o_rempty    => rempty,
-        i_re        => re,
-        o_rdata     => rdata,
+        o_rempty        => rempty,
+        i_re            => re,
+        o_rdata         => rdata,
 
-        i_reset_n   => reset_n,
-        i_clk       => clk--,
+        i_reset_n       => reset_n,
+        i_clk           => clk--,
     );
 
     -- write
