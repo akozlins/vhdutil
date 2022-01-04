@@ -14,7 +14,7 @@ use ieee.std_logic_1164.all;
 entity fifo_rreg is
 generic (
     g_DATA_WIDTH : positive := 32;
-    g_N : natural := 1--;
+    g_N : natural := 2--;
 );
 port (
     o_rdata         : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
@@ -32,48 +32,48 @@ end entity;
 
 architecture arch of fifo_rreg is
 
-    signal data0, data1 : std_logic_vector(g_DATA_WIDTH-1 downto 0);
-    signal empty0, empty1 : std_logic;
+    signal fifo_rdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    type data_array_t is array (natural range <>) of std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    signal data : data_array_t(g_N-1 downto 0);
+    signal empty : std_logic_vector(g_N-1 downto 0);
 
 begin
 
+    fifo_rdata <= i_fifo_rdata when ( i_fifo_rempty = '0' ) else (others => '0');
+
     generate_N_0 : if ( g_N = 0 ) generate
-        o_rdata <= i_fifo_rdata;
+        o_rdata <= fifo_rdata;
         o_fifo_re <= i_re;
         o_rempty <= i_fifo_rempty;
     end generate;
 
     generate_N_1 : if ( g_N > 0 ) generate
-        o_rdata <=
-            data0 when ( empty0 = '0' ) else
-            data1 when ( empty1 = '0' ) else
-            (others => '0');
-        o_fifo_re <= (empty0 or empty1) and not i_fifo_rempty;
-        o_rempty <= empty0 and empty1;
+        o_rdata <= data(0);
+        o_fifo_re <= work.util.or_reduce(empty) and not i_fifo_rempty;
+        o_rempty <= empty(0);
 
         process(i_clk, i_reset_n)
         begin
         if ( i_reset_n = '0' ) then
-            data0 <= (others => '0');
-            data1 <= (others => '0');
-            empty0 <= '1';
-            empty1 <= '1';
+            data <= (others => (others => '0'));
+            empty <= (others => '1');
         elsif rising_edge(i_clk) then
-            if ( empty0 = '1' ) then
-                data0 <= data1;
-                empty0 <= empty1;
-            end if;
-            if ( empty0 = '1' or empty1 = '1' ) then
-                data1 <= i_fifo_rdata;
-                if ( i_fifo_rempty = '1' ) then
-                    data1 <= (others => '0');
+            if ( i_re = '0' and empty(0) = '0' ) then
+                if ( empty(1) = '1' ) then
+                    data(1) <= fifo_rdata;
+                    empty(1) <= i_fifo_rempty;
                 end if;
-                empty1 <= i_fifo_rempty;
-            end if;
-
-            if ( i_re = '1' ) then
-                data0 <= (others => '0');
-                empty0 <= '1';
+            elsif ( empty(1) = '0' ) then
+                -- read and both not empty
+                data(0) <= data(1);
+                empty(0) <= empty(1);
+                data(1) <= (others => '0');
+                empty(1) <= '1';
+            else
+                -- read and 1 is empty
+                -- or both are empty
+                data(0) <= fifo_rdata;
+                empty(0) <= i_fifo_rempty;
             end if;
         end if;
         end process;
