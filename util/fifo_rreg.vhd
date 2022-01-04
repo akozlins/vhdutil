@@ -32,39 +32,48 @@ end entity;
 
 architecture arch of fifo_rreg is
 
-    signal rdata : std_logic_vector(o_rdata'range);
-    signal re : std_logic;
-    signal rempty : std_logic;
+    signal data0, data1 : std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    signal empty0, empty1 : std_logic;
 
 begin
 
-    assert ( g_N < 2 ) report "" severity failure;
-
-    o_rdata <= rdata;
-    o_fifo_re <= re;
-    o_rempty <= rempty;
-
     generate_N_0 : if ( g_N = 0 ) generate
-        rdata <= i_fifo_rdata;
-        re <= i_re;
-        rempty <= i_fifo_rempty;
+        o_rdata <= i_fifo_rdata;
+        o_fifo_re <= i_re;
+        o_rempty <= i_fifo_rempty;
     end generate;
 
-    generate_N_1 : if ( g_N = 1 ) generate
-        re <= ( i_re or rempty ) and not i_fifo_rempty;
+    generate_N_1 : if ( g_N > 0 ) generate
+        o_rdata <=
+            data0 when ( empty0 = '0' ) else
+            data1 when ( empty1 = '0' ) else
+            (others => '0');
+        o_fifo_re <= (empty0 or empty1) and not i_fifo_rempty;
+        o_rempty <= empty0 and empty1;
 
         process(i_clk, i_reset_n)
         begin
         if ( i_reset_n = '0' ) then
-            rdata <= (others => '0');
-            rempty <= '1';
+            data0 <= (others => '0');
+            data1 <= (others => '0');
+            empty0 <= '1';
+            empty1 <= '1';
         elsif rising_edge(i_clk) then
-            if ( i_re = '1' or rempty = '1' ) then
-                rdata <= i_fifo_rdata;
-                rempty <= i_fifo_rempty;
+            if ( empty0 = '1' ) then
+                data0 <= data1;
+                empty0 <= empty1;
+            end if;
+            if ( empty0 = '1' or empty1 = '1' ) then
+                data1 <= i_fifo_rdata;
                 if ( i_fifo_rempty = '1' ) then
-                    rdata <= (others => '0');
+                    data1 <= (others => '0');
                 end if;
+                empty1 <= i_fifo_rempty;
+            end if;
+
+            if ( i_re = '1' ) then
+                data0 <= (others => '0');
+                empty0 <= '1';
             end if;
         end if;
         end process;
