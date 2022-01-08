@@ -88,7 +88,7 @@ top.qsf : $(MAKEFILE_LIST)
 	set_global_assignment -name QIP_FILE top.qip
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY $(QUARTUS_OUTPUT_FILES)
-	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "util/altera/settings.tcl"
+	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "util/quartus/settings.tcl"
 	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
 
