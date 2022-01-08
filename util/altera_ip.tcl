@@ -2,6 +2,14 @@
 
 package require qsys;
 
+set ::SGR_RED "\033\[0;31m"
+set ::SGR_RESET "\033\[0m"
+
+proc ::error { msg } {
+    puts "${::SGR_RED}E \[[ lindex [ info level 1 ] 0 ]\] $msg${::SGR_RESET}"
+    exit 1
+}
+
 # ::add_fifo --
 #
 #   Add FIFO Intel FPGA IP (fifo) instance and auto export.
@@ -34,7 +42,7 @@ proc ::add_fifo { width depth args } {
                 set aclr 1
             }
             default {
-                send_message "Error" "\[add_fifo\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -118,7 +126,7 @@ proc ::add_ram_2port { width words args } {
                 set regB 1
             }
             default {
-                send_message "Error" "\[add_ram_2port\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -155,7 +163,7 @@ proc ::add_ram_2port { width words args } {
         0 {}
         old { set_instance_parameter_value ${name} {GUI_Q_PORT_MODE} {1} }
         new { set_instance_parameter_value ${name} {GUI_Q_PORT_MODE} {3} }
-        default { send_message "Error" "\[add_ram_2port\] invalid RDW '[ lindex $args $i ]'" }
+        default { ::error "invalid RDW '[ lindex $args $i ]'" }
     }
 
     # output registers
@@ -181,7 +189,7 @@ proc ::add_altclkctrl { n args } {
                 set name [ lindex $args $i ]
             }
             default {
-                send_message "Error" "\[add_altclkctrl\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -217,7 +225,7 @@ proc ::add_altera_iopll { refclk outclk args } {
                 set locked 1
             }
             default {
-                send_message "Error" "\[add_altclkctrl\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -254,7 +262,7 @@ proc ::add_altera_modular_adc { channels args } {
                 set seq_order [ lindex $args $i ]
             }
             default {
-                send_message "Error" "\[add_modular_adc\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -298,7 +306,7 @@ proc ::add_altera_xcvr_fpll_a10 { refclk_frequency output_clock_frequency args }
                 set name [ lindex $args $i ]
             }
             default {
-                send_message "Error" "\[add_altera_xcvr_fpll_a10\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -341,7 +349,7 @@ proc ::add_altera_xcvr_native_a10 { channels channel_width cdr_refclk_freq data_
                 set mode [ lindex $args $i ]
             }
             default {
-                send_message "Error" "\[[ lindex [ info level 0 ] 0 ]\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -425,7 +433,7 @@ proc ::add_altera_xcvr_reset_control { CHANNELS SYS_CLK_IN_MHZ args } {
                 set name [ lindex $args $i ]
             }
             default {
-                send_message "Error" "\[add_altera_xcvr_reset_control\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
@@ -477,7 +485,7 @@ proc add_pcie_a10_hip { args } {
                 set auto_export 0
             }
             default {
-                send_message "Error" "\[add_pcie_a10_hip\] invalid argument '[ lindex $args $i ]'"
+                ::error "invalid argument '[ lindex $args $i ]'"
             }
         }
     }
