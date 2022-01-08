@@ -54,7 +54,7 @@ begin
     generate_N_1 : if ( g_N > 0 ) generate
         -- slot 1 contains readable data
         o_rdata <= data(1);
-        o_fifo_re <= work.util.or_reduce(empty(1 to g_N));
+        o_fifo_re <= empty(g_N);
         o_rempty <= empty(1);
 
         process(i_clk, i_reset_n)
