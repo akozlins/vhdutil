@@ -17,10 +17,10 @@ architecture arch of tb_fifo_sc is
     signal cycle : integer := 0;
 
     signal wdata, rdata : std_logic_vector(9 downto 0) := (others => '0');
-    signal we, wfull, re, rempty : std_logic := '0';
+    signal we, wfull, rack, rempty : std_logic := '0';
 
     signal fifo_rdata : std_logic_vector(9 downto 0) := (others => '0');
-    signal fifo_re, fifo_rempty : std_logic := '0';
+    signal fifo_rempty, fifo_rack, fifo_rack_n : std_logic := '0';
 
     signal DONE : std_logic_vector(1 downto 0) := (others => '0');
 
@@ -52,34 +52,34 @@ begin
         g_ADDR_WIDTH => 2--,
     )
     port map (
-        o_wfull     => wfull,
-        i_we        => we,
-        i_wdata     => wdata,
-
-        o_rempty    => fifo_rempty,
-        i_rack      => fifo_re,
         o_rdata     => fifo_rdata,
+        i_rack      => not fifo_rack_n,
+        o_rempty    => fifo_rempty,
+
+        i_wdata     => wdata,
+        i_we        => we,
+        o_wfull     => wfull,
 
         i_reset_n   => reset_n,
         i_clk       => clk--,
     );
 
-    e_fifo_rreg : entity work.fifo_rreg
+    e_fifo_reg : entity work.fifo_reg
     generic map (
         g_DATA_WIDTH => rdata'length,
         g_N => 2--,
     )
     port map (
-        i_fifo_rempty   => fifo_rempty,
-        o_fifo_re       => fifo_re,
-        i_fifo_rdata    => fifo_rdata,
+        o_rdata     => rdata,
+        i_rack      => rack,
+        o_rempty    => rempty,
 
-        o_rempty        => rempty,
-        i_re            => re,
-        o_rdata         => rdata,
+        i_wdata     => fifo_rdata,
+        i_we        => not fifo_rempty,
+        o_wfull     => fifo_rack_n,
 
-        i_reset_n       => reset_n,
-        i_clk           => clk--,
+        i_reset_n   => reset_n,
+        i_clk       => clk--,
     );
 
     -- write
@@ -98,12 +98,12 @@ begin
     end process;
 
     -- read
-    re <= not rempty and prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
+    rack <= not rempty and prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
 
     process
     begin
         for i in 0 to 2**rdata'length-1 loop
-            wait until rising_edge(clk) and re = '1';
+            wait until rising_edge(clk) and rack = '1';
 --            report "read: rdata = " & work.util.to_hstring(rdata);
             assert ( rdata = std_logic_vector(to_unsigned(i, rdata'length)) ) severity error;
         end loop;
