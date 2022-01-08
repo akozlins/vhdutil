@@ -32,6 +32,18 @@ package util is
     end record;
     type avalon_array_t is array(natural range <>) of avalon_t;
 
+    function value_if (
+        condition : boolean;
+        value_true : std_logic_vector;
+        value_false : std_logic_vector--;
+    ) return std_logic_vector;
+
+    function value_if (
+        condition : boolean;
+        value_true : integer;
+        value_false : integer--;
+    ) return integer;
+
     -- Greatest Common Divisor
     function gcd (
         p, q : positive--;
@@ -195,6 +207,32 @@ package util is
 end package;
 
 package body util is
+
+    function value_if (
+        condition : boolean;
+        value_true : std_logic_vector;
+        value_false : std_logic_vector--;
+    ) return std_logic_vector is
+    begin
+        if ( condition ) then
+            return value_true;
+        else
+            return value_false;
+        end if;
+    end function;
+
+    function value_if (
+        condition : boolean;
+        value_true : integer;
+        value_false : integer--;
+    ) return integer is
+    begin
+        if ( condition ) then
+            return value_true;
+        else
+            return value_false;
+        end if;
+    end function;
 
     function gcd (
         p, q : positive--;
