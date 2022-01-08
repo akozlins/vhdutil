@@ -363,15 +363,29 @@ proc ::add_altera_xcvr_native_a10 { channels channel_width cdr_refclk_freq data_
     set_instance_parameter_value ${name} {support_mode} {user_mode}
 
     if { [ string equal $mode basic_std ] } {
-        if { ${channel_width} == 8 } {
+        if { ${channel_width} == 8 || ${channel_width} == 10 } {
             set_instance_parameter_value ${name} {std_pcs_pma_width} {10}
-        } \
-        else {
+        }
+        if { ${channel_width} == 16 || ${channel_width} == 20 } {
             set_instance_parameter_value ${name} {std_pcs_pma_width} {20}
         }
-        if { ${channel_width} == 32 } {
+        if { ${channel_width} == 32 || ${channel_width} == 40 } {
+            set_instance_parameter_value ${name} {std_pcs_pma_width} {20}
             set_instance_parameter_value ${name} {std_tx_byte_ser_mode} {Serialize x2}
             set_instance_parameter_value ${name} {std_rx_byte_deser_mode} {Deserialize x2}
+        }
+        if { ${channel_width} == 8 || ${channel_width} == 16 || ${channel_width} == 32 } {
+            # enable 8b10b decoder/encoder
+            set_instance_parameter_value ${name} {std_tx_8b10b_enable} {1}
+            set_instance_parameter_value ${name} {std_rx_8b10b_enable} {1}
+
+            set_instance_parameter_value ${name} {std_rx_word_aligner_mode} {synchronous state machine}
+            set_instance_parameter_value ${name} {std_rx_word_aligner_pattern_len} {10}
+            # word aligner pattern K28.5
+            set_instance_parameter_value ${name} {std_rx_word_aligner_pattern} {0x283}
+        }
+        if { ${channel_width} == 10 || ${channel_width} == 20 || ${channel_width} == 40 } {
+            set_instance_parameter_value ${name} {enable_port_rx_std_bitslip} {1}
         }
     }
     if { [ string equal $mode basic_enh ] } {
@@ -403,15 +417,6 @@ proc ::add_altera_xcvr_native_a10 { channels channel_width cdr_refclk_freq data_
     set_instance_parameter_value ${name} {enable_port_rx_is_lockedtoref} {1}
     set_instance_parameter_value ${name} {enable_port_rx_seriallpbken_tx} {1}
     set_instance_parameter_value ${name} {enable_port_rx_seriallpbken} {1}
-
-    # standard PCS
-    set_instance_parameter_value ${name} {std_tx_8b10b_enable} {1}
-    set_instance_parameter_value ${name} {std_rx_8b10b_enable} {1}
-
-    set_instance_parameter_value ${name} {std_rx_word_aligner_mode} {synchronous state machine}
-    set_instance_parameter_value ${name} {std_rx_word_aligner_pattern_len} {10}
-    # word aligner pattern K28.5
-    set_instance_parameter_value ${name} {std_rx_word_aligner_pattern} {0x283}
 
     # dynamic reconfiguration
     set_instance_parameter_value ${name} {rcfg_enable} {1}
