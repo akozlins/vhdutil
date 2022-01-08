@@ -15,7 +15,7 @@ entity ip_dcfifo_v2 is
 generic (
     g_ADDR_WIDTH : positive := 8;
     g_DATA_WIDTH : positive := 8;
-    DEVICE_FAMILY : string := "Arria 10"--;
+    g_DEVICE_FAMILY : string := ""--;
 );
 port (
     i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
@@ -83,7 +83,7 @@ begin
         rdsync_delaypipe => 4,
         -- Specifies the intended device that matches the device set in your Intel Quartus Prime project.
         -- Use only this parameter for functional simulation.
-        intended_device_family => DEVICE_FAMILY--,
+        intended_device_family => g_DEVICE_FAMILY--,
     )
     port map (
         data => i_wdata,
@@ -115,9 +115,9 @@ begin
         i_re => i_re,
         o_rempty => o_rempty,
 
-        i_rdata => fifo_rdata,
-        o_re => fifo_re,
-        i_rempty => fifo_rempty,
+        i_fifo_rdata => fifo_rdata,
+        o_fifo_re => fifo_re,
+        i_fifo_rempty => fifo_rempty,
 
         i_reset_n => reset_n,
         i_clk => i_rclk--,
