@@ -67,6 +67,16 @@ package util is
         n : natural--;
     ) return std_logic_vector;
 
+    function rotate_right (
+        v : std_logic_vector;
+        n : natural--;
+    ) return std_logic_vector;
+
+    function rotate_left (
+        v : std_logic_vector;
+        n : natural--;
+    ) return std_logic_vector;
+
     function resize (
         v : std_logic_vector;
         n : positive--;
@@ -267,6 +277,22 @@ package body util is
     ) return std_logic_vector is
     begin
         return std_logic_vector(shift_left(unsigned(v), n));
+    end function;
+
+    function rotate_right (
+        v : std_logic_vector;
+        n : natural--;
+    ) return std_logic_vector is
+    begin
+        return shift_right(v, n) or shift_left(v, v'length - n);
+    end function;
+
+    function rotate_left (
+        v : std_logic_vector;
+        n : natural--;
+    ) return std_logic_vector is
+    begin
+        return shift_left(v, n) or shift_right(v, v'length - n);
     end function;
 
     function resize (
