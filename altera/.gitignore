@@ -5,8 +5,10 @@
 /*/output_files
 
 .qsys_edit/
+reconfig_mif/
 
 *.qpf
 *.qsf
 *.qws
 *.sopcinfo
+*.stp

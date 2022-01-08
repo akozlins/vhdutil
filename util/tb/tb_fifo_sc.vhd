@@ -16,10 +16,10 @@ architecture arch of tb_fifo_sc is
     signal reset_n : std_logic := '0';
     signal cycle : integer := 0;
 
-    signal wdata, rdata : std_logic_vector(11 downto 0) := (others => '0');
+    signal wdata, rdata : std_logic_vector(9 downto 0) := (others => '0');
     signal we, wfull, re, rempty : std_logic := '0';
 
-    signal fifo_rdata : std_logic_vector(11 downto 0) := (others => '0');
+    signal fifo_rdata : std_logic_vector(9 downto 0) := (others => '0');
     signal fifo_re, fifo_rempty : std_logic := '0';
 
     signal DONE : std_logic_vector(1 downto 0) := (others => '0');
@@ -49,7 +49,7 @@ begin
     e_fifo : entity work.fifo_sc
     generic map (
         g_DATA_WIDTH => wdata'length,
-        g_ADDR_WIDTH => 3--,
+        g_ADDR_WIDTH => 2--,
     )
     port map (
         o_wfull     => wfull,

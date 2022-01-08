@@ -53,9 +53,6 @@ architecture arch of fifo_sc is
 
 begin
 
-    -- psl assert always ( i_rack = '0' or rempty = '0' ) @ i_clk ;
-    -- psl assert always ( i_we = '0' or wfull = '0' ) @ i_clk ;
-
     -- psl assert always ( we = '1' |=> rempty = '0' ) @ i_clk ;
 
 
