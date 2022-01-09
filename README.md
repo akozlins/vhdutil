@@ -6,20 +6,20 @@
 Prefixes/sufixes:
 
 - `e_` / `_id` - entity/component instance
-- `g_` - generate statement
+- `generate_` - generate statement
 - `_q`, `_r` - register
 - `_s`, `_w` - signal/wire
 - `_v` - variable
 - `_t` - type
-- `_g` or UPPERCASE - generic
-- `_c` or UPPERCASE - constant
+- `g_NAME` - generic
+- `c_NAME` - constant
 - `i/o_` - input/output ports
 - `_n` - active low
 
 - ports : `std_logic` and `std_logic_vector`
 - use `downto`
 - `entityname.vhd`
-- `tb_entityname.vhd`
+- `entityname_tb.vhd`
 - `packagename_pkg.vhd`
 
 - 4 spaces

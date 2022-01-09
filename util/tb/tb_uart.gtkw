@@ -1,4 +1,6 @@
 [*]
+[timestart] 0
+[size] 1200 900
 [treeopen] top.
 [treeopen] top.tb_uart.
 top.tb_uart.clk

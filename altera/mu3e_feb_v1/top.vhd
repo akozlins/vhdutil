@@ -30,9 +30,11 @@ architecture arch of top is
     signal clk_50, reset_50_n : std_logic;
     signal clk_125, reset_125_n : std_logic;
 
+    signal spi_ss_n : std_logic_vector(31 downto 0);
+
     signal av_test : work.util.avalon_t;
 
-    signal clk_rx_phase : slv32_array_t(3 downto 0);
+    signal clk_rx_phase : work.util.slv32_array_t(3 downto 0);
 
 begin
 
@@ -73,15 +75,10 @@ begin
 
     e_nios : component work.components.nios
     port map (
---        spi_sclk => o_si5342_spi_sclk,
---        spi_mosi => o_si5342_spi_mosi,
---        spi_miso => i_si5342_spi_miso,
---        spi_ss_n(0) => o_si5342_spi_ss_n,
-
-        spi_master_sclk => o_si5342_spi_sclk,
-        spi_master_sdo => o_si5342_spi_mosi,
-        spi_master_sdi => i_si5342_spi_miso,
-        spi_master_ss_n(0) => o_si5342_spi_ss_n,
+        spi_master_sclk         => o_si5342_spi_sclk,
+        spi_master_sdo          => o_si5342_spi_mosi,
+        spi_master_sdi          => i_si5342_spi_miso,
+        spi_master_ss_n         => spi_ss_n,
 
         avm_test_address        => av_test.address(7 downto 0),
         avm_test_read           => av_test.read,
@@ -93,6 +90,8 @@ begin
         rst_reset_n => reset_125_n,
         clk_clk => clk_125--,
     );
+
+    o_si5342_spi_ss_n <= spi_ss_n(0);
 
     generate_clk_rx_phase : for i in clk_rx_phase'range generate
     begin

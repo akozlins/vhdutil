@@ -1,7 +1,8 @@
 [*]
+[timestart] 0
+[size] 1200 900
 [treeopen] top.
 [treeopen] top.tb_fifo_sc.
-[treeopen] top.tb_fifo_sc.e_fifo.
 @28
 top.tb_fifo_sc.clk
 top.tb_fifo_sc.reset_n
