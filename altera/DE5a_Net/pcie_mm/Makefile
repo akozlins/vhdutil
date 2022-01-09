@@ -3,7 +3,7 @@ CABLE=DE5
 
 IPs := \
     $(wildcard ip/*.tcl) \
-    nios.sopcinfo
+    nios.tcl
 
 include util/quartus/makefile.mk
 

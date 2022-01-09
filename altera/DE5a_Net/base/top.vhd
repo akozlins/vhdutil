@@ -28,6 +28,7 @@ architecture arch of top is
     signal clk_50               : std_logic;
     signal reset_50_n           : std_logic;
 
+    signal flash_addr_unused    : std_logic_vector(1 downto 0);
     signal flash_cs_n           : std_logic;
     signal flash_rst_n          : std_logic;
     signal nios_reset_n         : std_logic;
@@ -61,21 +62,23 @@ begin
         N => integer(50.0e6 * 0.100) -- 100ms
     )
     port map (
-        i_d(0)          => '1',
-        o_q(0)          => flash_rst_n,
-        i_d(1)          => flash_rst_n,
-        o_q(1)          => nios_reset_n,
+        i_d(0) => '1',         i_d(1) => flash_rst_n,
+        o_q(0) => flash_rst_n, o_q(1) => nios_reset_n,
 
         i_reset_n       => reset_50_n,
         i_clk           => clk_50--,
     );
     flash_reset_n <= flash_rst_n;
 
+    o_led_n(1) <= flash_rst_n;
+    o_led_n(2) <= nios_reset_n;
+
 
 
     e_nios : component work.components.nios
     port map (
         flash_tcm_address_out(27 downto 2) => FLASH_A,
+        flash_tcm_address_out(1 downto 0) => flash_addr_unused,
         flash_tcm_data_out => FLASH_D,
         flash_tcm_read_n_out(0) => FLASH_OE_n,
         flash_tcm_write_n_out(0) => FLASH_WE_n,

@@ -10,7 +10,3 @@ set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "pcie_pkg.
 set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "pcie_block.vhd"]
 
 set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "util/include.qip"]
-set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "ip/include.qip"]
-
-set_global_assignment -name QSYS_FILE [file join $::quartus(qip_path) "nios.qsys"]
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "components_pkg.vhd"]
