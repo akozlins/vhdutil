@@ -34,24 +34,7 @@ architecture arch of tb_stream_merger is
           XXXX ,   XXXX ,   XXXX ,   XXXX ,
           XXXX ,   XXXX ,   XXXX , X"009C",
           XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX ,
-          XXXX ,   XXXX ,   XXXX ,   XXXX 
+        others => XXXX
     );
 
     type offsets_array_t is array ( natural range <> ) of integer;

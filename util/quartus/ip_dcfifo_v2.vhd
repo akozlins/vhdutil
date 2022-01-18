@@ -29,14 +29,12 @@ port (
     o_rdata     : out   std_logic_vector(work.util.value_if(g_RDATA_WIDTH > 0, g_RDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     i_rack      : in    std_logic; -- read enable (request, acknowledge)
     o_rempty    : out   std_logic;
-    o_rusedw    : out   std_logic_vector(g_ADDR_WIDTH-1 downto 0);
     i_rclk      : in    std_logic;
 
     o_wusedw    : out   std_logic_vector(work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
     i_wdata     : in    std_logic_vector(work.util.value_if(g_WDATA_WIDTH > 0, g_WDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     i_we        : in    std_logic; -- write enable (request)
     o_wfull     : out   std_logic;
-    o_wusedw    : out   std_logic_vector(g_ADDR_WIDTH-1 downto 0);
     i_wclk      : in    std_logic;
 
     -- async clear

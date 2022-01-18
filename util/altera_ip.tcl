@@ -383,6 +383,9 @@ proc ::add_altera_xcvr_native_a10 { channels channel_width cdr_refclk_freq data_
             set_instance_parameter_value ${name} {std_rx_word_aligner_pattern_len} {10}
             # word aligner pattern K28.5
             set_instance_parameter_value ${name} {std_rx_word_aligner_pattern} {0x283}
+        } else {
+            set_instance_parameter_value ${name} {std_tx_8b10b_enable} {0}
+            set_instance_parameter_value ${name} {std_rx_8b10b_enable} {0}
         }
         if { ${channel_width} == 10 || ${channel_width} == 20 || ${channel_width} == 40 } {
             set_instance_parameter_value ${name} {enable_port_rx_std_bitslip} {1}

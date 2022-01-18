@@ -21,6 +21,9 @@ package util is
     subtype slv32_t is std_logic_vector(31 downto 0);
     type slv32_array_t is array ( natural range <> ) of slv32_t;
 
+    type integer_array_t is array( natural range <> ) of integer;
+    type natural_array_t is array( natural range <> ) of natural;
+
     type avalon_t is record
         address         :   std_logic_vector(31 downto 0);
         read            :   std_logic;

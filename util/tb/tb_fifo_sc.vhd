@@ -85,7 +85,8 @@ begin
     );
 
     -- write
-    we <= not wfull and prbs(cycle / 32)(cycle mod 32);
+    we <= '0' when ( reset_n = '0' or wfull = '1' ) else
+        prbs(cycle / 32)(cycle mod 32);
 
     process
     begin
@@ -100,14 +101,17 @@ begin
     end process;
 
     -- read
-    rack <= not rempty and prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
+    rack <= '0' when ( reset_n = '0' or rempty = '1' ) else
+        prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
 
     process
     begin
         for i in 0 to 2**rdata'length-1 loop
             wait until rising_edge(clk) and rack = '1';
 --            report "read: rdata = " & work.util.to_hstring(rdata);
-            assert ( rdata = std_logic_vector(to_unsigned(i, rdata'length)) ) severity error;
+            assert ( rdata = std_logic_vector(to_unsigned(i, rdata'length)) )
+                report "cycle = " & integer'image(cycle)
+                severity error;
         end loop;
 
         DONE(1) <= '1';

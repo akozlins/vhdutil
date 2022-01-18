@@ -97,7 +97,7 @@ begin
     begin
         e_clk_rx_phase : entity work.clk_phase
         port map (
-            i_clk1              => i_clk_125,
+            i_clk1              => clk_125,
             i_clk2              => pod_rx_clk(i),
 
             o_phase             => clk_rx_phase(i)(15 downto 0),
