@@ -16,7 +16,7 @@ top.tb_fifo_sc.wfull
 @22
 #{top.tb_fifo_sc.rdata[5:0]} top.tb_fifo_sc.rdata[5] top.tb_fifo_sc.rdata[4] top.tb_fifo_sc.rdata[3] top.tb_fifo_sc.rdata[2] top.tb_fifo_sc.rdata[1] top.tb_fifo_sc.rdata[0]
 @28
-top.tb_fifo_sc.re
+top.tb_fifo_sc.rack
 @29
 top.tb_fifo_sc.rempty
 [pattern_trace] 1

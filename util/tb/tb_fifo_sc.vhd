@@ -16,15 +16,14 @@ architecture arch of tb_fifo_sc is
     signal reset_n : std_logic := '0';
     signal cycle : integer := 0;
 
+    signal prbs : work.util.slv32_array_t(0 to 1023);
+    signal DONE : std_logic_vector(1 downto 0) := (others => '0');
+
     signal wdata, rdata : std_logic_vector(9 downto 0) := (others => '0');
     signal we, wfull, rack, rempty : std_logic := '0';
 
     signal fifo_rdata : std_logic_vector(9 downto 0) := (others => '0');
-    signal fifo_rempty, fifo_rack, fifo_rack_n : std_logic := '0';
-
-    signal DONE : std_logic_vector(1 downto 0) := (others => '0');
-
-    signal prbs : work.util.slv32_array_t(0 to 1023);
+    signal fifo_rempty, fifo_rack : std_logic := '0';
 
 begin
 
@@ -34,12 +33,13 @@ begin
 
     process
         variable lfsr : std_logic_vector(31 downto 0);
+        variable taps : std_logic_vector(31 downto 0) := (31 => '1', 21 => '1', 1 => '1', 0 => '1', others => '0');
     begin
         lfsr := std_logic_vector(to_signed(g_SEED, lfsr'length));
         for i in prbs'range loop
             for j in prbs(0)'range loop
                 lfsr := lfsr sll 1;
-                lfsr(0) := work.util.xor_reduce(lfsr and "10000000001000000000000000000011");
+                lfsr(0) := work.util.xor_reduce(lfsr and taps);
                 prbs(i)(j) <= lfsr(0);
             end loop;
         end loop;
@@ -48,20 +48,22 @@ begin
 
     e_fifo : entity work.fifo_sc
     generic map (
-        g_DATA_WIDTH => wdata'length,
-        g_ADDR_WIDTH => 2--,
+        g_ADDR_WIDTH => 2,
+        g_DATA_WIDTH => wdata'length--,
     )
     port map (
         o_rdata     => fifo_rdata,
-        i_rack      => not fifo_rack_n,
+        i_rack      => fifo_rack,
         o_rempty    => fifo_rempty,
 
         i_wdata     => wdata,
         i_we        => we,
         o_wfull     => wfull,
 
-        i_reset_n   => reset_n,
-        i_clk       => clk--,
+        i_clk       => clk,
+--        i_rclk      => clk,
+--        i_wclk      => clk,
+        i_reset_n   => reset_n--,
     );
 
     e_fifo_reg : entity work.fifo_reg
@@ -76,7 +78,7 @@ begin
 
         i_wdata     => fifo_rdata,
         i_we        => not fifo_rempty,
-        o_wfull     => fifo_rack_n,
+        o_wfull_n   => fifo_rack,
 
         i_reset_n   => reset_n,
         i_clk       => clk--,
@@ -116,9 +118,9 @@ begin
     begin
         wait for g_STOP_TIME_US * 1 us;
         if ( DONE = (DONE'range => '1') ) then
-            report work.util.sgr(32) & "DONE" & work.util.sgr(0);
+            report work.util.SGR_FG_GREEN & "DONE" & work.util.SGR_RESET;
         else
-            report work.util.sgr(31) & "NOT DONE" & work.util.sgr(0);
+            report work.util.SGR_FG_RED & "NOT DONE" & work.util.SGR_RESET;
         end if;
         assert ( DONE = (DONE'range => '1') ) severity error;
         wait;
