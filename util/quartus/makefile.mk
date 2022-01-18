@@ -76,6 +76,10 @@ VHD_FILES := $(addprefix $(PREFIX)/, \
     $(patsubst %.vhd.envsubst,%.vhd,$(VHD_ENVSUBST_FILES)) \
 )
 
+define find_file
+$(lastword $(wildcard $(addsuffix $(1),$(dir $(MAKEFILE_LIST)))))
+endef
+
 # default qpf file
 top.qpf :
 	cat << EOF > "$@"
@@ -88,7 +92,7 @@ top.qsf : $(MAKEFILE_LIST)
 	set_global_assignment -name QIP_FILE "top.qip"
 	set_global_assignment -name TOP_LEVEL_ENTITY top
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY "$(QUARTUS_OUTPUT_FILES)"
-	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "util/quartus/settings.tcl"
+	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "$(call find_file,settings.tcl)"
 	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
 
@@ -98,10 +102,10 @@ all : top.qpf top.qsf $(PREFIX)/include.qip
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
 	mkdir -pv -- "$(PREFIX)"
 	# find and exec components_pkg.sh
-	$(lastword $(realpath $(addsuffix components_pkg.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)" > "$@"
-	if [ -x /bin/awk ] ; then awk -f $(lastword $(realpath $(addsuffix components_pkg.awk,$(dir $(MAKEFILE_LIST))))) "$@" ; fi
+	$(call find_file,components_pkg.sh) "$(PREFIX)" > "$@"
+	[ -x /bin/awk ] && awk -f $(call find_file,components_pkg.awk) "$@"
 	# patch generated "altera_pci_express.sdc" files
-	$(lastword $(realpath $(addsuffix altera_pci_express.sh,$(dir $(MAKEFILE_LIST))))) "$(PREFIX)"
+	$(call find_file,altera_pci_express.sh) "$(PREFIX)"
 
 # include.qip - include all generated files
 $(PREFIX)/include.qip : $(PREFIX)/components_pkg.vhd $(QSYS_FILES)
@@ -133,23 +137,23 @@ $(PREFIX)/%.vhd : %.vhd.envsubst
 
 $(PREFIX)/%.vhd : %.vhd.qmegawiz
 	# find and exec qmegawiz.sh
-	$(lastword $(realpath $(addsuffix qmegawiz.sh,$(dir $(MAKEFILE_LIST))))) "$<" "$@"
+	$(call find_file,qmegawiz.sh) "$<" "$@"
 
 $(PREFIX)/%.qsys : %.tcl device.tcl
 	mkdir -pv -- "$(PREFIX)"
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 	# find and exec tcl2qsys.sh
-	$(lastword $(realpath $(addsuffix tcl2qsys.sh,$(dir $(MAKEFILE_LIST))))) "$<" "$@"
+	$(call find_file,tcl2qsys.sh) "$<" "$@"
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 	# find and exec qsys-generate.sh
-	$(lastword $(realpath $(addsuffix qsys-generate.sh,$(dir $(MAKEFILE_LIST))))) "$<"
+	$(call find_file,qsys-generate.sh) "$<"
 
 .PHONY : flow
 flow : all
 	# find and exec flow.sh
-	$(lastword $(realpath $(addsuffix flow.sh,$(dir $(MAKEFILE_LIST)))))
+	$(call find_file,flow.sh)
 
 update_mif :
 	quartus_cdb top --update_mif
