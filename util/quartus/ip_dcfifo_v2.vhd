@@ -15,19 +15,25 @@ entity ip_dcfifo_v2 is
 generic (
     g_ADDR_WIDTH : positive := 8;
     g_DATA_WIDTH : positive := 8;
+    g_RADDR_WIDTH : natural := 0;
+    g_RDATA_WIDTH : natural := 0;
+    g_WADDR_WIDTH : natural := 0;
+    g_WDATA_WIDTH : natural := 0;
     g_SHOWAHEAD : string := "ON";
     g_RREG_N : positive := 2;
     g_WREG_N : positive := 2;
     g_DEVICE_FAMILY : string := "Arria 10"--;
 );
 port (
-    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    o_rusedw    : out   std_logic_vector(work.util.value_if(g_RADDR_WIDTH > 0, g_RADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
+    o_rdata     : out   std_logic_vector(work.util.value_if(g_RDATA_WIDTH > 0, g_RDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     i_rack      : in    std_logic; -- read enable (request, acknowledge)
     o_rempty    : out   std_logic;
     o_rusedw    : out   std_logic_vector(g_ADDR_WIDTH-1 downto 0);
     i_rclk      : in    std_logic;
 
-    i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    o_wusedw    : out   std_logic_vector(work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
+    i_wdata     : in    std_logic_vector(work.util.value_if(g_WDATA_WIDTH > 0, g_WDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     i_we        : in    std_logic; -- write enable (request)
     o_wfull     : out   std_logic;
     o_wusedw    : out   std_logic_vector(g_ADDR_WIDTH-1 downto 0);
@@ -43,6 +49,11 @@ use altera_mf.altera_mf_components.all;
 
 architecture arch of ip_dcfifo_v2 is
 
+    constant RADDR_WIDTH : positive := work.util.value_if(g_RADDR_WIDTH > 0, g_RADDR_WIDTH, g_ADDR_WIDTH);
+    constant RDATA_WIDTH : positive := work.util.value_if(g_RDATA_WIDTH > 0, g_RDATA_WIDTH, g_DATA_WIDTH);
+    constant WADDR_WIDTH : positive := work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH);
+    constant WDATA_WIDTH : positive := work.util.value_if(g_WDATA_WIDTH > 0, g_WDATA_WIDTH, g_DATA_WIDTH);
+
     signal fifo_rdata, fifo_wdata : std_logic_vector(g_DATA_WIDTH-1 DOWNTO 0);
     signal fifo_rack, fifo_rempty, rreset_n, fifo_we, fifo_wfull, wreset_n : std_logic;
 
@@ -51,17 +62,19 @@ begin
     assert ( g_ADDR_WIDTH >= 2 ) report "" severity failure;
 
     -- <ug_fifo.pdf>
-    dcfifo_component : dcfifo
+    dcfifo_component : dcfifo_mixed_widths
     generic map (
         -- Identifies the library of parameterized modules (LPM) entity name.
         lpm_type => "dcfifo",
         -- Specifies ... the width of the rdusedw and wrusedw ports for the DCFIFO function.
-        lpm_widthu => g_ADDR_WIDTH,
+        lpm_widthu_r => RADDR_WIDTH,
+        lpm_widthu => WADDR_WIDTH,
         -- Specifies the depths of the FIFO you require. The value must be at least 4.
         -- The value assigned must comply to the following equation: 2^LPM_WIDTHU.
-        lpm_numwords => 2**g_ADDR_WIDTH,
+        lpm_numwords => 2**WADDR_WIDTH,
         -- Specifies the width of the data and q ports for the SCFIFO function and DCFIFO function. 
-        lpm_width => g_DATA_WIDTH,
+        lpm_width_r => RDATA_WIDTH,
+        lpm_width => WDATA_WIDTH,
         -- Specifies whether the FIFO is in normal mode (OFF) or show-ahead mode (ON).
         lpm_showahead => g_SHOWAHEAD,
         -- Specifies whether to register the q output.
