@@ -134,12 +134,13 @@ package util is
 
 
 
-    -- LFSR 32
+
+    -- LFSR
     -- src: http://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
     --
-    -- taps: 31, 21, 1, 0
-    function lfsr_32 (
-        data : std_logic_vector(31 downto 0)--;
+    function lfsr (
+        data : std_logic_vector;
+        taps : natural_array_t--;
     ) return std_logic_vector;
 
     -- CRC-32C (Castagnoli) 0x1.1EDC6F41
@@ -531,12 +532,17 @@ package body util is
 
 
 
-    function lfsr_32(
-        data : std_logic_vector(31 downto 0)--;
+    function lfsr (
+        data : std_logic_vector;
+        taps : natural_array_t--;
     ) return std_logic_vector is
+        variable data_v : std_logic_vector(data'range);
     begin
-        return data(30 downto 0) &
-              (data(31) xor data(21) xor data(1) xor data(0));
+        data_v := shift_left(data, 1);
+        for i in taps'range loop
+            data_v(0) := data_v(0) xor data(taps(i));
+        end loop;
+        return data_v;
     end function;
 
     function crc32 (
