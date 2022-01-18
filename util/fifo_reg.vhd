@@ -37,6 +37,7 @@ architecture arch of fifo_reg is
     type cell_array_t is array (natural range <>) of std_logic_vector(g_DATA_WIDTH-1 downto 0);
     signal cell : cell_array_t(0 to g_N+1) := (others => (others => '-'));
     signal empty : std_logic_vector(0 to g_N+1) := (0 => '0', others => '1');
+    signal full : std_logic;
 
 begin
 
@@ -51,8 +52,8 @@ begin
     o_rdata <= cell(1);
     o_rempty <= empty(1);
     o_rempty_n <= not empty(1);
-    o_wfull <= not empty(g_N);
-    o_wfull_n <= empty(g_N);
+    o_wfull <= full;
+    o_wfull_n <= not full;
 
     process(i_clk, i_reset_n)
     begin
@@ -61,7 +62,10 @@ begin
             cell(i) <= (others => '-');
             empty(i) <= '1';
         end loop;
+        full <= '1';
     elsif rising_edge(i_clk) then
+        full <= not empty(g_N);
+
         for i in 1 to g_N loop
             if ( i_rack = '1' and empty(1) = '0' ) then
                 -- read from cell(1) and shift left
@@ -73,11 +77,13 @@ begin
                     cell(i) <= i_wdata;
                     empty(i) <= not i_we;
                 end if;
+                full <= '0';
             else
                 -- copy wdata into first empty cell
                 if ( empty(i-1 to i) = "01" ) then
                     cell(i) <= i_wdata;
                     empty(i) <= not i_we;
+                    full <= work.util.to_std_logic(i = g_N) and i_we;
                 end if;
             end if;
         end loop;
