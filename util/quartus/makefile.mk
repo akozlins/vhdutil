@@ -11,6 +11,10 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
+ifndef QUARTUS_VERSION
+    QUARTUS_VERSION := $(shell basename $(shell dirname $(QUARTUS_ROOTDIR)))
+endif
+
 ifeq ($(QUARTUS_OUTPUT_FILES),)
     override QUARTUS_OUTPUT_FILES := output_files
 endif
@@ -166,6 +170,7 @@ pgm : $(SOF)
 .PRECIOUS : $(BSP_DIR)/settings.bsp
 $(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
 	mkdir -pv -- "$(BSP_DIR)"
+	export LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(QUARTUS_ROOTDIR)/linux64"
 	nios2-bsp-create-settings \
 	    --type hal --script "$(SOPC_KIT_NIOS2)/sdk2/bin/bsp-set-defaults.tcl" \
 	    --sopc $(NIOS_SOPCINFO) --cpu-name cpu \
@@ -177,8 +182,9 @@ bsp : $(BSP_DIR)/settings.bsp
 .PHONY : $(APP_DIR)/main.elf
 $(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)/settings.bsp
 	# TODO: --elf-name
+	[[ "$(QUARTUS_VERSION)" < 20.0 ]] && GCC_STD="-std=c++14"
 	nios2-app-generate-makefile \
-	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic -std=c++14" \
+	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic $$GCC_STD" \
 	    --bsp-dir "$(BSP_DIR)" --app-dir "$(APP_DIR)" --src-dir "$(SRC_DIR)"
 	$(MAKE) -C "$(APP_DIR)" clean
 	$(MAKE) -C "$(APP_DIR)"
