@@ -5,24 +5,28 @@ use ieee.std_logic_1164.all;
 
 entity ip_ram_2rw is
 generic (
-    g_ADDR0_WIDTH : positive := 8;
-    g_DATA0_WIDTH : positive := 8;
-    g_ADDR1_WIDTH : positive := 8;
-    g_DATA1_WIDTH : positive := 8;
+    g_ADDR_WIDTH : positive := 8;
+    g_DATA_WIDTH : positive := 8;
+    g_ADDR0_WIDTH : natural := 0;
+    g_DATA0_WIDTH : natural := 0;
+    g_ADDR1_WIDTH : natural := 0;
+    g_DATA1_WIDTH : natural := 0;
     g_RDATA0_REG : integer := 0;
     g_RDATA1_REG : integer := 0;
     g_DEVICE_FAMILY : string := "Arria 10"--;
 );
 port (
-    i_addr0     : in    std_logic_vector(g_ADDR0_WIDTH-1 downto 0);
-    o_rdata0    : out   std_logic_vector(g_DATA0_WIDTH-1 downto 0);
-    i_wdata0    : in    std_logic_vector(g_DATA0_WIDTH-1 downto 0) := (others => '0');
+    i_addr0     : in    std_logic_vector(work.util.value_if(g_ADDR0_WIDTH > 0, g_ADDR0_WIDTH, g_ADDR_WIDTH)-1 downto 0);
+    o_rdata0    : out   std_logic_vector(work.util.value_if(g_DATA0_WIDTH > 0, g_DATA0_WIDTH, g_DATA_WIDTH)-1 downto 0);
+    i_re0       : in    std_logic := '1';
+    i_wdata0    : in    std_logic_vector(work.util.value_if(g_DATA0_WIDTH > 0, g_DATA0_WIDTH, g_DATA_WIDTH)-1 downto 0) := (others => '0');
     i_we0       : in    std_logic := '0';
     i_clk0      : in    std_logic;
 
-    i_addr1     : in    std_logic_vector(g_ADDR1_WIDTH-1 downto 0);
-    o_rdata1    : out   std_logic_vector(g_DATA1_WIDTH-1 downto 0);
-    i_wdata1    : in    std_logic_vector(g_DATA1_WIDTH-1 downto 0) := (others => '0');
+    i_addr1     : in    std_logic_vector(work.util.value_if(g_ADDR1_WIDTH > 0, g_ADDR1_WIDTH, g_ADDR_WIDTH)-1 downto 0);
+    o_rdata1    : out   std_logic_vector(work.util.value_if(g_DATA1_WIDTH > 0, g_DATA1_WIDTH, g_DATA_WIDTH)-1 downto 0);
+    i_re1       : in    std_logic := '1';
+    i_wdata1    : in    std_logic_vector(work.util.value_if(g_DATA1_WIDTH > 0, g_DATA1_WIDTH, g_DATA_WIDTH)-1 downto 0) := (others => '0');
     i_we1       : in    std_logic := '0';
     i_clk1      : in    std_logic--;
 );
@@ -44,18 +48,18 @@ begin
     generic map (
         lpm_type => "altsyncram",
         operation_mode => "BIDIR_DUAL_PORT",
-        numwords_a => 2**g_ADDR0_WIDTH,
-        numwords_b => 2**g_ADDR1_WIDTH,
-        widthad_a => g_ADDR0_WIDTH,
-        widthad_b => g_ADDR1_WIDTH,
-        width_a => g_DATA0_WIDTH,
-        width_b => g_DATA1_WIDTH,
+        numwords_a => 2**i_addr0'length,
+        numwords_b => 2**i_addr1'length,
+        widthad_a => i_addr0'length,
+        widthad_b => i_addr1'length,
+        width_a => o_rdata0'length,
+        width_b => o_rdata1'length,
         -- Optional parameters to specify the clock used for the output ports.
         -- The values are CLOCK0, CLOCK1 and UNREGISTERED.
         outdata_reg_a => "UNREGISTERED",
         outdata_reg_b => "UNREGISTERED",
-        read_during_write_mode_port_a => "DONT_CARE",
-        read_during_write_mode_port_b => "DONT_CARE",
+        read_during_write_mode_port_a => "NEW_DATA_NO_NBE_READ",
+        read_during_write_mode_port_b => "NEW_DATA_NO_NBE_READ",
         clock_enable_input_a => "BYPASS",
         clock_enable_input_b => "BYPASS",
         clock_enable_output_a => "BYPASS",
@@ -64,7 +68,7 @@ begin
         width_byteena_a => 1,
         width_byteena_b => 1,
         -- Optional parameter to specify whether to initialize memory content data to X on power-up simulation.
-        power_up_uninitialized => "FALSE",
+        power_up_uninitialized => "TRUE",
         -- Optional parameter to specify the target device family.
         -- This parameter is used for modeling and behavioral simulation purposes.
         intended_device_family => g_DEVICE_FAMILY--,
