@@ -10,17 +10,17 @@ use ieee.std_logic_1164.all;
 
 entity fifo_dc is
 generic (
-    W   : positive := 8;
-    N   : positive := 8--;
+    g_ADDR_WIDTH : positive := 8;
+    g_DATA_WIDTH : positive := 8--;
 );
 port (
     i_we        : in    std_logic;
-    i_wdata     : in    std_logic_vector(W-1 downto 0);
+    i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     o_wfull     : out   std_logic;
     i_wreset_n  : in    std_logic;
     i_wclk      : in    std_logic;
     i_re        : in    std_logic;
-    o_rdata     : out   std_logic_vector(W-1 downto 0);
+    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
     o_rempty    : out   std_logic;
     i_rreset_n  : in    std_logic;
     i_rclk      : in    std_logic--;
@@ -32,10 +32,10 @@ use ieee.numeric_std.all;
 
 architecture arch of fifo_dc is
 
-    subtype addr_t is std_logic_vector(N-1 downto 0);
-    subtype ptr_t is std_logic_vector(N downto 0);
+    subtype addr_t is std_logic_vector(g_ADDR_WIDTH-1 downto 0);
+    subtype ptr_t is std_logic_vector(g_ADDR_WIDTH downto 0);
 
-    constant XOR_FULL : ptr_t := "11" & ( N-2 downto 0 => '0' );
+    constant XOR_FULL : ptr_t := "11" & ( g_ADDR_WIDTH-2 downto 0 => '0' );
 
     signal re, we : std_logic;
     signal rempty, wfull : std_logic;
@@ -57,8 +57,8 @@ begin
 
     e_ram : entity work.ram_dp
     generic map (
-        W => W,
-        N => N--,
+        N => g_ADDR_WIDTH,
+        W => g_DATA_WIDTH--,
     )
     port map (
         a_addr  => rptr(addr_t'range),
