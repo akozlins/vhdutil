@@ -84,6 +84,13 @@ define find_file
 $(lastword $(wildcard $(addsuffix $(1),$(dir $(MAKEFILE_LIST)))))
 endef
 
+.PHONY : clean
+clean :
+	rm -rf -- \
+	    ./.qsys_edit ./top.qws \
+	    ./db ./incremental_db ./output_files \
+	    ./top.qsf ./top.qpf "./$(PREFIX)"
+
 # default qpf file
 top.qpf :
 	cat << EOF > "$@"
