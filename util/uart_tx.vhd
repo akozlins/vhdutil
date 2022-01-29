@@ -20,7 +20,7 @@ generic (
     g_PARITY : integer := 0;
     g_STOP_BITS : positive := 1;
     g_BAUD_RATE : positive := 115200; -- bps
-    g_FIFO_ADDR_WIDTH : positive := 4;
+    g_FIFO_ADDR_WIDTH : positive := 2;
     g_CLK_MHZ : real--;
 );
 port (

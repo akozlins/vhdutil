@@ -1,0 +1,11 @@
+[*]
+[timestart] 0
+[size] 1600 1200
+[pos] -1 -1
+[sst_expanded] 1
+[sst_width] 300
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 600
+[pattern_trace] 1
+[pattern_trace] 0

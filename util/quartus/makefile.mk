@@ -98,7 +98,7 @@ top.qpf :
 	EOF
 
 # default qsf file - load top.qip, and generated include.qip
-top.qsf : $(MAKEFILE_LIST)
+top.qsf : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	cat << EOF > "$@"
 	set_global_assignment -name QIP_FILE "top.qip"
 	set_global_assignment -name TOP_LEVEL_ENTITY top
@@ -107,7 +107,7 @@ top.qsf : $(MAKEFILE_LIST)
 	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
 
-all : top.qpf top.qsf $(PREFIX)/include.qip
+all : top.qpf top.qsf
 	[ -e "top.srf" ] || ln -sv -- "util/quartus/top.srf"
 
 .PHONY : $(PREFIX)/components_pkg.vhd

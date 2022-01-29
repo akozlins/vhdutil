@@ -21,9 +21,6 @@ package util is
     subtype slv32_t is std_logic_vector(31 downto 0);
     type slv32_array_t is array ( natural range <> ) of slv32_t;
 
-    type integer_array_t is array( natural range <> ) of integer;
-    type natural_array_t is array( natural range <> ) of natural;
-
     type avalon_t is record
         address         :   std_logic_vector(31 downto 0);
         read            :   std_logic;
@@ -141,6 +138,13 @@ package util is
         good : out boolean--;
     );
 
+    impure
+    function read_hex (
+        fname : in string;
+        N : in positive;
+        W : in positive--;
+    ) return std_logic_vector;
+
     function lfsr (
         data : in std_logic_vector;
         taps : in integer_vector--;
@@ -170,13 +174,6 @@ package util is
         data : std_logic_vector--;
     ) return natural;
 
-    impure
-    function read_hex (
-        fname : in string;
-        N : in positive;
-        W : in positive--;
-    ) return std_logic_vector;
-
     function to_string (
         v : in std_logic--;
     ) return string;
@@ -185,16 +182,8 @@ package util is
         v : in std_logic_vector--;
     ) return string;
 
-    function to_string (
-        v : in unsigned--;
-    ) return string;
-
     function to_hstring (
         v : std_logic_vector--;
-    ) return string;
-
-    function to_hstring (
-        v : unsigned--;
     ) return string;
 
     -- get next Round-Robin index
@@ -546,8 +535,6 @@ package body util is
         return data;
     end function;
 
-
-
     function lfsr (
         data : in std_logic_vector;
         taps : in integer_vector--;
@@ -610,7 +597,7 @@ package body util is
 
 
 
-    function count_bits_4(
+    function count_bits_4 (
         data : std_logic_vector(3 downto 0)--;
     ) return natural is
     begin
@@ -623,7 +610,7 @@ package body util is
         end case;
     end function;
 
-    function count_bits_32(
+    function count_bits_32 (
         data : std_logic_vector(31 downto 0)--;
     ) return natural is
     begin
@@ -681,13 +668,6 @@ package body util is
         return s;
     end function;
 
-    function to_string (
-        v : in unsigned--;
-    ) return string is
-    begin
-        return to_string(std_logic_vector(v));
-    end function;
-
     function to_hstring (
         v : std_logic_vector--;
     ) return string is
@@ -701,13 +681,6 @@ package body util is
             r(r'length-i+1) := lut(1 + to_integer(u(4*i-1 downto 4*i-4)));
         end loop;
         return r;
-    end function;
-
-    function to_hstring (
-        v : unsigned--;
-    ) return string is
-    begin
-        return to_hstring(std_logic_vector(v));
     end function;
 
     function round_robin_next (
