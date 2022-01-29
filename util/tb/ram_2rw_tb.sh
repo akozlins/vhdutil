@@ -1,12 +1,7 @@
-#!/bin/sh
-set -eu
-IFS="$(printf '\n\t')"
-unset CDPATH
-cd "$(dirname -- "$(readlink -e -- "$0")")" || exit 1
+#!/bin/bash
 
-entity=$(basename "$0" .sh)
-
-STOP_TIME_US=10 \
-../sim.sh "$entity" \
+STOP_TIME_US=1 \
+../sim.sh \
+    ram_2rw_tb.vhd \
     ../*.vhd \
-    "$entity.vhd"
+    ../quartus/*.vhd
