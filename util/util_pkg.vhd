@@ -47,6 +47,12 @@ package util is
         value_false : integer--;
     ) return integer;
 
+    function value_if (
+        condition : boolean;
+        value_true : string;
+        value_false : string--;
+    ) return string;
+
     -- Greatest Common Divisor
     function gcd (
         p, q : positive--;
@@ -228,6 +234,19 @@ package body util is
         value_true : integer;
         value_false : integer--;
     ) return integer is
+    begin
+        if ( condition ) then
+            return value_true;
+        else
+            return value_false;
+        end if;
+    end function;
+
+    function value_if (
+        condition : boolean;
+        value_true : string;
+        value_false : string--;
+    ) return string is
     begin
         if ( condition ) then
             return value_true;
