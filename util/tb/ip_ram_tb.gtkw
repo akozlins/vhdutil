@@ -1,0 +1,31 @@
+[*]
+[timestart] 0
+[size] 1600 1200
+[pos] -1 -1
+[treeopen] top.
+[treeopen] top.ip_ram_tb.
+[treeopen] top.ip_ram_tb.e_ram.
+[sst_expanded] 1
+[sst_width] 300
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 600
+@28
+top.ip_ram_tb.clk
+@29
+top.ip_ram_tb.reset_n
+@420
+top.ip_ram_tb.cycle
+@22
+#{top.ip_ram_tb.e_ram.i_addr0[3:0]} top.ip_ram_tb.e_ram.i_addr0[3] top.ip_ram_tb.e_ram.i_addr0[2] top.ip_ram_tb.e_ram.i_addr0[1] top.ip_ram_tb.e_ram.i_addr0[0]
+@28
+top.ip_ram_tb.e_ram.i_we0
+@22
+#{top.ip_ram_tb.e_ram.i_wdata0[3:0]} top.ip_ram_tb.e_ram.i_wdata0[3] top.ip_ram_tb.e_ram.i_wdata0[2] top.ip_ram_tb.e_ram.i_wdata0[1] top.ip_ram_tb.e_ram.i_wdata0[0]
+@28
+top.ip_ram_tb.e_ram.i_re0
+top.ip_ram_tb.e_ram.o_rvalid0
+@22
+#{top.ip_ram_tb.e_ram.o_rdata0[3:0]} top.ip_ram_tb.e_ram.o_rdata0[3] top.ip_ram_tb.e_ram.o_rdata0[2] top.ip_ram_tb.e_ram.o_rdata0[1] top.ip_ram_tb.e_ram.o_rdata0[0]
+[pattern_trace] 1
+[pattern_trace] 0
