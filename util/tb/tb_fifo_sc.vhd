@@ -33,13 +33,11 @@ begin
 
     process
         variable lfsr : std_logic_vector(31 downto 0);
-        variable taps : std_logic_vector(31 downto 0) := (31 => '1', 21 => '1', 1 => '1', 0 => '1', others => '0');
     begin
         lfsr := std_logic_vector(to_signed(g_SEED, lfsr'length));
         for i in prbs'range loop
             for j in prbs(0)'range loop
-                lfsr := lfsr sll 1;
-                lfsr(0) := work.util.xor_reduce(lfsr and taps);
+                lfsr := work.util.lfsr(lfsr, 31 & 21 & 1 & 0);
                 prbs(i)(j) <= lfsr(0);
             end loop;
         end loop;

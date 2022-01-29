@@ -135,15 +135,9 @@ package util is
         good : out boolean--;
     );
 
-
-
-
-    -- LFSR
-    -- src: http://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
-    --
     function lfsr (
-        data : std_logic_vector;
-        taps : natural_array_t--;
+        data : in std_logic_vector;
+        taps : in integer_vector--;
     ) return std_logic_vector;
 
     -- CRC-32C (Castagnoli) 0x1.1EDC6F41
@@ -536,8 +530,8 @@ package body util is
 
 
     function lfsr (
-        data : std_logic_vector;
-        taps : natural_array_t--;
+        data : in std_logic_vector;
+        taps : in integer_vector--;
     ) return std_logic_vector is
         variable data_v : std_logic_vector(data'range);
     begin
