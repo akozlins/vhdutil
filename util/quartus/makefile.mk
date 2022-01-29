@@ -101,6 +101,7 @@ top.qsf : $(MAKEFILE_LIST)
 	EOF
 
 all : top.qpf top.qsf $(PREFIX)/include.qip
+	[ -e "top.srf" ] || ln -sv -- "util/quartus/top.srf"
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
