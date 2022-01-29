@@ -1,10 +1,15 @@
 [*]
 [timestart] 0
-[size] 1200 900
+[size] 1600 1200
 [treeopen] top.
 [treeopen] top.tb_spi.
 [treeopen] top.tb_spi.e_spi_master.
 [treeopen] top.tb_spi.e_spi_master.e_spi_slave.
+[sst_expanded] 1
+[sst_width] 300
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 600
 top.tb_spi.reset_n
 top.tb_spi.clk
 top.tb_spi.cycle

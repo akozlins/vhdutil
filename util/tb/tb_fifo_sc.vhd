@@ -1,3 +1,5 @@
+--
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -16,14 +18,13 @@ architecture arch of tb_fifo_sc is
     signal reset_n : std_logic := '0';
     signal cycle : integer := 0;
 
-    signal prbs : work.util.slv32_array_t(0 to 1023);
+    signal random : std_logic_vector(1 downto 0);
     signal DONE : std_logic_vector(1 downto 0) := (others => '0');
 
-    signal wdata, rdata : std_logic_vector(9 downto 0) := (others => '0');
-    signal we, wfull, rack, rempty : std_logic := '0';
-
-    signal fifo_rdata : std_logic_vector(9 downto 0) := (others => '0');
-    signal fifo_rempty, fifo_rack : std_logic := '0';
+    signal wdata : std_logic_vector(15 downto 0) := (others => '0');
+    signal we, wfull : std_logic := '0';
+    signal rdata, fifo_rdata : std_logic_vector(15 downto 0);
+    signal rack, rempty, fifo_rempty, fifo_rack : std_logic := '0';
 
 begin
 
@@ -32,35 +33,39 @@ begin
     cycle <= cycle + 1 after (1 us / g_CLK_MHZ);
 
     process
-        variable lfsr : std_logic_vector(31 downto 0);
+        variable lfsr : std_logic_vector(31 downto 0) := std_logic_vector(to_signed(g_SEED, 32));
     begin
-        lfsr := std_logic_vector(to_signed(g_SEED, lfsr'length));
-        for i in prbs'range loop
-            for j in prbs(0)'range loop
-                lfsr := work.util.lfsr(lfsr, 31 & 21 & 1 & 0);
-                prbs(i)(j) <= lfsr(0);
-            end loop;
+        for i in random'range loop
+            lfsr := work.util.lfsr(lfsr, 31 & 21 & 1 & 0);
+            random(i) <= lfsr(0);
         end loop;
-        wait;
+        wait until rising_edge(clk);
     end process;
 
-    e_fifo : entity work.fifo_sc
+    e_fifo : entity work.ip_scfifo_v2
     generic map (
-        g_ADDR_WIDTH => 2,
-        g_DATA_WIDTH => wdata'length--,
+        g_ADDR_WIDTH => 3,
+        g_DATA_WIDTH => wdata'length,
+--        g_RADDR_WIDTH => 4,
+--        g_RDATA_WIDTH => rdata'length,
+--        g_WADDR_WIDTH => 4,
+--        g_WDATA_WIDTH => wdata'length,
+        g_RREG_N => 1,
+        g_WREG_N => 1,
+        g_DEVICE_FAMILY => "Arria 10"--
     )
     port map (
-        o_rdata     => fifo_rdata,
-        i_rack      => fifo_rack,
-        o_rempty    => fifo_rempty,
-
-        i_wdata     => wdata,
         i_we        => we,
+        i_wdata     => wdata,
         o_wfull     => wfull,
 
-        i_clk       => clk,
---        i_rclk      => clk,
+        i_rack      => fifo_rack,
+        o_rdata     => fifo_rdata,
+        o_rempty    => fifo_rempty,
+
 --        i_wclk      => clk,
+--        i_rclk      => clk,
+        i_clk       => clk,
         i_reset_n   => reset_n--,
     );
 
@@ -70,13 +75,13 @@ begin
         g_N => 2--,
     )
     port map (
-        o_rdata     => rdata,
-        i_rack      => rack,
-        o_rempty    => rempty,
-
-        i_wdata     => fifo_rdata,
         i_we        => not fifo_rempty,
+        i_wdata     => fifo_rdata,
         o_wfull_n   => fifo_rack,
+
+        i_rack      => rack,
+        o_rdata     => rdata,
+        o_rempty    => rempty,
 
         i_reset_n   => reset_n,
         i_clk       => clk--,
@@ -84,36 +89,48 @@ begin
 
     -- write
     we <= '0' when ( reset_n = '0' or wfull = '1' ) else
-        prbs(cycle / 32)(cycle mod 32);
+        random(0);
 
     process
     begin
-        for i in 0 to 2**wdata'length-1 loop
-            wait until rising_edge(clk) and we = '1';
---            report "write: wdata = " & work.util.to_hstring(wdata);
-            wdata <= std_logic_vector(unsigned(wdata) + 1);
-        end loop;
+        wait until rising_edge(clk) and we = '1';
 
-        DONE(0) <= '1';
-        wait;
+        if ( we = '1' ) then
+            wdata <= std_logic_vector(unsigned(wdata) + 1);
+        end if;
+
+        if ( cycle+10 > g_STOP_TIME_US*integer(g_CLK_MHZ) ) then
+            DONE(0) <= '1';
+            wait;
+        end if;
     end process;
 
     -- read
     rack <= '0' when ( reset_n = '0' or rempty = '1' ) else
-        prbs(cycle / 32 + prbs'length/2)(cycle mod 32);
+        random(1);
 
     process
+        variable rdata_v : std_logic_vector(rdata'range) := (others => '0');
     begin
-        for i in 0 to 2**rdata'length-1 loop
-            wait until rising_edge(clk) and rack = '1';
---            report "read: rdata = " & work.util.to_hstring(rdata);
-            assert ( rdata = std_logic_vector(to_unsigned(i, rdata'length)) )
-                report "cycle = " & integer'image(cycle)
-                severity error;
-        end loop;
+        wait until rising_edge(clk) and rack = '1';
 
-        DONE(1) <= '1';
-        wait;
+        if ( rack = '1' and rdata /= rdata_v ) then
+            report work.util.SGR_FG_RED
+                & "[cycle = " & integer'image(cycle) & "]"
+                & " rdata = " & to_hstring(rdata)
+                & " != " & to_hstring(rdata_v)
+                & work.util.SGR_RESET
+            severity error;
+        end if;
+
+        if ( rack = '1' ) then
+            rdata_v := std_logic_vector(unsigned(rdata_v) + 1);
+        end if;
+
+        if ( cycle+10 > g_STOP_TIME_US*integer(g_CLK_MHZ) ) then
+            DONE(1) <= '1';
+            wait;
+        end if;
     end process;
 
     process
