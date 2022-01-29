@@ -15,10 +15,9 @@ generic (
 );
 port (
     i_addr      : in    std_logic_vector(g_ADDR_WIDTH-1 downto 0);
-
-    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we        : in    std_logic;
+    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
 
     i_clk       : in    std_logic--;
 );
@@ -35,14 +34,14 @@ begin
         g_ALTERA_RAM_STYLE => g_ALTERA_RAM_STYLE--,
     )
     port map (
-        i_raddr     => i_addr,
-        o_rdata     => o_rdata,
-        i_rclk      => i_clk,
-
         i_waddr     => i_addr,
         i_wdata     => i_wdata,
         i_we        => i_we,
-        i_wclk      => i_clk--,
+        i_wclk      => i_clk,
+
+        i_raddr     => i_addr,
+        o_rdata     => o_rdata,
+        i_rclk      => i_clk--,
     );
 
 end architecture;

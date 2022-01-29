@@ -65,15 +65,15 @@ begin
         N => N--,
     )
     port map (
+        o_rack          => rack,
         i_rdata         => rdata,
         i_rsop          => rsop,
         i_reop          => reop,
         i_rempty        => rempty,
-        o_rack          => rack,
 
+        o_we            => we,
         o_wdata         => wdata,
         i_wfull         => '0',
-        o_we            => we,
 
         i_reset_n       => reset_n,
         i_clk           => clk--,

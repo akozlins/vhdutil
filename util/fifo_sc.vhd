@@ -19,13 +19,13 @@ generic (
     g_ADDR_WIDTH : positive := 8--;
 );
 port (
-    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
-    i_rack      : in    std_logic;
-    o_rempty    : out   std_logic;
-
-    i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     i_we        : in    std_logic;
+    i_wdata     : in    std_logic_vector(g_DATA_WIDTH-1 downto 0);
     o_wfull     : out   std_logic;
+
+    i_rack      : in    std_logic;
+    o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    o_rempty    : out   std_logic;
 
     i_reset_n   : in    std_logic;
     i_clk       : in    std_logic--;
@@ -42,9 +42,9 @@ architecture arch of fifo_sc is
 
     constant XOR_FULL_c : ptr_t := "10" & ( g_ADDR_WIDTH-2 downto 0 => '0' );
 
-    signal rack, we : std_logic;
-    signal rempty, wfull : std_logic;
-    signal rptr, wptr, rptr_next, wptr_next : ptr_t := (others => '0');
+    signal we, rack : std_logic;
+    signal wfull, rempty : std_logic;
+    signal wptr, wptr_next, rptr, rptr_next : ptr_t := (others => '0');
 
     signal rdata : std_logic_vector(g_DATA_WIDTH-1 downto 0);
 
@@ -57,32 +57,32 @@ begin
 
 
 
-    o_rempty <= rempty;
     o_wfull <= wfull;
+    o_rempty <= rempty;
 
     -- check for underflow and overflow
-    rack <= ( i_rack and not rempty );
     we <= ( i_we and not wfull );
+    rack <= ( i_rack and not rempty );
 
-    rptr_next <= std_logic_vector(unsigned(rptr) + ("" & rack));
     wptr_next <= std_logic_vector(unsigned(wptr) + ("" & we));
+    rptr_next <= std_logic_vector(unsigned(rptr) + ("" & rack));
 
     process(i_clk, i_reset_n)
     begin
     if ( i_reset_n = '0' ) then
-        rptr <= (others => '0');
         wptr <= (others => '0');
-        rempty <= '1';
         wfull <= '1';
+        rptr <= (others => '0');
+        rempty <= '1';
         rdw <= '0';
         --
     elsif rising_edge(i_clk) then
         -- advance pointers
-        rptr <= rptr_next;
         wptr <= wptr_next;
+        rptr <= rptr_next;
 
-        rempty <= work.util.to_std_logic( rptr_next = wptr_next );
         wfull <= work.util.to_std_logic( (rptr_next xor wptr_next) = XOR_FULL_c );
+        rempty <= work.util.to_std_logic( rptr_next = wptr_next );
 
         -- read during write
         rdw <= we and work.util.to_std_logic( rptr_next = wptr );
@@ -97,14 +97,14 @@ begin
         g_ADDR_WIDTH => g_ADDR_WIDTH--,
     )
     port map (
+        i_waddr         => wptr(addr_t'range),
+        i_we            => we,
+        i_wdata         => i_wdata,
+        i_wclk          => i_clk,
+
         i_raddr         => rptr_next(addr_t'range),
         o_rdata         => rdata,
-        i_rclk          => i_clk,
-
-        i_waddr         => wptr(addr_t'range),
-        i_wdata         => i_wdata,
-        i_we            => we,
-        i_wclk          => i_clk--,
+        i_rclk          => i_clk--,
     );
 
     o_rdata <=
