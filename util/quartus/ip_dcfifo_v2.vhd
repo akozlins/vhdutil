@@ -15,27 +15,30 @@ entity ip_dcfifo_v2 is
 generic (
     g_ADDR_WIDTH : positive := 8;
     g_DATA_WIDTH : positive := 8;
-    g_RADDR_WIDTH : natural := 0;
-    g_RDATA_WIDTH : natural := 0;
     g_WADDR_WIDTH : natural := 0;
     g_WDATA_WIDTH : natural := 0;
-    g_RREG_N : natural := 0;
+    g_RADDR_WIDTH : natural := 0;
+    g_RDATA_WIDTH : natural := 0;
     g_WREG_N : natural := 0;
+    g_RREG_N : natural := 0;
     g_SHOWAHEAD : string := "ON";
     g_DEVICE_FAMILY : string := "Arria 10"--;
 );
 port (
-    o_rusedw    : out   std_logic_vector(work.util.value_if(g_RADDR_WIDTH > 0, g_RADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
-    o_rdata     : out   std_logic_vector(work.util.value_if(g_RDATA_WIDTH > 0, g_RDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
-    i_rack      : in    std_logic; -- read enable (request, acknowledge)
-    o_rempty    : out   std_logic;
-    i_rclk      : in    std_logic;
-
-    o_wusedw    : out   std_logic_vector(work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
-    i_wdata     : in    std_logic_vector(work.util.value_if(g_WDATA_WIDTH > 0, g_WDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     i_we        : in    std_logic; -- write enable (request)
+    i_wdata     : in    std_logic_vector(work.util.value_if(g_WDATA_WIDTH > 0, g_WDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
     o_wfull     : out   std_logic;
+    o_wfull_n   : out   std_logic;
+    o_wusedw    : out   std_logic_vector(work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
     i_wclk      : in    std_logic;
+
+    i_re        : in    std_logic := '0'; -- read enable (request)
+    i_rack      : in    std_logic := '0'; -- read acknowledge (same as read enable)
+    o_rdata     : out   std_logic_vector(work.util.value_if(g_RDATA_WIDTH > 0, g_RDATA_WIDTH, g_DATA_WIDTH)-1 downto 0);
+    o_rempty    : out   std_logic;
+    o_rempty_n  : out   std_logic;
+    o_rusedw    : out   std_logic_vector(work.util.value_if(g_RADDR_WIDTH > 0, g_RADDR_WIDTH, g_ADDR_WIDTH)-1 downto 0);
+    i_rclk      : in    std_logic;
 
     -- async clear
     i_reset_n   : in    std_logic--;
@@ -50,9 +53,15 @@ architecture arch of ip_dcfifo_v2 is
     constant RADDR_WIDTH : positive := work.util.value_if(g_RADDR_WIDTH > 0, g_RADDR_WIDTH, g_ADDR_WIDTH);
     constant WADDR_WIDTH : positive := work.util.value_if(g_WADDR_WIDTH > 0, g_WADDR_WIDTH, g_ADDR_WIDTH);
 
-    signal fifo_rdata : std_logic_vector(o_rdata'range);
-    signal fifo_wdata : std_logic_vector(i_wdata'range);
-    signal fifo_rack, fifo_rempty, rreset_n, fifo_we, fifo_wfull, wreset_n : std_logic;
+    type rdata_t is array (natural range <>) of std_logic_vector(o_rdata'range);
+    signal fifo_rdata : rdata_t(g_RREG_N downto 0);
+    signal fifo_rack, fifo_rempty : std_logic_vector(g_RREG_N downto 0);
+    signal rreset_n : std_logic;
+
+    type wdata_t is array (natural range <>) of std_logic_vector(i_wdata'range);
+    signal fifo_wdata : wdata_t(g_WREG_N downto 0);
+    signal fifo_we, fifo_wfull : std_logic_vector(g_WREG_N downto 0);
+    signal wreset_n : std_logic;
 
 begin
 
@@ -67,6 +76,15 @@ begin
         & ", WDATA_WIDTH = " & integer'image(i_wdata'length)
     severity failure;
 
+    fifo_we(0) <= i_we;
+    fifo_wdata(0) <= i_wdata;
+    o_wfull <= fifo_wfull(0);
+    o_wfull_n <= not fifo_wfull(0);
+    fifo_rack(0) <= i_re or i_rack;
+    o_rdata <= fifo_rdata(0);
+    o_rempty <= fifo_rempty(0);
+    o_rempty_n <= not fifo_rempty(0);
+
     generate_dcfifo : if ( o_rdata'length = i_wdata'length ) generate
         -- <ug_fifo.pdf>
         dcfifo_component : dcfifo
@@ -78,7 +96,7 @@ begin
             -- Specifies the depths of the FIFO you require. The value must be at least 4.
             -- The value assigned must comply to the following equation: 2^LPM_WIDTHU.
             lpm_numwords => 2**WADDR_WIDTH,
-            -- Specifies the width of the data and q ports for the SCFIFO function and DCFIFO function. 
+            -- Specifies the width of the data and q ports for the SCFIFO function and DCFIFO function.
             lpm_width => i_wdata'length,
             -- Specifies whether the FIFO is in normal mode (OFF) or show-ahead mode (ON).
             lpm_showahead => g_SHOWAHEAD,
@@ -104,17 +122,17 @@ begin
             intended_device_family => g_DEVICE_FAMILY--,
         )
         port map (
-            q => fifo_rdata,
-            rdreq => fifo_rack,
-            rdempty => fifo_rempty,
-            rdusedw => o_rusedw,
-            rdclk => i_rclk,
-
-            data => fifo_wdata,
-            wrreq => fifo_we,
-            wrfull => fifo_wfull,
+            wrreq => fifo_we(g_WREG_N),
+            data => fifo_wdata(g_WREG_N),
+            wrfull => fifo_wfull(g_WREG_N),
             wrusedw => o_wusedw,
             wrclk => i_wclk,
+
+            rdreq => fifo_rack(g_RREG_N),
+            q => fifo_rdata(g_RREG_N),
+            rdempty => fifo_rempty(g_RREG_N),
+            rdusedw => o_rusedw,
+            rdclk => i_rclk,
 
             -- Assert this signal to clear all the output status ports.
             -- There are no minimum number of clock cycles for aclr signals that must remain active.
@@ -126,11 +144,11 @@ begin
         dcfifo_component : dcfifo_mixed_widths
         generic map (
             lpm_type => "dcfifo_mixed_widths",
-            lpm_widthu_r => RADDR_WIDTH,
             lpm_widthu => WADDR_WIDTH,
             lpm_numwords => 2**WADDR_WIDTH,
-            lpm_width_r => o_rdata'length,
+            lpm_widthu_r => RADDR_WIDTH,
             lpm_width => i_wdata'length,
+            lpm_width_r => o_rdata'length,
             lpm_showahead => g_SHOWAHEAD,
             use_eab => "ON",
             overflow_checking => "ON",
@@ -142,82 +160,74 @@ begin
             intended_device_family => g_DEVICE_FAMILY--,
         )
         port map (
-            q => fifo_rdata,
-            rdreq => fifo_rack,
-            rdempty => fifo_rempty,
-            rdusedw => o_rusedw,
-            rdclk => i_rclk,
-
-            data => fifo_wdata,
-            wrreq => fifo_we,
-            wrfull => fifo_wfull,
+            wrreq => fifo_we(g_WREG_N),
+            data => fifo_wdata(g_WREG_N),
+            wrfull => fifo_wfull(g_WREG_N),
             wrusedw => o_wusedw,
             wrclk => i_wclk,
+
+            rdreq => fifo_rack(g_RREG_N),
+            q => fifo_rdata(g_RREG_N),
+            rdempty => fifo_rempty(g_RREG_N),
+            rdusedw => o_rusedw,
+            rdclk => i_rclk,
 
             aclr => not i_reset_n--,
         );
     end generate;
 
-    generate_rreg_0 : if ( g_RREG_N = 0 or g_SHOWAHEAD /= "ON" ) generate
-        o_rdata <= fifo_rdata;
-        fifo_rack <= i_rack;
-        o_rempty <= fifo_rempty;
+    generate_wreg : if ( g_WREG_N > 0 ) generate
+    -- sync write clock reset
+    e_wreset_n : entity work.reset_sync
+    port map ( o_reset_n => wreset_n, i_reset_n => i_reset_n, i_clk => i_wclk );
+
+    -- write through reg fifos
+    generate_fifo_wreg : for i in g_WREG_N-1 downto 0 generate
+        e_fifo_wreg : entity work.fifo_reg
+        generic map (
+            g_DATA_WIDTH => i_wdata'length,
+            g_N => 2--,
+        )
+        port map (
+            i_we => fifo_we(i),
+            i_wdata => fifo_wdata(i),
+            o_wfull => fifo_wfull(i),
+
+            i_rack => not fifo_wfull(i+1),
+            o_rdata => fifo_wdata(i+1),
+            o_rempty_n => fifo_we(i+1),
+
+            i_reset_n => wreset_n,
+            i_clk => i_wclk--,
+        );
+    end generate;
     end generate;
 
-    generate_rreg : if ( g_RREG_N > 0 and g_SHOWAHEAD = "ON" ) generate
-        -- sync read clock reset
-        e_rreset_n : entity work.reset_sync
-        port map ( o_reset_n => rreset_n, i_reset_n => i_reset_n, i_clk => i_rclk );
+    generate_rreg : if ( g_RREG_N > 0 ) generate
+    -- sync read clock reset
+    e_rreset_n : entity work.reset_sync
+    port map ( o_reset_n => rreset_n, i_reset_n => i_reset_n, i_clk => i_rclk );
 
-        -- read through reg fifo
+    -- read through reg fifos
+    generate_fifo_rreg : for i in g_RREG_N-1 downto 0 generate
         e_fifo_rreg : entity work.fifo_reg
         generic map (
             g_DATA_WIDTH => o_rdata'length,
-            g_N => g_RREG_N--,
+            g_N => 2--,
         )
         port map (
-            o_rdata => o_rdata,
-            i_rack => i_rack,
-            o_rempty => o_rempty,
+            i_we => not fifo_rempty(i+1),
+            i_wdata => fifo_rdata(i+1),
+            o_wfull_n => fifo_rack(i+1),
 
-            i_wdata => fifo_rdata,
-            i_we => not fifo_rempty,
-            o_wfull_n => fifo_rack,
+            i_rack => fifo_rack(i),
+            o_rdata => fifo_rdata(i),
+            o_rempty => fifo_rempty(i),
 
             i_reset_n => rreset_n,
             i_clk => i_rclk--,
         );
     end generate;
-
-    generate_wreg_0 : if ( g_WREG_N = 0 ) generate
-        fifo_wdata <= i_wdata;
-        fifo_we <= i_we;
-        o_wfull <= fifo_wfull;
-    end generate;
-
-    generate_wreg : if ( g_WREG_N > 0 ) generate
-        -- sync write clock reset
-        e_wreset_n : entity work.reset_sync
-        port map ( o_reset_n => wreset_n, i_reset_n => i_reset_n, i_clk => i_wclk );
-
-        -- write through reg fifo
-        e_fifo_wreg : entity work.fifo_reg
-        generic map (
-            g_DATA_WIDTH => i_wdata'length,
-            g_N => g_WREG_N--,
-        )
-        port map (
-            o_rdata => fifo_wdata,
-            i_rack => not fifo_wfull,
-            o_rempty_n => fifo_we,
-
-            i_wdata => i_wdata,
-            i_we => i_we,
-            o_wfull => o_wfull,
-
-            i_reset_n => wreset_n,
-            i_clk => i_wclk--,
-        );
     end generate;
 
 end architecture;
