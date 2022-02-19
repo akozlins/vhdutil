@@ -23,13 +23,14 @@ architecture arch of tb_fifo_sc is
 
     signal wdata : std_logic_vector(15 downto 0) := (others => '0');
     signal we, wfull : std_logic := '0';
-    signal rdata, fifo_rdata : std_logic_vector(15 downto 0);
-    signal rack, rempty, fifo_rempty, fifo_rack : std_logic := '0';
+    signal rdata : std_logic_vector(15 downto 0);
+    signal rack, rempty : std_logic := '0';
 
 begin
 
     clk <= not clk after (0.5 us / g_CLK_MHZ);
-    reset_n <= '0', '1' after (1.0 us / g_CLK_MHZ);
+    --reset_n <= '0', '1' after (4.0 us / g_CLK_MHZ);
+    reset_n <= '0' when ( cycle < 4 ) else '1';
     cycle <= cycle + 1 after (1 us / g_CLK_MHZ);
 
     process
@@ -42,60 +43,43 @@ begin
         wait until rising_edge(clk);
     end process;
 
-    e_fifo : entity work.ip_scfifo_v2
+    e_fifo : entity work.fifo_reg
     generic map (
-        g_ADDR_WIDTH => 3,
+        --g_ADDR_WIDTH => 2,
         g_DATA_WIDTH => wdata'length,
---        g_RADDR_WIDTH => 4,
---        g_RDATA_WIDTH => rdata'length,
---        g_WADDR_WIDTH => 4,
---        g_WDATA_WIDTH => wdata'length,
-        g_RREG_N => 1,
-        g_WREG_N => 1,
-        g_DEVICE_FAMILY => "Arria 10"--
+        --g_RADDR_WIDTH => 4,
+        --g_RDATA_WIDTH => rdata'length,
+        --g_WADDR_WIDTH => 4,
+        --g_WDATA_WIDTH => wdata'length,
+        --g_RREG_N => 1,
+        --g_WREG_N => 1,
+        --g_DEVICE_FAMILY => "Arria 10"--
+        g_N => 1--,
     )
     port map (
         i_we        => we,
         i_wdata     => wdata,
         o_wfull     => wfull,
 
-        i_rack      => fifo_rack,
-        o_rdata     => fifo_rdata,
-        o_rempty    => fifo_rempty,
-
---        i_wclk      => clk,
---        i_rclk      => clk,
-        i_clk       => clk,
-        i_reset_n   => reset_n--,
-    );
-
-    e_fifo_reg : entity work.fifo_reg
-    generic map (
-        g_DATA_WIDTH => rdata'length,
-        g_N => 2--,
-    )
-    port map (
-        i_we        => not fifo_rempty,
-        i_wdata     => fifo_rdata,
-        o_wfull_n   => fifo_rack,
-
         i_rack      => rack,
         o_rdata     => rdata,
         o_rempty    => rempty,
 
-        i_reset_n   => reset_n,
-        i_clk       => clk--,
+        --i_wclk      => clk,
+        --i_rclk      => clk,
+        i_clk       => clk,
+        i_reset_n   => reset_n--,
     );
 
     -- write
-    we <= '0' when ( reset_n = '0' or wfull = '1' ) else
+    we <= -- '0' when ( reset_n = '0' or wfull = '1' ) else
         random(0);
 
     process
     begin
         wait until rising_edge(clk) and we = '1';
 
-        if ( we = '1' ) then
+        if ( we = '1' and wfull = '0' ) then
             wdata <= std_logic_vector(unsigned(wdata) + 1);
         end if;
 
@@ -106,7 +90,7 @@ begin
     end process;
 
     -- read
-    rack <= '0' when ( reset_n = '0' or rempty = '1' ) else
+    rack <= -- '0' when ( reset_n = '0' or rempty = '1' ) else
         random(1);
 
     process
@@ -114,7 +98,7 @@ begin
     begin
         wait until rising_edge(clk) and rack = '1';
 
-        if ( rack = '1' and rdata /= rdata_v ) then
+        if ( rack = '1' and rempty = '0' and rdata /= rdata_v ) then
             report work.util.SGR_FG_RED
                 & "[cycle = " & integer'image(cycle) & "]"
                 & " rdata = " & to_hstring(rdata)
@@ -123,7 +107,7 @@ begin
             severity error;
         end if;
 
-        if ( rack = '1' ) then
+        if ( rack = '1' and rempty = '0' ) then
             rdata_v := std_logic_vector(unsigned(rdata_v) + 1);
         end if;
 

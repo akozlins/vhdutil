@@ -185,8 +185,7 @@ begin
     generate_fifo_wreg : for i in g_WREG_N-1 downto 0 generate
         e_fifo_wreg : entity work.fifo_reg
         generic map (
-            g_DATA_WIDTH => i_wdata'length,
-            g_N => 2--,
+            g_DATA_WIDTH => i_wdata'length--,
         )
         port map (
             i_we => fifo_we(i),
@@ -212,8 +211,7 @@ begin
     generate_fifo_rreg : for i in g_RREG_N-1 downto 0 generate
         e_fifo_rreg : entity work.fifo_reg
         generic map (
-            g_DATA_WIDTH => o_rdata'length,
-            g_N => 2--,
+            g_DATA_WIDTH => o_rdata'length--,
         )
         port map (
             i_we => not fifo_rempty(i+1),

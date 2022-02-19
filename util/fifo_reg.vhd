@@ -14,7 +14,7 @@ use ieee.std_logic_1164.all;
 entity fifo_reg is
 generic (
     g_DATA_WIDTH : positive := 32;
-    g_N : positive := 2--;
+    g_N : positive := 1--;
 );
 port (
     i_we        : in    std_logic;
@@ -24,6 +24,7 @@ port (
 
     i_rack      : in    std_logic;
     o_rdata     : out   std_logic_vector(g_DATA_WIDTH-1 downto 0);
+    o_rvalid    : out   std_logic;
     o_rempty    : out   std_logic;
     o_rempty_n  : out   std_logic;
 
@@ -34,59 +35,72 @@ end entity;
 
 architecture arch of fifo_reg is
 
-    type cell_array_t is array (natural range <>) of std_logic_vector(g_DATA_WIDTH-1 downto 0);
-    signal cell : cell_array_t(0 to g_N+1) := (others => (others => '-'));
-    signal empty : std_logic_vector(0 to g_N+1) := (0 => '0', others => '1');
-    signal full : std_logic;
+    signal we : std_logic;
+    signal wdata : std_logic_vector(i_wdata'range);
+    signal wfull : std_logic;
+
+    type rdata_array_t is array (natural range <>) of std_logic_vector(o_rdata'range);
+    signal rdata : rdata_array_t(0 to g_N);
+    signal rvalid : std_logic_vector(0 to g_N);
 
 begin
 
-    -- empty(0) is used when i_rack = '0' and index is 1
-    empty(0) <= '0';
-    cell(0) <= (others => '-');
-    -- cell(g_N+1) is used when i_rack = '1' and index is g_N
-    empty(g_N+1) <= '1';
-    cell(g_N+1) <= (others => '-');
+    we <= i_we and not wfull;
+    wdata <= i_wdata when ( we = '1' ) else (others => '-');
+    o_wfull <= wfull;
+    o_wfull_n <= not wfull;
 
-    -- cell(1) contains readable data
-    o_wfull <= full;
-    o_wfull_n <= not full;
-    o_rdata <= cell(1);
-    o_rempty <= empty(1);
-    o_rempty_n <= not empty(1);
+    -- rdata(0) is head of the fifo
+    o_rdata <= rdata(0);
+    o_rvalid <= rvalid(0);
+    o_rempty <= not rvalid(0);
+    o_rempty_n <= rvalid(0);
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
-        for i in 1 to g_N loop
-            cell(i) <= (others => '-');
-            empty(i) <= '1';
-        end loop;
-        full <= '1';
+    if ( i_reset_n /= '1' ) then
+        wfull <= '1';
+        rdata <= (others => (others => '-'));
+        rvalid <= (others => '0');
+        --
     elsif rising_edge(i_clk) then
-        full <= not empty(g_N);
+        if ( i_rack = '1' and rvalid(0) = '1' ) then
+            -- read from rdata(0)
+            -- shift left
+            rdata(0 to g_N-1) <= rdata(1 to g_N);
+            rdata(g_N) <= (others => '-');
+            rvalid(0 to g_N-1) <= rvalid(1 to g_N);
+            rvalid(g_N) <= '0';
+            --
+            wfull <= '0';
+        elsif ( we = '1' and rvalid(g_N-1 to g_N) = "10" ) then
+            -- write to last empty rdata(g_N)
+            wfull <= '1';
+        else
+            -- init wfull after reset
+            wfull <= rvalid(g_N);
+        end if;
 
-        for i in 1 to g_N loop
-            if ( i_rack = '1' and empty(1) = '0' ) then
-                -- read from cell(1) and shift left
-                cell(i) <= cell(i+1);
-                empty(i) <= empty(i+1);
-                -- copy wdata into first empty cell
-                -- NOTE: do not touch last cell (o_wfull is '1')
-                if ( empty(i to i+1) = "01" and i < g_N ) then
-                    cell(i) <= i_wdata;
-                    empty(i) <= not i_we;
+        if ( i_rack = '1' and rvalid(0) = '1' ) then
+            -- copy wdata into last valid rdata
+            for i in 0 to g_N loop
+                -- NOTE: wfull = '1' when rvalid(g_N) = '1'
+                if ( -- ( i = g_N and rvalid(g_N) = '1' ) or
+                     ( i < g_N and rvalid(i to i+1) = "10" ) ) then
+                    rdata(i) <= wdata;
+                    rvalid(i) <= we;
                 end if;
-                full <= '0';
-            else
-                -- copy wdata into first empty cell
-                if ( empty(i-1 to i) = "01" ) then
-                    cell(i) <= i_wdata;
-                    empty(i) <= not i_we;
-                    full <= work.util.to_std_logic(i = g_N) and i_we;
+            end loop;
+        else
+            -- copy wdata into first empty rdata
+            for i in 0 to g_N loop
+                if ( (i = 0 and rvalid(0) = '0') or
+                     (i > 0 and rvalid(i-1 to i) = "10") ) then
+                    rdata(i) <= wdata;
+                    rvalid(i) <= we;
                 end if;
-            end if;
-        end loop;
+            end loop;
+        end if;
     end if;
     end process;
 
