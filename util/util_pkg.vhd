@@ -174,6 +174,14 @@ package util is
         data : std_logic_vector--;
     ) return natural;
 
+    function to_slv (
+        c : in character--;
+    ) return std_logic_vector;
+
+    function to_slv (
+        s : in string--;
+    ) return std_logic_vector;
+
     function to_string (
         v : in std_logic--;
     ) return string;
@@ -644,6 +652,24 @@ package body util is
         else
             return to_integer(unsigned(data_v));
         end if;
+    end function;
+
+    function to_slv (
+        c : in character--;
+    ) return std_logic_vector is
+    begin
+        return std_logic_vector(to_unsigned(character'pos(c), 8));
+    end function;
+
+    function to_slv (
+        s : in string--;
+    ) return std_logic_vector is
+        variable v : std_logic_vector(s'length*8-1 downto 0);
+    begin
+        for i in s'length-1 downto 0 loop
+            v((i+1)*8-1 downto i*8) := to_slv(s(i+1));
+        end loop;
+        return v;
     end function;
 
     function to_string (
