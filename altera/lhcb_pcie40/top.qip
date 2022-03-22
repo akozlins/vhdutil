@@ -1,0 +1,8 @@
+#
+
+set_global_assignment -name QIP_FILE assignments/a10_lhcb.qip
+
+set_global_assignment -name VHDL_FILE top.vhd
+set_global_assignment -name SDC_FILE top.sdc
+
+set_global_assignment -name QIP_FILE util/include.qip
