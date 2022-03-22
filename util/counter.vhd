@@ -53,7 +53,7 @@ begin
 
     process(i_clk, i_reset_n, enable)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         cnt_div <= 0;
         cnt <= (others => '0');
         --

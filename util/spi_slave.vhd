@@ -79,7 +79,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         sclk_q <= '0';
         ss_q <= '0';
         --
@@ -167,7 +167,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         rfifo_we <= '0';
         sdo_reg <= (others => '-');
         sdi_reg <= (others => '-');

@@ -48,7 +48,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         ff <= (others => (others => '0'));
         --
     elsif rising_edge(i_clk) then

@@ -107,7 +107,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         rack <= '0';
         cnt <= 0;
         state <= STATE_IDLE;

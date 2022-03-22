@@ -30,7 +30,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         ff0 <= (others => '0');
         cnt <= 0;
         --

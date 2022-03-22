@@ -50,7 +50,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         data <= (others => '0');
         datak <= (others => '0');
         --
@@ -68,7 +68,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         o_bitslip <= '0';
         timeout <= (others => '0');
         --
@@ -100,7 +100,7 @@ begin
         variable error_v : boolean;
         --
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         locked <= '0';
         quality <= (others => '0');
         o_data <= (others => '0');

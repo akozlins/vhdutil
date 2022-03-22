@@ -37,7 +37,7 @@ begin
 
         process(i_clk, i_reset_n)
         begin
-        if ( i_reset_n = '0' ) then
+        if ( i_reset_n /= '1' ) then
             clk1 <= '0';
             cnt1 <= 0;
             --
@@ -60,7 +60,7 @@ begin
 
         process(i_clk, i_reset_n)
         begin
-        if ( i_reset_n = '0' ) then
+        if ( i_reset_n /= '1' ) then
             clk1 <= '0';
             cnt1 <= 0;
             --
@@ -79,7 +79,7 @@ begin
 
         process(i_clk, i_reset_n)
         begin
-        if ( i_reset_n = '0' ) then
+        if ( i_reset_n /= '1' ) then
             clk2 <= '0';
             cnt2 <= 0;
             --

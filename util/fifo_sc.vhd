@@ -69,7 +69,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         wptr <= (others => '0');
         wfull <= '1';
         rptr <= (others => '0');

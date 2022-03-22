@@ -22,7 +22,7 @@ begin
 
     process(clk, reset_n)
     begin
-    if ( reset_n = '0' ) then
+    if ( reset_n /= '1' ) then
         i <= (others => '0');
         g2 <= (others => '0');
         --

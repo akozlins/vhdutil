@@ -52,7 +52,7 @@ begin
 
     process(clk, reset)
     begin
-    if ( reset = '1' ) then
+    if ( reset /= '0' ) then
         ss <= (others => '0');
         sso <= '0';
         avs_readdata <= X"CCCCCCCC";

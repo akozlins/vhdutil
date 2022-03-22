@@ -45,7 +45,7 @@ begin
 
     process(i_clk, i_reset_n)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         cnt <= (others => '0');
         ff1 <= '0';
         o_tst_ok <= '0';

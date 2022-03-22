@@ -64,7 +64,7 @@ begin
     -- generate clock (sclk) and slave select (ss)
     process(i_clk)
     begin
-    if ( i_reset_n = '0' ) then
+    if ( i_reset_n /= '1' ) then
         sclk <= '0';
         ss <= '0';
         sclk_cnt <= (others => '0');
