@@ -178,7 +178,7 @@ pgm : $(SOF)
 .PRECIOUS : $(BSP_DIR)/settings.bsp
 $(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
 	mkdir -pv -- "$(BSP_DIR)"
-	export LD_LIBRARY_PATH="$(LD_LIBRARY_PATH):$(QUARTUS_ROOTDIR)/linux64"
+	LD_LIBRARY_PATH="$(QUARTUS_ROOTDIR)/linux64:$(LD_LIBRARY_PATH)" \
 	nios2-bsp-create-settings \
 	    --type hal --script "$(SOPC_KIT_NIOS2)/sdk2/bin/bsp-set-defaults.tcl" \
 	    --sopc $(NIOS_SOPCINFO) --cpu-name cpu \

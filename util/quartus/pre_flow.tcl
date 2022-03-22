@@ -1,1 +1,3 @@
-post_message "git rev [exec git rev-parse HEAD]"
+#
+
+post_message "I \[pre_flow\] git rev [exec git rev-parse HEAD]"

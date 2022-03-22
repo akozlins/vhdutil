@@ -11,4 +11,5 @@ reconfig_mif/
 *.qsf
 *.qws
 *.sopcinfo
+*.srf
 *.stp
