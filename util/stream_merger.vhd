@@ -54,9 +54,9 @@ begin
         busy <= '0';
         --
     elsif rising_edge(i_clk) then
-        for i in N-1 downto 0 loop
+        for i in index'range loop
             if ( index(i) = '1' ) then
-                o_wdata <= i_rdata(W-1 + i*W downto i*W);
+                o_wdata <= i_rdata((i+1)*W-1 downto i*W);
             end if;
         end loop;
         o_wsop <= work.util.or_reduce(i_rsop and index);

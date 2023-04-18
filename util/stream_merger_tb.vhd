@@ -2,10 +2,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity tb_stream_merger is
+entity stream_merger_tb is
+generic (
+    g_STOP_TIME_US : integer := 1;
+    g_SEED : integer := 0;
+    g_CLK_MHZ : real := 1000.0--;
+);
 end entity;
 
-architecture arch of tb_stream_merger is
+architecture arch of stream_merger_tb is
 
     constant CLK_MHZ : real := 1000.0; -- MHz
     signal clk, reset_n, reset : std_logic := '0';
