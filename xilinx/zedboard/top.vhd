@@ -22,7 +22,7 @@ begin
     e_reset_100_n : entity work.reset_sync
     port map ( o_reset_n => reset_100_n, i_reset_n => not i_btn(0), i_clk => i_clk_100 );
 
-    process(i_clk_100)
+    process(i_clk_100, reset_100_n)
     begin
     if ( reset_100_n = '1' ) then
         o_led <= (others => '0');

@@ -64,8 +64,8 @@ begin
         rvalid <= (others => '0');
         --
     elsif rising_edge(i_clk) then
+        -- read
         if ( i_rack = '1' and rvalid(0) = '1' ) then
-            -- read from rdata(0)
             -- shift left
             rdata(0 to g_N-1) <= rdata(1 to g_N);
             rdata(g_N) <= (others => '-');
@@ -81,7 +81,9 @@ begin
             wfull <= rvalid(g_N);
         end if;
 
+        -- write
         if ( i_rack = '1' and rvalid(0) = '1' ) then
+            -- write during read
             -- copy wdata into last valid rdata
             for i in 0 to g_N loop
                 -- NOTE: wfull = '1' when rvalid(g_N) = '1'

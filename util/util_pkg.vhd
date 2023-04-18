@@ -9,9 +9,13 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 
 use std.textio.all;
+--use ieee.std_logic_textio.all;
 
 package util is
 
+    --! basic array types
+    subtype slv2_t is std_logic_vector(1 downto 0);
+    type slv2_array_t is array ( natural range <> ) of slv2_t;
     subtype slv4_t is std_logic_vector(3 downto 0);
     type slv4_array_t is array ( natural range <> ) of slv4_t;
     subtype slv8_t is std_logic_vector(7 downto 0);
@@ -20,6 +24,10 @@ package util is
     type slv16_array_t is array ( natural range <> ) of slv16_t;
     subtype slv32_t is std_logic_vector(31 downto 0);
     type slv32_array_t is array ( natural range <> ) of slv32_t;
+    subtype slv64_t is std_logic_vector(63 downto 0);
+    type slv64_array_t is array ( natural range <> ) of slv64_t;
+    subtype slv256_t is std_logic_vector(255 downto 0);
+    type slv256_array_t is array ( natural range <> ) of slv256_t;
 
     type avalon_t is record
         address         :   std_logic_vector(31 downto 0);

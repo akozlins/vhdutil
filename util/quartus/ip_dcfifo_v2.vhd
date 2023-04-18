@@ -66,14 +66,18 @@ architecture arch of ip_dcfifo_v2 is
 begin
 
     assert ( true
-        and RADDR_WIDTH >= 2 and WADDR_WIDTH >= 2
-        and 2**RADDR_WIDTH * o_rdata'length = 2**WADDR_WIDTH * i_wdata'length
-        and ( g_RREG_N = 0 or g_SHOWAHEAD = "ON" )
+        and WADDR_WIDTH >= 2 and RADDR_WIDTH >= 2
+        and 2**WADDR_WIDTH * i_wdata'length = 2**RADDR_WIDTH * o_rdata'length
+        and ( g_SHOWAHEAD = "ON" or g_SHOWAHEAD = "OFF" )
+        and not ( g_SHOWAHEAD = "OFF" and g_RREG_N > 0 )
     ) report "ip_dcfifo_v2"
-        & ", RADDR_WIDTH = " & integer'image(RADDR_WIDTH)
-        & ", RDATA_WIDTH = " & integer'image(o_rdata'length)
         & ", WADDR_WIDTH = " & integer'image(WADDR_WIDTH)
         & ", WDATA_WIDTH = " & integer'image(i_wdata'length)
+        & ", RADDR_WIDTH = " & integer'image(RADDR_WIDTH)
+        & ", RDATA_WIDTH = " & integer'image(o_rdata'length)
+        & ", g_WREG_N = " & integer'image(g_WREG_N)
+        & ", g_RREG_N = " & integer'image(g_RREG_N)
+        & ", g_SHOWAHEAD = " & g_SHOWAHEAD
     severity failure;
 
     fifo_we(0) <= i_we;

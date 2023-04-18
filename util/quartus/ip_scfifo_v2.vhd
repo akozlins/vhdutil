@@ -49,10 +49,14 @@ architecture arch of ip_scfifo_v2 is
 begin
 
     assert ( true
-        and ( g_RREG_N = 0 or g_SHOWAHEAD = "ON" )
+        and ( g_SHOWAHEAD = "ON" or g_SHOWAHEAD = "OFF" )
+        and not ( g_SHOWAHEAD = "OFF" and g_RREG_N > 0 )
     ) report "ip_dcfifo_v2"
         & ", ADDR_WIDTH = " & integer'image(g_ADDR_WIDTH)
         & ", DATA_WIDTH = " & integer'image(o_rdata'length)
+        & ", g_WREG_N = " & integer'image(g_WREG_N)
+        & ", g_RREG_N = " & integer'image(g_RREG_N)
+        & ", g_SHOWAHEAD = " & g_SHOWAHEAD
     severity failure;
 
     fifo_we(0) <= i_we;

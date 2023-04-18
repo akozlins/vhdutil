@@ -43,22 +43,24 @@ begin
 
     o_debug <= reg_wdata;
 
-    i_ram : entity work.ram_dp
+    i_ram : entity work.ram_2rw
     generic map (
-        W => 32,
-        N => 8,
+        g_ADDR_WIDTH => 8,
+        g_DATA_WIDTH => 32--,
 --        INIT_FILE_HEX => "rv/rv32i_cpu.hex"--,
 --        INIT_FILE_HEX => "../../../../rv/rv32i_cpu.hex"--,
-        INIT_FILE_HEX => "../../rv/rv32i_cpu.hex"--,
+--        INIT_FILE_HEX => "../../rv/rv32i_cpu.hex"--,
     )
     port map (
-        a_addr  => pc(9 downto 2),
-        a_rdata => inst,
-        b_addr  => ram_addr(9 downto 2),
-        b_rdata => ram_rdata,
-        b_wdata => ram_wdata,
-        b_we    => ram_we,
-        clk     => i_clk--,
+        i_addr0  => pc(9 downto 2),
+        o_rdata0 => inst,
+        i_clk0   => i_clk,
+
+        i_addr1  => ram_addr(9 downto 2),
+        o_rdata1 => ram_rdata,
+        i_wdata1 => ram_wdata,
+        i_we1    => ram_we,
+        i_clk1   => i_clk--,
     );
 
     ram_wdata <= reg_rdata2;

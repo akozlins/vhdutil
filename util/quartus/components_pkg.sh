@@ -14,7 +14,7 @@ use ieee.std_logic_1164.all;
 
 package components is
 
-    constant GIT_HEAD : std_logic_vector(0 to 16*4-1) := X"$(git rev-parse --short=16 HEAD)";
+    constant GIT_HEAD : std_logic_vector(16*4-1 downto 0) := X"$(git rev-parse --short=16 HEAD | rev)";
 
 EOF
 
