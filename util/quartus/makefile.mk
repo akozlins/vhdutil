@@ -171,10 +171,6 @@ update_mif :
 	quartus_cdb top --update_mif
 	quartus_asm top
 
-.PHONY : pgm
-pgm : $(SOF)
-	quartus_pgm -m jtag -c "$(CABLE)" --operation="p;$(SOF)"
-
 .PRECIOUS : $(BSP_DIR)/settings.bsp
 $(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
 	mkdir -pv -- "$(BSP_DIR)"
@@ -209,10 +205,17 @@ app_gdb:
 .PHONY : app
 app : $(APP_DIR)/main.elf
 
+.PHONY : pgm
+pgm : $(SOF)
+	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	quartus_pgm --cable "$$CABLE" --mode jtag --operation="p;$(SOF)"
+
 .PHONY : app_upload
 app_upload : app
-	nios2-gdb-server -c "$(CABLE)" -r -w 1 -g "$(APP_DIR)/main.srec"
+	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	nios2-gdb-server --cable "$$CABLE" -r -w 1 -g "$(APP_DIR)/main.srec"
 
 .PHONY : terminal
 terminal :
-	nios2-terminal -c "$(CABLE)"
+	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	nios2-terminal --cable "$$CABLE"
