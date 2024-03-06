@@ -148,22 +148,27 @@ $(PREFIX)/%.vhd : %.vhd.envsubst
 	NAME="$(basename $(notdir $@))" envsubst '$$NAME' < "$<" > "$@"
 
 $(PREFIX)/%.vhd : %.vhd.qmegawiz
+	mkdir -pv -- "$(PREFIX)/tmp"
+	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec qmegawiz.sh
 	$(call find_file,qmegawiz.sh) "$<" "$@"
 
 $(PREFIX)/%.qsys : %.tcl device.tcl
-	mkdir -pv -- "$(PREFIX)"
+	mkdir -pv -- "$(PREFIX)/tmp"
+	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 	# find and exec tcl2qsys.sh
 	$(call find_file,tcl2qsys.sh) "$<" "$@"
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
+	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec qsys-generate.sh
 	$(call find_file,qsys-generate.sh) "$<"
 
 .PHONY : flow
 flow : all
+	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec flow.sh
 	$(call find_file,flow.sh)
 
