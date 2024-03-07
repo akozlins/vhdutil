@@ -11,22 +11,17 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
-ifndef QUARTUS_VERSION
-    QUARTUS_VERSION := $(shell basename $(shell dirname $(QUARTUS_ROOTDIR)))
-endif
-
 ifeq ($(QUARTUS_OUTPUT_FILES),)
     override QUARTUS_OUTPUT_FILES := output_files
 endif
+
+QPF := $(BUILD_DIR)/top.qpf
+QSF := $(BUILD_DIR)/top.qsf
 
 # directory for generated files (*.qsys, *.sopcinfo, etc.)
 # TODO: rename PREFIX -> QP_TMP_DIR
 ifeq ($(PREFIX),)
     override PREFIX := .cache
-endif
-
-ifeq ($(CABLE),)
-    CABLE := 1
 endif
 
 # location of compiled firmware (SOF file)
@@ -89,16 +84,17 @@ clean :
 	rm -rf -- \
 	    ./.qsys_edit ./top.qws \
 	    ./db ./incremental_db ./output_files \
-	    ./top.qsf ./top.qpf "./$(PREFIX)"
+	    "$(QPF)" "$(QSF)" \
+	    "$(PREFIX)"
 
 # default qpf file
-top.qpf :
+$(QPF) : $(QSF)
 	cat << EOF > "$@"
 	PROJECT_REVISION = "top"
 	EOF
 
 # default qsf file - load top.qip, and generated include.qip
-top.qsf : $(MAKEFILE_LIST) $(PREFIX)/include.qip
+$(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	cat << EOF > "$@"
 	set_global_assignment -name QIP_FILE "top.qip"
 	set_global_assignment -name TOP_LEVEL_ENTITY top
@@ -107,7 +103,7 @@ top.qsf : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
 	EOF
 
-all : top.qpf top.qsf
+all : $(QPF) $(QSF)
 	[ -e "top.srf" ] || ln -sv -- "util/quartus/top.srf"
 
 .PHONY : $(PREFIX)/components_pkg.vhd
@@ -115,7 +111,7 @@ $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
 	mkdir -pv -- "$(PREFIX)"
 	# find and exec components_pkg.sh
 	$(call find_file,components_pkg.sh) "$(PREFIX)" > "$@"
-	[ -x /bin/awk ] && awk -f $(call find_file,components_pkg.awk) "$@"
+	[ -x /usr/bin/awk ] && awk -f $(call find_file,components_pkg.awk) "$@"
 	# patch generated "altera_pci_express.sdc" files
 	$(call find_file,altera_pci_express.sh) "$(PREFIX)"
 
@@ -158,57 +154,67 @@ $(PREFIX)/%.qsys : %.tcl device.tcl
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
-	# find and exec tcl2qsys.sh
-	$(call find_file,tcl2qsys.sh) "$<" "$@"
+	# find and exec tcl2qsys.sh (use `awk` to remove timestamp prefix)
+	$(call find_file,tcl2qsys.sh) "$<" "$@" 2>&1 | awk '{ sub(/^([0-9]+[.:]?)+ /, "") ; print $0 }'
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec qsys-generate.sh
-	$(call find_file,qsys-generate.sh) "$<"
+	$(call find_file,qsys-generate.sh) "$<" 2>&1 | awk '{ sub(/^([0-9]+[.:]?)+ /, "") ; print $0 }'
 
 .PHONY : flow
 flow : all
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec flow.sh
-	$(call find_file,flow.sh)
+	$(call find_file,flow.sh) "$(QPF)"
+
+.PHONY : post_flow
+post_flow :
 
 update_mif :
 	quartus_cdb top --update_mif
 	quartus_asm top
 
 .PRECIOUS : $(BSP_DIR)/settings.bsp
-$(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO)
+$(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO) $(MAKEFILE_LIST)
 	mkdir -pv -- "$(BSP_DIR)"
 	LD_LIBRARY_PATH="$(QUARTUS_ROOTDIR)/linux64:$(LD_LIBRARY_PATH)" \
 	nios2-bsp-create-settings \
 	    --type hal --script "$(SOPC_KIT_NIOS2)/sdk2/bin/bsp-set-defaults.tcl" \
 	    --sopc $(NIOS_SOPCINFO) --cpu-name cpu \
 	    --bsp-dir "$(BSP_DIR)" --settings "$(BSP_DIR)/settings.bsp" --script "$(BSP_SCRIPT)"
+	$(MAKE) -C "$(BSP_DIR)" clean
 
-bsp : $(BSP_DIR)/settings.bsp
+.PRECIOUS : $(APP_DIR)/Makefile
+$(APP_DIR)/Makefile : $(BSP_DIR)/settings.bsp $(SRC_DIR)/*
+	QUARTUS_VERSION=$(shell quartus_sh -v | awk '/^Version/{print $$2}')
+	if [[ "$$QUARTUS_VERSION" < 20.0 ]] ; then
+	    NIOS2_CFLAGS_STD="-std=c++14"
+	fi
+	nios2-app-generate-makefile \
+	    --set ALT_CFLAGS "$$NIOS2_CFLAGS_STD -Wall -Wextra -Wformat=0 -g3 -Os" \
+	    --bsp-dir "$(BSP_DIR)" --src-dir "$(SRC_DIR)" \
+	    --app-dir "$(APP_DIR)" --elf-name main.elf
+	$(MAKE) -C "$(APP_DIR)" clean
 
 .PRECIOUS : $(APP_DIR)/main.elf
 .PHONY : $(APP_DIR)/main.elf
-$(APP_DIR)/main.elf : $(SRC_DIR)/* $(BSP_DIR)/settings.bsp
-	# TODO: --elf-name
-	[[ "$(QUARTUS_VERSION)" < 20.0 ]] && GCC_STD="-std=c++14"
-	nios2-app-generate-makefile \
-	    --set ALT_CFLAGS "-Wall -Wextra -Wformat=0 -pedantic $$GCC_STD" \
-	    --bsp-dir "$(BSP_DIR)" --app-dir "$(APP_DIR)" --src-dir "$(SRC_DIR)"
-	$(MAKE) -C "$(APP_DIR)" clean
+$(APP_DIR)/main.elf : $(APP_DIR)/Makefile
+	$(MAKE) -C "$(BSP_DIR)"
 	$(MAKE) -C "$(APP_DIR)"
-	nios2-elf-objcopy "$(APP_DIR)/main.elf" -O srec "$(APP_DIR)/main.srec"
-	# generate mem_init/*.hex files (see AN730 / HEX File Generation)
-	$(MAKE) -C "$(APP_DIR)" mem_init_generate
-	mkdir -pv -- "$(QUARTUS_OUTPUT_FILES)"
-	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "$(QUARTUS_OUTPUT_FILES)/"
 
-app_gdb:
-	nios2-gdb-server --cable $(CABLE) --tcpport 2342 --tcptimeout 2 &
-	nios2-elf-gdb --eval-command='target remote :2342' $(APP_DIR)/app/main.elf
+$(APP_DIR)/main.srec : $(APP_DIR)/main.elf
+	nios2-elf-objcopy "$(APP_DIR)/main.elf" -O srec "$(APP_DIR)/main.srec"
 
 .PHONY : app
 app : $(APP_DIR)/main.elf
+	# generate mem_init/*.hex files (see AN730 / HEX File Generation)
+	$(MAKE) -C "$(APP_DIR)" mem_init_generate
+	mkdir -pv -- "$(BUILD_DIR)/output_files"
+	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "$(BUILD_DIR)/output_files/"
+
+
+
 
 .PHONY : pgm
 pgm : $(SOF)
@@ -216,11 +222,31 @@ pgm : $(SOF)
 	quartus_pgm --cable "$$CABLE" --mode jtag --operation="p;$(SOF)"
 
 .PHONY : app_upload
-app_upload : app
+app_upload : $(APP_DIR)/main.srec
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	nios2-gdb-server --cable "$$CABLE" -r -w 1 -g "$(APP_DIR)/main.srec"
+
+app_gdb :
+	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	PORT=$$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)
+	nios2-gdb-server --cable "$$CABLE" --tcpport "$$PORT" --tcptimeout 2 &
+	nios2-elf-gdb \
+	    --eval-command="target remote :$$PORT" \
+	    --eval-command="set confirm off" \
+	    --eval-command="set pagination off" \
+	    "$(APP_DIR)/main.elf"
+
+nios_reset :
+	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	nios2-gdb-server --cable "$$CABLE" -r -w 1 -g
 
 .PHONY : terminal
 terminal :
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	nios2-terminal --cable "$$CABLE"
+
+.PHONY : quartus
+quartus : $(QPF)
+	# prevent quartus from writing to system tmp dir
+	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
+	quartus $(QPF) &> /dev/null &

@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 set -euf
 
 DIR=$(dirname -- "$(readlink -f -- "$0")")
 
-PROJECT_NAME=top
+PROJECT_NAME="${1:-top}"
 
 # run Analysis & Synthesis
 #quartus_map top
