@@ -102,6 +102,7 @@ $(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(call find_file,settings.tcl)")"
 	set_global_assignment -name QIP_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(PREFIX)/include.qip")"
+	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:$(shell realpath -s --relative-to="$(BUILD_DIR)" util/quartus/pre_flow.tcl)"
 	EOF
 
 all : $(QPF) $(QSF)
@@ -162,6 +163,11 @@ $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec qsys-generate.sh
 	$(call find_file,qsys-generate.sh) "$<" 2>&1 | awk '{ sub(/^([0-9]+[.:]?)+ /, "") ; print $0 }'
+
+.PHONY : pre_flow
+pre_flow :
+	# generate components_pkg.vhd
+	$(call find_file,components_pkg.sh) "$(PREFIX)" > "$(PREFIX)/components_pkg.vhd"
 
 .PHONY : flow
 flow : all
