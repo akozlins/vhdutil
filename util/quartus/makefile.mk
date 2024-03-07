@@ -11,8 +11,8 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
-ifeq ($(QUARTUS_OUTPUT_FILES),)
-    override QUARTUS_OUTPUT_FILES := output_files
+ifeq ($(BUILD_DIR),)
+    override BUILD_DIR := quartus-build
 endif
 
 QPF := $(BUILD_DIR)/top.qpf
@@ -26,7 +26,7 @@ endif
 
 # location of compiled firmware (SOF file)
 ifeq ($(SOF),)
-    SOF := $(QUARTUS_OUTPUT_FILES)/top.sof
+    SOF := $(BUILD_DIR)/output_files/top.sof
 endif
 
 # location of generated nios.sopcinfo
@@ -83,7 +83,7 @@ endef
 clean :
 	rm -rf -- \
 	    ./.qsys_edit ./top.qws \
-	    ./db ./incremental_db ./output_files \
+	    $(BUILD_DIR)/db $(BUILD_DIR)/incremental_db $(BUILD_DIR)/output_files \
 	    "$(QPF)" "$(QSF)" \
 	    "$(PREFIX)"
 
@@ -95,16 +95,17 @@ $(QPF) : $(QSF)
 
 # default qsf file - load top.qip, and generated include.qip
 $(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
+	mkdir -p -- "$(BUILD_DIR)/output_files"
 	cat << EOF > "$@"
-	set_global_assignment -name QIP_FILE "top.qip"
+	set_global_assignment -name QIP_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" top.qip)"
 	set_global_assignment -name TOP_LEVEL_ENTITY top
-	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY "$(QUARTUS_OUTPUT_FILES)"
-	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "$(call find_file,settings.tcl)"
-	set_global_assignment -name QIP_FILE "$(PREFIX)/include.qip"
+	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(call find_file,settings.tcl)")"
+	set_global_assignment -name QIP_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(PREFIX)/include.qip")"
 	EOF
 
 all : $(QPF) $(QSF)
-	[ -e "top.srf" ] || ln -sv -- "util/quartus/top.srf"
+	[ -e "$(BUILD_DIR)/top.srf" ] || ln -s -T "$(shell realpath -s --relative-to="$(BUILD_DIR)" "util/quartus/top.srf")" "$(BUILD_DIR)/top.srf"
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
