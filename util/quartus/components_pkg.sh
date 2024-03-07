@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 set -euf
 
-# find '*.cmp' files
-# and generate 'components' package
+# find `*.cmp` files
+# and generate `components` package
 
 if [ $# -ge 1 ] ; then
     cd -- "$1" || exit 1
@@ -16,11 +16,12 @@ package components is
 
     constant GIT_HEAD : std_logic_vector(16*4-1 downto 0) := X"$(git rev-parse --short=16 HEAD | rev)";
 
-EOF
-
-find -L . -name '*.cmp' -exec echo "--" '{}' ';' -exec cat '{}' ';'
-
-cat << EOF
+$(
+while read -r fname ; do
+    echo "-- $fname"
+    cat -- "$fname"
+done < <(find -L . -name '*.cmp' | sort)
+)
 
 end package;
 EOF
