@@ -1,5 +1,6 @@
-#/bin/sh
+#!/bin/sh
 set -euf
+export LC_ALL=C
 
 # generate Altera IP using qmegawiz
 

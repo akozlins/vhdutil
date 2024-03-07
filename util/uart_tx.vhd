@@ -5,6 +5,7 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_misc.all;
 
 -- uart transmitter
 --
@@ -25,6 +26,10 @@ generic (
 );
 port (
     -- serial data
+    -- - idle is logic high (pull up)
+    -- - start bit is logic low
+    -- - least significant bit first
+    -- - stop bits are logic high
     o_data      : out   std_logic;
     -- output enable
     o_data_oe   : out   std_logic;
@@ -43,8 +48,8 @@ architecture arch of uart_tx is
     signal rdata : std_logic_vector(g_DATA_BITS-1 downto 0);
     signal rack, rempty : std_logic;
 
-    constant CNT_MAX_c : positive := positive(1000000.0 * g_CLK_MHZ / real(g_BAUD_RATE)) - 1;
-    signal cnt : integer range 0 to CNT_MAX_c;
+    constant CNT_MAX : positive := positive(1000000.0 * g_CLK_MHZ / real(g_BAUD_RATE)) - 1;
+    signal cnt : integer range 0 to CNT_MAX;
 
     type state_t is (
         STATE_START,
@@ -61,8 +66,8 @@ architecture arch of uart_tx is
 
 begin
 
-    -- psl default clock is rising_edge(i_clk) ;
-    -- psl assert always ( i_we = '0' or o_wfull = '0' ) ;
+    -- psl default clock is rising_edge(i_clk);
+    -- psl assert always ( i_we = '0' or o_wfull = '0' );
 
     o_data <=
         -- start bit
@@ -95,14 +100,14 @@ begin
         o_wfull         => o_wfull,
 
         i_reset_n       => i_reset_n,
-        i_clk           => i_clk--;
+        i_clk           => i_clk--,
     );
 
     parity <=
         -- total parity odd
-        '1' xor work.util.xor_reduce(rdata) when ( g_PARITY = 1 ) else
+        '1' xor xor_reduce(rdata) when ( g_PARITY = 1 ) else
         -- total parity even
-        '0' xor work.util.xor_reduce(rdata) when ( g_PARITY = 2 ) else
+        '0' xor xor_reduce(rdata) when ( g_PARITY = 2 ) else
         '-';
 
     process(i_clk, i_reset_n)
@@ -116,7 +121,7 @@ begin
         rack <= '0';
 
         -- change state at baud rate
-        if ( cnt = CNT_MAX_c ) then
+        if ( cnt = CNT_MAX ) then
             case state is
             when STATE_START =>
                 data_bit <= 0;
@@ -150,7 +155,7 @@ begin
                 --
             when STATE_IDLE =>
                 if ( rempty = '0' ) then
-                   -- start transmission
+                    -- start transmission
                     state <= STATE_START;
                 end if;
                 --

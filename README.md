@@ -5,10 +5,8 @@
 
 Prefixes/sufixes:
 
-- `e_` / `_id` - entity/component instance
+- `e_` - entity/component instance
 - `generate_` - generate statement
-- `_q`, `_r` - register
-- `_s`, `_w` - signal/wire
 - `_v` - variable
 - `_t` - type
 - `g_NAME` - generic

@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euf
+export LC_ALL=C
 
 TCL=$1
 QSYS=$2

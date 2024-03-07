@@ -50,7 +50,7 @@ begin
     o_wfull <= wfull;
     o_wfull_n <= not wfull;
 
-    -- rdata(0) is head of the fifo
+    -- rdata(0) is the head of the fifo
     o_rdata <= rdata(0);
     o_rvalid <= rvalid(0);
     o_rempty <= not rvalid(0);

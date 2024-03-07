@@ -55,19 +55,19 @@ begin
 
 
 
-    e_ram : entity work.ram_dp
+    e_ram : entity work.ram_1r1w
     generic map (
-        N => g_ADDR_WIDTH,
-        W => g_DATA_WIDTH--,
+        g_DATA_WIDTH => g_DATA_WIDTH,
+        g_ADDR_WIDTH => g_ADDR_WIDTH--,
     )
     port map (
-        a_addr  => rptr(addr_t'range),
-        a_rdata => o_rdata,
-        b_addr  => wptr(addr_t'range),
-        b_rdata => open,
-        b_wdata => i_wdata,
-        b_we    => we,
-        clk     => i_wclk--,
+        i_raddr => rptr(addr_t'range),
+        o_rdata => o_rdata,
+        i_rclk  => i_wclk,
+        i_waddr => wptr(addr_t'range),
+        i_wdata => i_wdata,
+        i_we    => we,
+        i_wclk  => i_wclk--,
     );
 
     o_rempty <= rempty;

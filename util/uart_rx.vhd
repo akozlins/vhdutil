@@ -1,10 +1,9 @@
 --
--- author : Alexandr Kozlinskiy
--- date : 2019-11-25
---
 
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_misc.all;
+use ieee.std_logic_unsigned.all;
 
 -- uart receiver
 --
@@ -25,6 +24,10 @@ generic (
 );
 port (
     -- serial data
+    -- - idle is logic high (pull up)
+    -- - start bit is logic low
+    -- - least significant bit first
+    -- - stop bits are logic high
     i_data      : in    std_logic;
 
     o_rdata     : out   std_logic_vector(g_DATA_BITS-1 downto 0);
@@ -43,8 +46,8 @@ architecture arch of uart_rx is
     signal wdata : std_logic_vector(g_DATA_BITS-1 downto 0);
     signal we, wfull : std_logic;
 
-    constant CNT_MAX_c : positive := positive(1000000.0 * g_CLK_MHZ / real(g_BAUD_RATE)) - 1;
-    signal cnt : integer range 0 to CNT_MAX_c;
+    constant CNT_MAX : positive := positive(1000000.0 * g_CLK_MHZ / real(g_BAUD_RATE)) - 1;
+    signal cnt : integer range 0 to CNT_MAX;
 
     type state_t is (
         STATE_START,
@@ -61,8 +64,8 @@ architecture arch of uart_rx is
 
 begin
 
-    -- psl default clock is rising_edge(i_clk) ;
-    -- psl assert always ( o_rempty = '0' or i_rack = '0' ) ;
+    -- psl default clock is rising_edge(i_clk);
+    -- psl assert always ( o_rempty = '0' or i_rack = '0' );
 
     d(0) <= i_data;
     process(i_clk, i_reset_n)
@@ -88,14 +91,14 @@ begin
         o_wfull         => wfull,
 
         i_reset_n       => i_reset_n,
-        i_clk           => i_clk--;
+        i_clk           => i_clk--,
     );
 
     parity <=
         -- total parity odd
-        '1' xor work.util.xor_reduce(wdata) when ( g_PARITY = 1 ) else
+        '1' xor xor_reduce(wdata) when ( g_PARITY = 1 ) else
         -- total parity even
-        '0' xor work.util.xor_reduce(wdata) when ( g_PARITY = 2 ) else
+        '0' xor xor_reduce(wdata) when ( g_PARITY = 2 ) else
         '-';
 
     process(i_clk, i_reset_n)
@@ -109,7 +112,7 @@ begin
         we <= '0';
 
         -- baud rate counter
-        if ( cnt = CNT_MAX_c ) then
+        if ( cnt = CNT_MAX ) then
             cnt <= 0;
         else
             cnt <= cnt + 1;
@@ -121,7 +124,7 @@ begin
         end if;
 
         -- change state and sample data at baud half-phase
-        if ( cnt = CNT_MAX_c / 2 ) then
+        if ( cnt = CNT_MAX / 2 ) then
             case state is
             when STATE_START =>
                 if ( wfull = '1' ) then
@@ -155,7 +158,7 @@ begin
             when STATE_STOP =>
                 if ( i_data /= '1' ) then
                     -- TODO : framing error
-                    if ( wdata = (wdata'range => '0') ) then
+                    if ( wdata = 0 ) then
                         -- TODO : break condition
                     end if;
                 end if;
