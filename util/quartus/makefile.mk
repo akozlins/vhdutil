@@ -257,3 +257,8 @@ quartus : $(QPF)
 	# prevent quartus from writing to system tmp dir
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	quartus $(QPF) &> /dev/null &
+
+
+
+ghdl : $(QSF)
+	./util/quartus/ghdl-ana.sh "$(QSF)"

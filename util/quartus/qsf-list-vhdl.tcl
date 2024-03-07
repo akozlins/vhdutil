@@ -1,6 +1,10 @@
 #!/bin/sh
 # \
-exec tclsh "$0" "$@"
+exec quartus_sh -t "$0" "$@"
+
+set QSF [ lindex $argv 0 ]
+cd [ file dirname $QSF ]
+set QSF [ file tail $QSF ]
 
 namespace eval ::quartus::qsf {
 
@@ -32,6 +36,7 @@ namespace eval ::quartus::qsf {
             }
             VHDL_FILE {
                 lappend ::quartus::qsf::deps([ info script ]) "$value"
+                puts $value
             }
 
             # check FAMILY/DEVICE assignments
@@ -58,8 +63,8 @@ namespace eval ::quartus::qsf {
     proc set_location_assignment { args } {
     }
 
-    proc set_parameter { args } {
-    }
+#    proc set_parameter { args } {
+#    }
 
     # intercept access to ::quartus(qip_path)
     proc trace_quartus_qip_path { args } {
@@ -69,7 +74,7 @@ namespace eval ::quartus::qsf {
     trace add variable ::quartus(qip_path) read trace_quartus_qip_path
 
     set deps(top.qsf) [ list ]
-    source "top.qsf"
+    source "$QSF"
 
     trace remove variable ::quartus(qip_path) read trace_quartus_qip_path
 
