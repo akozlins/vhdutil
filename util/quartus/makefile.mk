@@ -11,8 +11,13 @@ ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
 endif
 
+# Fitter Initial Placement Seed
+ifeq ($(SEED),)
+    override SEED := 1
+endif
+
 ifeq ($(BUILD_DIR),)
-    override BUILD_DIR := quartus-build
+    override BUILD_DIR := quartus-build/SEED_$(SEED)
 endif
 
 QPF := $(BUILD_DIR)/top.qpf
@@ -21,7 +26,7 @@ QSF := $(BUILD_DIR)/top.qsf
 # directory for generated files (*.qsys, *.sopcinfo, etc.)
 # TODO: rename PREFIX -> QP_TMP_DIR
 ifeq ($(PREFIX),)
-    override PREFIX := .cache
+    override PREFIX := quartus-build/generated
 endif
 
 # location of compiled firmware (SOF file)
