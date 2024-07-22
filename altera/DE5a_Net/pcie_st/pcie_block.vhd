@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 entity pcie_block is
 port (
@@ -79,7 +80,7 @@ begin
         tx.valid <= '0';
 
         -- handle MRd TLP
-        if ( rx_data(31 downto 24) = X"00" and rx_header_length /= (rx_header_length'range => '0') ) then
+        if ( rx_data(31 downto 24) = X"00" and rx_header_length /= 0 ) then
             tx.data <= (others => '0');
 
             tx.data(31 downto 0) <=
@@ -111,8 +112,8 @@ begin
             tx.valid <= tx_ready_q;
 
             if ( tx_ready_q = '1' ) then
-                rx_header_length <= std_logic_vector(unsigned(rx_header_length) - 1);
-                rx_header_address <= std_logic_vector(unsigned(rx_header_address) + 4);
+                rx_header_length <= rx_header_length - 1;
+                rx_header_address <= rx_header_address + 4;
             end if;
         end if;
 

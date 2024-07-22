@@ -1,15 +1,6 @@
 #
 
-/**/db
-/**/incremental_db
-/**/output_files
+quartus-build
 
 .qsys_edit/
 reconfig_mif/
-
-*.qpf
-*.qsf
-*.qws
-*.sopcinfo
-*.srf
-*.stp

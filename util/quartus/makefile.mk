@@ -108,6 +108,7 @@ $(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	set_global_assignment -name SOURCE_TCL_SCRIPT_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(call find_file,settings.tcl)")"
 	set_global_assignment -name QIP_FILE "$(shell realpath -s --relative-to="$(BUILD_DIR)" "$(PREFIX)/include.qip")"
 	set_global_assignment -name PRE_FLOW_SCRIPT_FILE "quartus_sh:$(shell realpath -s --relative-to="$(BUILD_DIR)" util/quartus/pre_flow.tcl)"
+	set_global_assignment -name SEED "$(SEED)"
 	EOF
 
 all : $(QPF) $(QSF)

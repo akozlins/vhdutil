@@ -16,3 +16,7 @@ either by creating new system in QSYS editor
 or by generating specific IP.
 
 The `sopcinfo` files are generated directly from `qsys` files.
+
+## arch
+
+- `libxcrypt-compat` provides `libcrypt.so.1`
