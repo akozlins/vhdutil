@@ -88,9 +88,7 @@ endef
 .PHONY : clean
 clean :
 	rm -rf -- \
-	    ./.qsys_edit ./top.qws \
-	    $(BUILD_DIR)/db $(BUILD_DIR)/incremental_db $(BUILD_DIR)/output_files \
-	    "$(QPF)" "$(QSF)" \
+	    $(BUILD_DIR) \
 	    "$(PREFIX)"
 
 # default qpf file
@@ -98,6 +96,7 @@ $(QPF) : $(QSF)
 	cat << EOF > "$@"
 	PROJECT_REVISION = "top"
 	EOF
+	[ -e "$(BUILD_DIR)/top.srf" ] || ln -s -T "$(shell realpath -s --relative-to="$(BUILD_DIR)" "util/quartus/top.srf")" "$(BUILD_DIR)/top.srf"
 
 # default qsf file - load top.qip, and generated include.qip
 $(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
@@ -113,7 +112,6 @@ $(QSF) : $(MAKEFILE_LIST) $(PREFIX)/include.qip
 	EOF
 
 all : $(QPF) $(QSF)
-	[ -e "$(BUILD_DIR)/top.srf" ] || ln -s -T "$(shell realpath -s --relative-to="$(BUILD_DIR)" "util/quartus/top.srf")" "$(BUILD_DIR)/top.srf"
 
 .PHONY : $(PREFIX)/components_pkg.vhd
 $(PREFIX)/components_pkg.vhd : $(SOPC_FILES) $(VHD_FILES)
@@ -164,11 +162,13 @@ $(PREFIX)/%.qsys : %.tcl device.tcl
 	# util link is used by qsys to find _hw.tcl modules
 	[ -e $(PREFIX)/util ] || ln -snv --relative -T util $(PREFIX)/util
 	# find and exec tcl2qsys.sh (use `awk` to remove timestamp prefix)
+	stdbuf -oL -eL \
 	$(call find_file,tcl2qsys.sh) "$<" "$@" 2>&1 | awk '{ sub(/^([0-9]+[.:]?)+ /, "") ; print $0 }'
 
 $(PREFIX)/%.sopcinfo : $(PREFIX)/%.qsys
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec qsys-generate.sh
+	stdbuf -oL -eL \
 	$(call find_file,qsys-generate.sh) "$<" 2>&1 | awk '{ sub(/^([0-9]+[.:]?)+ /, "") ; print $0 }'
 
 .PHONY : pre_flow
@@ -177,10 +177,15 @@ pre_flow :
 	$(call find_file,components_pkg.sh) "$(PREFIX)" > "$(PREFIX)/components_pkg.vhd"
 
 .PHONY : flow
-flow : all
+flow :: all
 	export TMP="$$(readlink -f -- $(PREFIX))/tmp"
 	# find and exec flow.sh
-	$(call find_file,flow.sh) "$(QPF)"
+	stdbuf -oL -eL \
+	$(call find_file,flow.sh) "$(QPF)" | tee "$(BUILD_DIR)/output_files/flow.out"
+
+.PHONY : flow_map
+flow_map : all
+	quartus_map top
 
 .PHONY : post_flow
 post_flow :
@@ -227,9 +232,6 @@ app : $(APP_DIR)/main.elf
 	mkdir -pv -- "$(BUILD_DIR)/output_files"
 	cp -av -- "$(APP_DIR)/mem_init/nios_ram.hex" "$(BUILD_DIR)/output_files/"
 
-
-
-
 .PHONY : pgm
 pgm : $(SOF)
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
@@ -242,16 +244,19 @@ $(POF) : $(SOF)
 .PHONY : app_upload
 app_upload : $(APP_DIR)/main.srec
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
-	nios2-gdb-server --cable "$$CABLE" -r -w 1 -g "$(APP_DIR)/main.srec"
+	nios2-gdb-server --cable "$$CABLE" --go "$(APP_DIR)/main.srec"
 
 app_gdb :
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
+	nios2-gdb-server --cable "$$CABLE" --stop "$(APP_DIR)/main.srec"
 	PORT=$$(hexdump -n 2 -e '/2 "%u"' /dev/urandom)
 	nios2-gdb-server --cable "$$CABLE" --tcpport "$$PORT" --tcptimeout 2 &
 	nios2-elf-gdb \
 	    --eval-command="target remote :$$PORT" \
 	    --eval-command="set confirm off" \
 	    --eval-command="set pagination off" \
+	    --eval-command="break main" \
+	    --eval-command="continue" \
 	    "$(APP_DIR)/main.elf"
 
 nios_reset :
