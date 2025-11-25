@@ -2,10 +2,8 @@
 #define __FLASH_H__
 
 struct ufm_t {
-    static constexpr
-    auto csr = (volatile alt_u32*)FLASH_CSR_BASE;
-    static constexpr
-    auto sector2 = (volatile alt_u32*)FLASH_DATA_SECTOR2_START_ADDR;
+    volatile alt_u32* csr = (alt_u32*)FLASH_CSR_BASE;
+    volatile alt_u32* sector2 = (alt_u32*)FLASH_DATA_SECTOR2_START_ADDR;
 
     void wait_idle() {
         while(csr[0] & 0x3) {
