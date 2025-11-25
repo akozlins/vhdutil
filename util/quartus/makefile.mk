@@ -33,6 +33,7 @@ endif
 ifeq ($(SOF),)
     SOF := $(BUILD_DIR)/output_files/top.sof
 endif
+POF := $(patsubst %.sof,%.pof,$(SOF))
 
 # location of generated nios.sopcinfo
 ifeq ($(NIOS_SOPCINFO),)
@@ -233,6 +234,10 @@ app : $(APP_DIR)/main.elf
 pgm : $(SOF)
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	quartus_pgm --cable "$$CABLE" --mode jtag --operation="p;$(SOF)"
+
+$(POF) : $(SOF)
+	cp -- ./pof.cof "$(BUILD_DIR)/"
+	( cd "$(BUILD_DIR)" && quartus_cpf -c ./pof.cof )
 
 .PHONY : app_upload
 app_upload : $(APP_DIR)/main.srec
