@@ -50,6 +50,8 @@ add_connection pcie_dma.write_master pcie_ram.s1
 set_instance_parameter_value pcie {bar2_type_hwtcl} {32-bit non-prefetchable memory}
 set_instance_parameter_value pcie {cg_a2p_addr_map_num_entries_hwtcl} {2}
 set_instance_parameter_value pcie {cg_a2p_addr_map_pass_thru_bits_hwtcl} {12}
+#set_instance_parameter_value pcie {wrala_hwtcl} {7} ;# Gen2x8
+set_instance_parameter_value pcie {wrala_hwtcl} {2} ;# Gen3x4
 
 add_interface pcie_hip_ctrl conduit end
 set_interface_property pcie_hip_ctrl EXPORT_OF pcie.hip_ctrl
