@@ -40,6 +40,7 @@ architecture arch of top is
     signal nios_i2c_mask        : std_logic_vector(31 downto 0);
 
     signal nios_pio             : std_logic_vector(31 downto 0);
+    signal nios_pio_reset_n     : std_logic := '1';
 
 begin
 
@@ -55,17 +56,28 @@ begin
 
 
 
+    e_watchdog : work.watchdog
+    generic map (
+        N => 50000000--,
+    )
+    port map (
+        i_d => nios_pio(0 downto 0),
+        --o_reset_n => nios_pio_reset_n,
+        i_reset_n => reset_50_n,
+        i_clk => clk_50--,
+    );
+
     -- generate reset sequence for flash and nios
     e_nios_reset_n : entity work.debouncer
     generic map (
         W => 2,
-        N => integer(50.0e6 * 0.100) -- 100ms
+        N => integer(50.0e6 * 0.250) -- 250ms
     )
     port map (
         i_d(0) => '1',         i_d(1) => flash_rst_n,
         o_q(0) => flash_rst_n, o_q(1) => nios_reset_n,
 
-        i_reset_n       => reset_50_n,
+        i_reset_n       => reset_50_n and nios_pio_reset_n,
         i_clk           => clk_50--,
     );
     flash_reset_n <= flash_rst_n;
