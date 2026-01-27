@@ -134,11 +134,11 @@ proc program_file { args } {
     return
 }
 
-set test_addr 0x05E80000
 set sof_addr 0x02B40000
-set sof "output_files/top.sof"
+set sof "quartus-build/SEED_1/output_files/top.sof"
 set elf_addr 0x05E40000
-set elf "software/app/main.elf"
+set elf "quartus-build/generated/software/app/main.elf"
+set test_addr 0x05E80000
 
 set proc_paths [ get_service_paths processor ]
 set mm_paths [ get_service_paths master ]

@@ -1,9 +1,6 @@
-/*
- * author : Alexandr Kozlinskiy
- * date : 2019
- */
-#ifndef __UTIL_BASE_H__
-#define __UTIL_BASE_H__
+//
+
+#pragma once
 
 #include <system.h>
 
@@ -78,5 +75,3 @@ char wait_key(useconds_t us = 100000) {
 #include <sys/alt_timestamp.h>
 
 #include <altera_avalon_spi.h>
-
-#endif // __UTIL_BASE_H__

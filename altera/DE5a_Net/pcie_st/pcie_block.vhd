@@ -47,7 +47,7 @@ architecture arch of pcie_block is
     signal currentspeed : std_logic_vector(1 downto 0);
     signal ltssmstate : std_logic_vector(4 downto 0);
 
-    signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse : std_logic;
+    signal serdes_pll_locked, coreclkout_hip, pld_clk_inuse, reset_status : std_logic;
 
     signal clk, reset_n : std_logic;
 
@@ -126,12 +126,9 @@ begin
 
     block_avs : block
     begin
-        process(clk, reset_n)
+        process(clk)
         begin
-        if ( reset_n = '0' ) then
-            o_avs_waitrequest <= '1';
-            --
-        elsif rising_edge(clk) then
+        if rising_edge(clk) then
             o_avs_waitrequest <= '0';
             o_avs_readdata <= X"CCCCCCCC";
 
@@ -176,6 +173,10 @@ begin
                         32*to_integer(unsigned(i_avs_address(2 downto 0)))
                     )(31 downto 0);
                 end if;
+            end if;
+
+            if ( i_avs_read = '1' and i_avs_address(7 downto 4) = X"F" ) then
+                o_avs_readdata <= tl_cfg(to_integer(unsigned(i_avs_address(3 downto 0))));
             end if;
 
         --

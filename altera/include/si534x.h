@@ -1,10 +1,6 @@
-/*
- * author : Alexandr Kozlinskiy
- * date : 2019
- */
+//
 
-#ifndef __UTIL_SI534X_H__
-#define __UTIL_SI534X_H__
+#pragma once
 
 #include "si.h"
 
@@ -138,5 +134,3 @@ struct si534x_t : si_t {
     }
 
 };
-
-#endif // __UTIL_SI534X_H__

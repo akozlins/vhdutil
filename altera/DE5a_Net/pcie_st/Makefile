@@ -7,5 +7,5 @@ IPs = \
 
 include util/quartus/makefile.mk
 
-clean :
-	git clean -Xdf -- .
+flash :
+	../../a10_tcl/program.sh

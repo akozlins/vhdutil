@@ -1,4 +1,3 @@
-# util.tcl --
 #
 # author : Alexandr Kozlinskiy
 # date : 2017-11-24

@@ -9,7 +9,7 @@
 flash_t flash;
 
 #include "include/a10/fan.h"
-fan_t fan;
+fan_t fan(0x00000001);
 
 int main() {
     base_init();

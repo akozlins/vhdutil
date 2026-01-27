@@ -1,5 +1,6 @@
-#ifndef __ADC_H__
-#define __ADC_H__
+//
+
+#pragma once
 
 #include <altera_modular_adc_sequencer_regs.h>
 
@@ -30,5 +31,3 @@ struct adc_t {
     }
 
 };
-
-#endif // __ADC_H__

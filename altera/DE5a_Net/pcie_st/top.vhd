@@ -126,7 +126,7 @@ begin
         avm_pcie_writedata      => av_pcie.writedata,
         avm_pcie_waitrequest    => av_pcie.waitrequest,
 
-        avm_pcie_reset_reset_n  => pcie_reset_n,
+        avm_pcie_reset_reset_n  => '1',
         avm_pcie_clock_clk      => pcie_clk,
 
         flash_tcm_address_out(27 downto 2) => FLASH_A,

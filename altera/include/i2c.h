@@ -1,12 +1,6 @@
-/*
- * mm_i2c.h
- *
- * author : Alexandr Kozlinskiy
- * date : 2017-11-13
- */
+//
 
-#ifndef __UTIL_I2C_H__
-#define __UTIL_I2C_H__
+#pragma once
 
 #include <system.h>
 
@@ -81,5 +75,3 @@ struct i2c_t {
         return 0xFFFFFFFF;
     }
 };
-
-#endif // __UTIL_I2C_H__

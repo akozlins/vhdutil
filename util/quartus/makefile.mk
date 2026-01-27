@@ -6,6 +6,8 @@
 
 .DELETE_ON_ERROR :
 .ONESHELL :
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c
 
 ifndef QUARTUS_ROOTDIR
     $(error QUARTUS_ROOTDIR is undefined)
@@ -207,6 +209,7 @@ $(BSP_DIR)/settings.bsp : $(BSP_SCRIPT) $(NIOS_SOPCINFO) $(MAKEFILE_LIST)
 .PRECIOUS : $(APP_DIR)/Makefile
 $(APP_DIR)/Makefile : $(BSP_DIR)/settings.bsp $(SRC_DIR)/*
 	QUARTUS_VERSION=$(shell quartus_sh -v | awk '/^Version/{print $$2}')
+	NIOS2_CFLAGS_STD=""
 	if [[ "$$QUARTUS_VERSION" < 20.0 ]] ; then
 	    NIOS2_CFLAGS_STD="-std=c++14"
 	fi
@@ -246,6 +249,7 @@ app_upload : $(APP_DIR)/main.srec
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	nios2-gdb-server --cable "$$CABLE" --go "$(APP_DIR)/main.srec"
 
+.PHONY : app_gdb
 app_gdb :
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	nios2-gdb-server --cable "$$CABLE" --stop "$(APP_DIR)/main.srec"
@@ -259,6 +263,7 @@ app_gdb :
 	    --eval-command="continue" \
 	    "$(APP_DIR)/main.elf"
 
+.PHONY : nios_reset
 nios_reset :
 	CABLE=$$($(call find_file,jtagconfig_match.sh) "$(CABLE)" "$(CABLE_DEVICE)")
 	nios2-gdb-server --cable "$$CABLE" -r -w 1 -g

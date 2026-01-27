@@ -1,0 +1,25 @@
+#
+
+[excludes]
+**/software/** = true
+**/quartus-build/** = true
+
+# ignore all symlinks to dirs
+# `find . -type l -exec sh -c '[ -d "$(readlink -f "{}")" ] && echo "{}"' \; | sort`
+altera/DE5a_Net/base/quartus-build/generated/util = true
+altera/DE5a_Net/base/software/include = true
+altera/DE5a_Net/base/util = true
+altera/DE5a_Net/pcie_mm/quartus-build/generated/util = true
+altera/DE5a_Net/pcie_mm/software/include = true
+altera/DE5a_Net/pcie_mm/util = true
+altera/DE5a_Net/pcie_st/quartus-build/generated/util = true
+altera/DE5a_Net/pcie_st/software/include = true
+altera/DE5a_Net/pcie_st/util = true
+altera/lhcb_pcie40/util = true
+altera/max10_dev/assignments = true
+altera/max10_dev/quartus-build/generated/util = true
+altera/max10_dev/software/include = true
+altera/max10_dev/util = true
+altera/mu3e_feb_v1/software/include = true
+altera/mu3e_feb_v1/util = true
+altera/s5_dev/util = true

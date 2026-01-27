@@ -1,12 +1,6 @@
-/*
- * cfi1616.h
- *
- * author : Alexandr Kozlinskiy
- * date : 2017-10-30
- */
+//
 
-#ifndef __UTIL_A10_CFI1616_H__
-#define __UTIL_A10_CFI1616_H__
+#pragma once
 
 #include <io.h>
 
@@ -434,5 +428,3 @@ struct cfi1616_t {
         return 0;
     }
 };
-
-#endif // __UTIL_A10_CFI1616_H__

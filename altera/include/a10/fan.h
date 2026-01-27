@@ -1,10 +1,6 @@
-/*
- * author : Alexandr Kozlinskiy
- * date : 2019
- */
+//
 
-#ifndef __UTIL_A10_FAN_H__
-#define __UTIL_A10_FAN_H__
+#pragma once
 
 #include "../i2c.h"
 
@@ -99,5 +95,3 @@ struct fan_t {
         }
     }
 };
-
-#endif // __UTIL_A10_FAN_H__

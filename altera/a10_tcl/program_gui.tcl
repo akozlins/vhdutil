@@ -159,5 +159,3 @@ proc gui {} {
 
 if { $::argc >= 1 } { set sof [ lindex $::argv 0 ] }
 if { $::argc >= 2 } { set elf [ lindex $::argv 1 ] }
-
-?c gui

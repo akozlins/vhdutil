@@ -14,5 +14,3 @@ set_global_assignment -name AUTO_SHIFT_REGISTER_RECOGNITION OFF
 set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
 
 set_global_assignment -name SAVE_DISK_SPACE OFF
-
-##

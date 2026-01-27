@@ -1,10 +1,6 @@
-/*
- * author : Alexandr Kozlinskiy
- * date : 2019
- */
+//
 
-#ifndef __UTIL_SI_H__
-#define __UTIL_SI_H__
+#pragma once
 
 #include <altera_avalon_i2c.h>
 #include <altera_avalon_spi.h>
@@ -175,5 +171,3 @@ struct si_t {
     }
 
 };
-
-#endif // __UTIL_SI_H__
