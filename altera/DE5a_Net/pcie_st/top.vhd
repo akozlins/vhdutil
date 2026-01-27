@@ -101,7 +101,7 @@ begin
 
     e_pcie_block : entity work.pcie_block
     port map (
-        i_avs_address       => av_pcie.address(5 downto 0),
+        i_avs_address       => av_pcie.address(7 downto 0),
         i_avs_read          => av_pcie.read,
         o_avs_readdata      => av_pcie.readdata,
         i_avs_write         => av_pcie.write,
@@ -119,7 +119,7 @@ begin
 
     e_nios : component work.components.nios
     port map (
-        avm_pcie_address        => av_pcie.address(5 downto 0),
+        avm_pcie_address        => av_pcie.address(7 downto 0),
         avm_pcie_read           => av_pcie.read,
         avm_pcie_readdata       => av_pcie.readdata,
         avm_pcie_write          => av_pcie.write,
@@ -152,7 +152,7 @@ begin
     FLASH_ADV_n <= '0';
     FLASH_CLK <= '0';
 
---    o_led_n(3) <= nios_pio(7);
+    --o_led_n(3) <= nios_pio(7);
 
 
 

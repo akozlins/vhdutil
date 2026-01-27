@@ -1,9 +1,11 @@
 #
 
-set_global_assignment -name SOURCE_TCL_SCRIPT_FILE [file join $::quartus(qip_path) "../base/assignments.tcl"]
-set_global_assignment -name SOURCE_TCL_SCRIPT_FILE [file join $::quartus(qip_path) "assignments.tcl"]
-
-set_global_assignment -name VHDL_FILE [file join $::quartus(qip_path) "top.vhd"]
-set_global_assignment -name SDC_FILE [file join $::quartus(qip_path) "top.sdc"]
-
-set_global_assignment -name QIP_FILE [file join $::quartus(qip_path) "util/include.qip"]
+foreach path [ glob -directory $::quartus(qip_path) {*}"
+    ../base/assignments.tcl ./assignments.tcl
+    ./top.vhd ./top.sdc
+    ./util/include.qip
+" ] {
+    set_global_assignment -name [ dict get {
+        .qip QIP_FILE .sdc SDC_FILE .tcl SOURCE_TCL_SCRIPT_FILE .vhd VHDL_FILE
+    } [ file extension $path ] ] $path
+}

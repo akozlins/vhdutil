@@ -33,8 +33,10 @@ int main() {
             fan.menu();
             break;
         case '3':
-            for(int i = 0; i < 64; i++) {
-                printf("[pcie] [0x%02X] = 0x%08X\n", i, ((uint32_t*)AVM_PCIE_BASE)[i]);
+            for(int i = 0; i < 256; i++) {
+                auto x = ((volatile uint32_t*)AVM_PCIE_BASE)[i];
+                if(x == 0xCCCCCCCC) continue;
+                printf("[pcie] [0x%02X] = 0x%08X\n", i, x);
             }
             break;
         default:

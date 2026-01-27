@@ -24,7 +24,7 @@ QPF := $(BUILD_DIR)/top.qpf
 QSF := $(BUILD_DIR)/top.qsf
 
 # directory for generated files (*.qsys, *.sopcinfo, etc.)
-# TODO: rename PREFIX -> QP_TMP_DIR
+# [AK] TODO: rename PREFIX -> QP_TMP_DIR
 ifeq ($(PREFIX),)
     override PREFIX := quartus-build/generated
 endif

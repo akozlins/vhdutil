@@ -34,7 +34,8 @@ nios_base.add_clock_source clk [ expr int($nios_clk_mhz * 1e6) ] -reset_export r
 
 # cpu
 add_instance cpu altera_nios2_gen2
-set_instance_parameter_value cpu {impl} {Tiny}
+#set_instance_parameter_value cpu {impl} {Tiny}
+set_instance_parameter_value cpu {impl} {Fast}
 set_instance_parameter_value cpu {resetSlave} {ram.s1}
 set_instance_parameter_value cpu {resetOffset} {0x00000000}
 set_instance_parameter_value cpu {exceptionSlave} {ram.s1}

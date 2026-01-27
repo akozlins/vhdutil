@@ -132,7 +132,7 @@ begin
 
     -- generate and route 125 MHz clock to SMA output
     -- (can be connected to SMA input as global clock)
-    e_pll_100to125 : component work.cmp.ip_pll_100to125
+    e_pll_100to125 : component work.components.ip_pll_100to125
     port map (
         outclk_0 => pll_125,
         refclk => clk_100,
@@ -142,7 +142,7 @@ begin
     A10_SMA_CLK_OUT_P <= pll_125;
     A10_SI53344_FANOUT_CLK_P <= pll_125;
 
-    e_clk_125 : work.cmp.ip_clkctrl
+    e_clk_125 : work.components.ip_clkctrl
     port map (
         inclk => A10_CUSTOM_CLK_P,
         outclk => clk_125--,

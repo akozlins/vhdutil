@@ -59,6 +59,7 @@ void uart_init() {
 void base_init() {
     uart_init();
 
+    printf("BUILD_DATE: %s %s\n", __DATE__, __TIME__);
     printf("ALT_DEVICE_FAMILY = '%s'\n", ALT_DEVICE_FAMILY);
     printf("\n");
 

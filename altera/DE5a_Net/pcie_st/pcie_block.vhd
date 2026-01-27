@@ -5,12 +5,12 @@ use ieee.std_logic_unsigned.all;
 
 entity pcie_block is
 port (
-    i_avs_address       : in    std_logic_vector(5 downto 0);
+    i_avs_address       : in    std_logic_vector(7 downto 0);
     i_avs_read          : in    std_logic;
     o_avs_readdata      : out   std_logic_vector(31 downto 0);
     i_avs_write         : in    std_logic;
     i_avs_writedata     : in    std_logic_vector(31 downto 0);
-    o_avs_waitrequest   : out   std_logic;
+    o_avs_waitrequest   : out   std_logic := '1';
 
     i_pcie_rx           : in    std_logic_vector(7 downto 0);
     o_pcie_tx           : out   std_logic_vector(7 downto 0);
@@ -41,6 +41,7 @@ architecture arch of pcie_block is
 
     signal tl_cfg_add : std_logic_vector(3 downto 0);
     signal tl_cfg_ctl : std_logic_vector(31 downto 0);
+    signal tl_cfg : work.pcie.tl_cfg_t := (others => (others => '0'));
 
     signal lane_act : std_logic_vector(3 downto 0);
     signal currentspeed : std_logic_vector(1 downto 0);
@@ -72,7 +73,7 @@ begin
             app_msi_req <= '1';
         end if;
 
---        tx.data <= (others => '0');
+        tx.data <= (others => '0');
         tx.sop <= '0';
         tx.eop <= '0';
         tx.empty <= "00";
@@ -134,7 +135,7 @@ begin
             o_avs_waitrequest <= '0';
             o_avs_readdata <= X"CCCCCCCC";
 
-            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "00" ) then
+            if ( i_avs_read = '1' and i_avs_address(7 downto 4) = X"0" ) then
                 o_avs_readdata <= (others => '0');
                 case i_avs_address(3 downto 0) is
                 when X"0" => o_avs_readdata(lane_act'range) <= lane_act;
@@ -146,7 +147,7 @@ begin
             end if;
 
             -- pcie config regs
-            if ( i_avs_read = '1' and i_avs_address(5 downto 4) = "01" ) then
+            if ( i_avs_read = '1' and i_avs_address(7 downto 4) = X"1" ) then
                 o_avs_readdata <= (others => '0');
                 case i_avs_address(3 downto 0) is
                 when X"0" => o_avs_readdata(cfg.busdev'range) <= cfg.busdev;
@@ -163,22 +164,18 @@ begin
                 end case;
             end if;
 
-            -- RX TLP
-            if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "100" ) then
-                o_avs_readdata <= rx_data(
-                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                    + 31 downto 0 +
-                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                );
-            end if;
-
-            -- TX TLP
-            if ( i_avs_read = '1' and i_avs_address(5 downto 3) = "110" ) then
-                o_avs_readdata <= tx.data(
-                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                    + 31 downto 0 +
-                    32*to_integer(unsigned(i_avs_address(2 downto 0)))
-                );
+            -- RX/TX TLP
+            if ( i_avs_read = '1' and i_avs_address(7 downto 3) = X"2" ) then
+                if ( i_avs_address(3) = '0' ) then
+                    o_avs_readdata <= work.util.shift_right(rx_data,
+                        32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                    )(31 downto 0);
+                end if;
+                if ( i_avs_address(3) = '1' ) then
+                    o_avs_readdata <= work.util.shift_right(tx.data,
+                        32*to_integer(unsigned(i_avs_address(2 downto 0)))
+                    )(31 downto 0);
+                end if;
             end if;
 
         --
@@ -190,7 +187,6 @@ begin
 
     -- see "5.12. Transaction Layer Configuration Space Signals"
     block_cfg : block
-        signal tl_cfg : work.pcie.tl_cfg_t;
         signal tl_cfg_add0_q : std_logic_vector(3 downto 0);
     begin
         cfg <= work.pcie.to_cfg(tl_cfg);
@@ -284,12 +280,17 @@ begin
         pld_core_ready      => serdes_pll_locked,
         -- Hard IP Transaction Layer is ready (output)
         pld_clk_inuse       => pld_clk_inuse,
+        reset_status        => reset_status,
 
---        test_in             => X"00000188", -- see 'UG-01145_avmm / 5.8.4. Test Signals'
-        test_in             => X"000000" & "10" -- Reserved. Must be set to 26'h2.
-                             & "0" -- Compliance test mode.
-                             & "0100" -- Reserved. Must be set to 4'b0100.
-                             & "0", -- Simulation mode.
+        test_in             => X"000000" -- Reserved.
+            & "1" -- Disable low power state negotiation.
+            & "0" -- Forces entry to compliance mode when a timeout is reached in the polling.active state
+                  -- and not all lanes have detected their exit condition.
+            & "0" -- Compliance test mode.
+            & "01" -- Reserved. Must be set to 01.
+            & "0" -- Descramble mode disable.
+            & "0" -- Reserved.
+            & "0", -- Simulation mode.
         simu_mode_pipe      => '0',
         rx_in0              => i_pcie_rx(0),
         rx_in1              => i_pcie_rx(1),

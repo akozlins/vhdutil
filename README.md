@@ -7,7 +7,7 @@ Prefixes/sufixes:
 
 - `e_` - entity/component instance
 - `generate_` - generate statement
-- `_v` - variable
+- `v_` - variable
 - `_t` - type
 - `g_NAME` - generic
 - `c_NAME` - constant
@@ -22,7 +22,8 @@ Prefixes/sufixes:
 
 - 4 spaces
 - ascii
-- avoid `std_logic_unsigned`, etc.
+- avoid `std_logic_arith`, etc.
 
-## TODO
+## Quartus
 
+- <https://download.altera.com/akdlm/software/acdsinst/20.1std.1/720/ib_tar/Quartus-20.1.1.720-linux-complete.tar>

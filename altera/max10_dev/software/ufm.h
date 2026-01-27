@@ -1,5 +1,4 @@
-#ifndef __FLASH_H__
-#define __FLASH_H__
+#pragma once
 
 struct ufm_t {
     volatile alt_u32* csr = (alt_u32*)FLASH_CSR_BASE;
@@ -91,5 +90,3 @@ struct ufm_t {
         }
     }
 };
-
-#endif // __FLASH_H__
